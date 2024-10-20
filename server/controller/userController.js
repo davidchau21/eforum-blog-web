@@ -1,5 +1,5 @@
 import User from '../Schema/User.js';
-import {setSocketId} from '../Socket/Socket.js';
+import {setSocketId} from '../socket/socket.js';
 import EE from "../socket/eventManager.js"
 export const getUserForSidebar = async (req, res, next) => {
   try {

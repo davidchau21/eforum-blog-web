@@ -1,15 +1,13 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import useConversation from "../../zustand/useConversation";
 import { useSocketContext } from "../../socket/SocketContext";
 
-
-const Conversation = ({ conversation, lastIndex ,online }) => {
+const Conversation = ({ conversation, lastIndex, online }) => {
   const { selectedConversation, setSelectedConversation } = useConversation();
 
+  const isOnline = online?.includes(conversation._id);
 
-const isOnline =online?.includes(conversation._id)
-
-const isSelected =selectedConversation?._id === conversation._id
+  const isSelected = selectedConversation?._id === conversation._id;
 
   return (
     <>
@@ -19,7 +17,7 @@ const isSelected =selectedConversation?._id === conversation._id
         }`}
         onClick={() => setSelectedConversation(conversation)}
       >
-        <div className={`avatar ${isOnline ? "online" : "" }`}>
+        <div className={`avatar ${isOnline ? "online" : ""}`}>
           <div className="w-12 rounded-full">
             <img src={conversation.personal_info.profile_img} />
           </div>

@@ -38,7 +38,7 @@ const ProfilePage = () => {
 
     let { personal_info: { fullname, username: profile_username, profile_img, bio }, account_info: { total_posts, total_reads }, social_links, joinedAt } = profile;
 
-    let { userAuth: { username } } = useContext(UserContext)
+    let { userAuth: { username, access_token } } = useContext(UserContext)
 
     const fetchUserProfile = () => {
         axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-profile", { username: profileId })
@@ -101,7 +101,6 @@ const ProfilePage = () => {
     }
 
     return (
-
         <AnimationWrapper>
             {
                 loading ? <Loader /> : 
@@ -123,6 +122,16 @@ const ProfilePage = () => {
                                         <Link to="/settings/edit-profile" className="btn-light rounded-md">Edit Profile</Link>
                                         : " "
                                     }
+                                </div>
+
+                                <div className="flex gap-4 mt-2">
+                                    {profileId !== username && (
+                                        access_token ? (
+                                            <Link to={`/chat`} className="btn-light rounded-md">Message</Link>
+                                        ) : (
+                                            <Link to="/chat" className="btn-light rounded-md">Message</Link>
+                                        )
+                                    )}
                                 </div>
 
                                 <AboutUser className="max-md:hidden" bio={bio} social_links={social_links} joinedAt={joinedAt} />
@@ -173,7 +182,6 @@ const ProfilePage = () => {
                     : <PageNotFound />
             }
         </AnimationWrapper>
-
     )
 }
 
