@@ -9,6 +9,7 @@ import { activeTabRef } from "../components/inpage-navigation.component";
 import NoDataMessage from "../components/nodata.component";
 import { filterPaginationData } from "../common/filter-pagination-data";
 import LoadMoreDataBtn from "../components/load-more.component";
+import SupportChat from "../components/support-chat.component";
 
 const HomePage = () => {
     let [blogs, setBlog] = useState(null);
@@ -220,6 +221,8 @@ const HomePage = () => {
                         </div>
                     </div>
                 </div>
+
+                <SupportChat />
             </section>
         </AnimationWrapper>
     );
