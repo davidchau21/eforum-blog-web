@@ -19,6 +19,7 @@ import NewPasswordPage from "./pages/new-password.page";
 import ForgotPasswordPage from "./pages/forgot-password.page";
 import ChatUI from "./pages/chat.page";
 import { SocketContextProvider } from "./socket/SocketContext.jsx";
+import Footer from "./components/footer.component.jsx";
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
 
@@ -55,7 +56,7 @@ const App = () => {
                     <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
                     <Route path="/editor/:blog_id" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
                     <Route path="/" element={<Navbar />}>
-                        <Route index element={<HomePage />} />
+                        <Route index element={<><HomePage /><Footer /></>} />
                         <Route path="dashboard" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
                             <Route path="blogs" element={<ManageBlogs />} />
                             <Route path="notifications" element={<Notifications />} />
