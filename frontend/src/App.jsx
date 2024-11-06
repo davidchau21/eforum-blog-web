@@ -56,7 +56,7 @@ const App = () => {
                     <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
                     <Route path="/editor/:blog_id" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
                     <Route path="/" element={<Navbar />}>
-                        <Route index element={<><HomePage /><Footer /></>} />
+                        <Route index element={<><HomePage /></>} />
                         <Route path="dashboard" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
                             <Route path="blogs" element={<ManageBlogs />} />
                             <Route path="notifications" element={<Notifications />} />
@@ -66,7 +66,7 @@ const App = () => {
                             <Route path="change-password" element={<ChangePassword />} />
                         </Route>
                         <Route path="verify" element={<VerifyOtp />} />
-                        <Route path="signin" element={<UserAuthForm type="sign-in" />} />
+                        <Route path="signin" element={<><UserAuthForm type="sign-in" /> <Footer /></> } />
                         <Route path="signup" element={<UserAuthForm type="sign-up" />} />
                         <Route path="new-password" element={<NewPasswordPage />} />
                         <Route path="forgot-password" element={<ForgotPasswordPage />} />

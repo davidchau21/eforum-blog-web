@@ -333,6 +333,54 @@ server.post("/google-auth", async (req, res) => {
 
 })
 
+server.post("/facebook-auth", async (req, res) => {
+    let { access_token } = req.body;
+
+    fetch(`https://graph.facebook.com/v11.0/me?fields=id,name,email,picture&access_token=${access_token}`)
+    .then(response => response.json())
+    .then(async (data) => {
+        let { name, email, picture } = data;
+        picture = picture.replace("s96-c", "s384-c");
+        let user = await User.findOne({"personal_info.email": email}).select("personal_info.fullname personal_info.username personal_info.profile_img facebook_auth").then((u) => {
+            return u || null
+        })
+        .catch(err => {
+            return res.status(500).json({ "error": err.message })
+        })
+
+        if(user) { // login
+            if(!user.facebook_auth){
+                return res.status(403).json({ "error": "This email was signed up without facebook. Please log in with password to access the account" })
+            }
+        }
+        else { // sign up
+            
+            let username = await generateUsername(email);
+
+            user = new User({
+                personal_info: { fullname: name, email, username },
+                facebook_auth: true
+            })
+
+            await user.save().then((u) => {
+                user = u;
+            })
+            .catch(err => {
+                return res.status(500).json({ "error": err.message })
+            })
+
+        }
+
+        return res.status(200).json(formatDatatoSend(user))
+
+    })
+    .catch(() => {
+        return res.status(500).json({ "error": "Failed to authenticate you with facebook. Try with some other facebook account" })
+    })
+
+})
+
+
 server.post("/verify", async (req, res) => {
     const { email, otp } = req.body;
   

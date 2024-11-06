@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { GoogleAuthProvider, getAuth, signInWithPopup } from 'firebase/auth'
+import { FacebookAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -30,6 +31,23 @@ export const authWithGoogle = async () => {
     .catch((err) => {
         console.log(err)
     })
+
+    return user;
+}
+
+const providerFacebook = new FacebookAuthProvider();
+
+
+export const authWithFacebook = async () => {
+    let user = null;
+
+    await signInWithPopup(auth, providerFacebook)
+    .then((result) => {
+        user = result.user
+    })
+    .catch((err) => {
+        console.log(err)
+    });
 
     return user;
 }

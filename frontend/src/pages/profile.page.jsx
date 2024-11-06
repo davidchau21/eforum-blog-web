@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
 import { UserContext } from "../App";
@@ -11,6 +11,8 @@ import BlogPostCard from "../components/blog-post.component";
 import NoDataMessage from "../components/nodata.component";
 import LoadMoreDataBtn from "../components/load-more.component";
 import PageNotFound from "./404.page";
+import useGetConversations from "../hook/useGetConversations";
+import useConversation from "../zustand/useConversation";
 
 export const profileDataStructure = {
     personal_info: {
@@ -39,6 +41,12 @@ const ProfilePage = () => {
     let { personal_info: { fullname, username: profile_username, profile_img, bio }, account_info: { total_posts, total_reads }, social_links, joinedAt } = profile;
 
     let { userAuth: { username, access_token } } = useContext(UserContext)
+
+    const { conversations } = useGetConversations();
+    const navigate = useNavigate();
+    
+    const { setSelectedConversation } = useConversation();
+    
 
     const fetchUserProfile = () => {
         axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-profile", { username: profileId })
@@ -126,12 +134,24 @@ const ProfilePage = () => {
 
                                 <div className="flex gap-4 mt-2">
                                     {profileId !== username && (
-                                        access_token ? (
-                                            <Link to={`/chat`} className="btn-light rounded-md">Message</Link>
-                                        ) : (
-                                            <Link to="/chat" className="btn-light rounded-md">Message</Link>
-                                        )
+                                        <button 
+                                        className="btn-light rounded-md"
+                                        onClick={() => {
+                                            const conversation = conversations.find(conv => 
+                                                conv.personal_info.username === profile_username
+                                            );
+                                            if (conversation) {
+                                                setSelectedConversation(conversation);
+                                                navigate("/chat");
+                                            } else {
+                                                toast.error("No conversation found with this user");
+                                            }
+                                        }}
+                                    >
+                                        Message
+                                    </button>
                                     )}
+
                                 </div>
 
                                 <AboutUser className="max-md:hidden" bio={bio} social_links={social_links} joinedAt={joinedAt} />

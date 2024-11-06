@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from "react";
 import useConversation from "../../zustand/useConversation";
-import { useSocketContext } from "../../socket/SocketContext";
 
 const Conversation = ({ conversation, lastIndex, online }) => {
-  const { selectedConversation, setSelectedConversation } = useConversation();
+  const { selectedConversation, setSelectedConversation, messages } = useConversation();
 
   const isOnline = online?.includes(conversation._id);
 
   const isSelected = selectedConversation?._id === conversation._id;
+
+  const lastMessageTime = messages.length > 0 ? new Date(messages[messages.length - 1].createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : null;
+  // console.log("Last message time: ", lastMessageTime);
+
+  const lastMessage = messages.length > 0 ? messages[messages.length - 1].message : null;
+  // console.log("Last message: ", lastMessage);
 
   return (
     <>
@@ -25,9 +30,9 @@ const Conversation = ({ conversation, lastIndex, online }) => {
         <div className="flex flex-col flex-1">
           <div className="flex justify-between">
             <h1 className="font-bold">{conversation.personal_info.username}</h1>
-            <span className="text-xs text-gray-400">1:30 PM</span>
+            {/* {lastMessageTime && <span className="text-xs text-gray-400">{lastMessageTime}</span>} */}
           </div>
-          <p className="text-sm text-gray-400">Hello, how are you?</p>
+          {/* <p className="text-sm text-gray-400">{lastMessage}</p> */}
         </div>
       </div>
 
