@@ -2,14 +2,12 @@ import { useContext } from "react";
 import AnimationWrapper from "../common/page-animation";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
-import facebookIcon from "../imgs/facebook.png";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Toaster, toast } from "react-hot-toast";
 import axios from "axios";
 import { storeInSession } from "../common/session";
 import { UserContext } from "../App";
 import { authWithGoogle } from "../common/firebase";
-import { authWithFacebook } from "../common/firebase";
 
 const UserAuthForm = ({ type }) => {
   let {
@@ -96,26 +94,6 @@ const UserAuthForm = ({ type }) => {
       });
   };
 
-  const handleFacebookAuth = (e) => {
-    e.preventDefault();
-
-    authWithFacebook()
-      .then((user) => {
-        let serverRoute = "/facebook-auth";
-
-        let formData = {
-          access_token: user.accessToken,
-        };
-
-        userAuthThroughServer(serverRoute, formData);
-      })
-      .catch((err) => {
-        toast.error("trouble login through facebook");
-        return console.log(err);
-      });
-  };
-
-
   return access_token ? (
     <Navigate to="/" />
   ) : (
@@ -173,14 +151,6 @@ const UserAuthForm = ({ type }) => {
             <img src={googleIcon} className="w-5" />
             continue with google
           </button>
-
-          <button
-            className="btn-dark flex items-center justify-center gap-4 w-[90%] center"
-            onClick={handleFacebookAuth}
-            >
-              <img src={facebookIcon} className="w-5" />
-              continue with facebook
-            </button>
 
           {type === "sign-in" && (
             <div className="mt-6 text-dark-grey text-xl text-center">
