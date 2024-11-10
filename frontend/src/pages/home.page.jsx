@@ -1,7 +1,7 @@
 import axios from "axios";
 import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Loader from "../components/loader.component";
 import BlogPostCard from "../components/blog-post.component";
 import MinimalBlogPost from "../components/nobanner-blog-post.component";
@@ -10,11 +10,16 @@ import NoDataMessage from "../components/nodata.component";
 import { filterPaginationData } from "../common/filter-pagination-data";
 import LoadMoreDataBtn from "../components/load-more.component";
 import SupportChat from "../components/support-chat.component";
+import { getTranslations } from '../../translations';
+import { UserContext } from '../App';
 
 const HomePage = () => {
     let [blogs, setBlog] = useState(null);
     let [trendingBlogs, setTrendingBlog] = useState(null);
     let [ pageState, setPageState ] = useState("home");
+    const { userAuth } = useContext(UserContext);
+    const { language } = userAuth;
+    const translations = getTranslations(language);
 
     let categories = [
         "programming",
@@ -165,7 +170,7 @@ const HomePage = () => {
                                         </AnimationWrapper>
                                     );
                                 })
-                            : <NoDataMessage message="No trending blogs" />
+                            : <NoDataMessage message={translations.noTrendingBlogs} />
                         )}
                     </InPageNavigation>
                 </div>
@@ -175,7 +180,7 @@ const HomePage = () => {
                     <div className="flex flex-col gap-10">
                         <div>
                             <h1 className="font-medium text-xl mb-8">
-                                Stories form all interests
+                                {translations.subjects}
                             </h1>
 
                             <div className="flex gap-3 flex-wrap">
@@ -192,7 +197,7 @@ const HomePage = () => {
 
                         <div>
                             <h1 className="font-medium text-xl mb-8">
-                                Trending
+                                {translations.trending}
                                 <i className="fi fi-rr-arrow-trend-up"></i>
                             </h1>
 
@@ -216,7 +221,7 @@ const HomePage = () => {
                                             </AnimationWrapper>
                                         );
                                     })
-                                : <NoDataMessage message="No trending blogs" />
+                                : <NoDataMessage message={translations.noTrendingBlogs} />
                             )}
                         </div>
                     </div>
