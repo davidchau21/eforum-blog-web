@@ -45,11 +45,13 @@ mongoose.connect(process.env.DB_LOCATION, {
 import messageRouter from "./router/messageRouter.js";
 import userRouter from "./router/userRouter.js";
 import fileRouter from "./router/fileRouter.js";
+import searchRouter from "./router/searchRouter.js";
 
 
 server.use("/message", messageRouter);
 server.use("/users", userRouter);
 server.use("/files", fileRouter);
+server.use("/search", searchRouter);
 
 // setting up s3 bucket
 const s3 = new aws.S3({

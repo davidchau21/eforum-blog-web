@@ -5,7 +5,7 @@ const ChatHistory = ({ chatHistory }) => {
   return (
     <>
       {chatHistory.length === 0 ? (
-        <div className="flex items-center justify-center py-4 text-gray-500">
+        <div className="flex justify-items-center justify-center py-4 text-gray-500">
           Ready to chat with someone
         </div>
       ) : (

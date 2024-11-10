@@ -8,6 +8,7 @@ import {
   OpenAIOutlined,
   SendOutlined,
 } from "@ant-design/icons";
+import chatBot from "../imgs/chatbot.png";
 
 const SupportChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,15 +60,16 @@ const SupportChat = () => {
       {!isOpen && (
         <button
           onClick={toggleChat}
-          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-md hover:from-blue-700 hover:to-blue-800 focus:outline-none transition-all duration-300"
+          className="bg-gradient-to-r from-green-500 to-blue-600 text-white p-4 rounded-full shadow-md hover:from-blue-500 hover:to-green-500 focus:outline-none transition-all duration-300"
+
         >
-          Chat with AI <OpenAIOutlined />
+          <img src={chatBot} alt="chat" className="w-9 h-9" />
         </button>
       )}
       {/* Hộp thoại chat */}
       {isOpen && (
         <div className="bg-white rounded-xl shadow-lg p-6 w-full lg:w-[400px] h-[500px] flex flex-col justify-between relative border border-gray-300">
-          
+
           {/* Nút đóng cửa sổ chat */}
           <button
             onClick={toggleChat}
@@ -87,7 +89,7 @@ const SupportChat = () => {
               className="flex-shrink-0 px-4 py-2 rounded-full bg-rose-500 text-white hover:bg-rose-600 focus:outline-none transition-all duration-300 shadow-md"
               onClick={clearChat}
             >
-              <DeleteOutlined/>
+              <DeleteOutlined />
             </button>
             <input
               type="text"
