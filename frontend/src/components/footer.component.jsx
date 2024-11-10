@@ -1,91 +1,108 @@
-import React from "react";
+import { Link } from "react-router-dom";
+import { useContext } from "react";
+import darkLogo from "../imgs/logo-dark.png";
+import lightLogo from "../imgs/logo-light.png";
+import github from "../imgs/github.png";
+import youtube from "../imgs/youtube.png";
+import facebook from "../imgs/facebook.png"
+import { UserContext, ThemeContext } from '../App';
+import { getTranslations } from '../../translations';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear();
+    const { userAuth } = useContext(UserContext);
+    const { theme } = useContext(ThemeContext);
+    const { language } = userAuth;
+    const translations = getTranslations(language);
 
-  return (
-    <footer className="bg-gray-900 text-gray-300 py-12">
-      <div className="container mx-auto px-4">
-        <div className="flex flex-wrap justify-between">
-          {/* About Section */}
-          <div className="w-full sm:w-1/3 mb-6 sm:mb-0">
-            <h3 className="text-white text-lg font-semibold mb-4">About Us</h3>
-            <p className="text-sm leading-relaxed">
-              EduBlog is a platform for students to share knowledge, explore tutorials, and learn together. Join us for more educational content.
-            </p>
-          </div>
+    return (
+        <footer className={`p-5 mt-10 ${theme === "light" ? "bg-gray-200" : "bg-gray-800"}`}>
+            <div className={"p-5 mx-auto flex md:flex-row gap-10 "}>
 
-          {/* Quick Links Section */}
-          <div className="w-full sm:w-1/3 mb-6 sm:mb-0">
-            <h3 className="text-white text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="/about" className="hover:text-gray-400">About Us</a>
-              </li>
-              <li>
-                <a href="/contact" className="hover:text-gray-400">Contact</a>
-              </li>
-              <li>
-                <a href="/privacy" className="hover:text-gray-400">Privacy Policy</a>
-              </li>
-              <li>
-                <a href="/terms" className="hover:text-gray-400">Terms of Service</a>
-              </li>
-            </ul>
-          </div>
+                <div className="flex">
+                    <Link to="/" className="flex items-center">
+                        <img src={theme === "light" ? darkLogo : lightLogo} className="w-[70px] h-[70px]" alt="Logo" />
+                    </Link>
+                </div>
 
-          {/* Social Media Section */}
-          <div className="w-full sm:w-1/3">
-            <h3 className="text-white text-lg font-semibold mb-4">Follow Us</h3>
-            <div className="flex space-x-6">
-              <a
-                href="https://www.facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-white transition"
-              >
-                <i className="fab fa-facebook fa-lg"></i>
-              </a>
-              <a
-                href="https://www.twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-white transition"
-              >
-                <i className="fab fa-twitter fa-lg"></i>
-              </a>
-              <a
-                href="https://www.instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-white transition"
-              >
-                <i className="fab fa-instagram fa-lg"></i>
-              </a>
-              <a
-                href="https://www.linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-300 hover:text-white transition"
-              >
-                <i className="fa fa-linkedin fa-lg"></i>
-              </a>
+                <div className="text-left">
+                    <p className={`text-xl font-bold mt-2`}>  
+                            {translations.aboutUs}
+                    </p>
+                    <p className={`text-xs mt-2 max-w-lg`}>  
+                            {translations.aboutUsDes}
+                    </p>
+                    <p className={`text-xl font-bold mt-2`}>
+                        <span>
+                            {translations.contact}
+                        </span>
+                    </p>
+                    <p className={`text-xs mt-2`}>
+                    <span>
+                        contact@edublog.com -
+                        <span className="mx-2">
+                            <Link to="/contact" className={`hover:underline`}>
+                                {translations.more}
+                            </Link>
+                        </span>
+                    </span>
+
+                    </p>
+                </div>
+                
+                <div className="text-left">
+                    <p className={`text-xl font-bold mt-2`}>  
+                            {translations.legal}
+                    </p>
+                    <p className={`text-xs mt-2`}>
+                        <Link to="/terms-of-service" className={`hover:underline`}>
+                            {translations.termsOfService}
+                        </Link>
+                    </p>
+                    <p className={`text-xs mt-2`}>
+                        <Link to="/privacy" className={`hover:underline `}>
+                            {translations.privacy}
+                        </Link>
+                    </p>
+                    <p className={`text-xs mt-2`}>
+                        <Link to="/policy" className={`hover:underline`}>
+                            {translations.policy}
+                        </Link>
+                    </p>
+                </div>
+
+                <div className="text-left">
+                    <p className={`text-xl font-bold mt-2`}>  
+                            {translations.social}
+                    </p>
+                    <p className={`text-xs mt-2`}>
+                        
+                        <Link to="https://www.youtube.com/" className={`hover:opacity-50`}>
+                            <img src={youtube} className="w-8 h-8" alt="Logo" />
+                        </Link>
+                    </p>
+                    <p className={`text-xs mt-2`}>
+                        <Link to="https://www.facebook.com/" className={`hover:opacity-50`}>
+                            <img src={facebook} className="w-8 h-8" alt="Logo" />
+                        </Link>
+                    </p>
+                    <p className={`text-xs mt-2`}>
+                        <Link to="https://github.com/" className={`hover:opacity-50`}>
+                            <img src={github} className="w-8 h-8" alt="Logo" />
+                        </Link>
+                    </p>
+                </div>
+
+                
             </div>
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="border-t border-gray-700 my-8"></div>
-
-        {/* Copyright */}
-        <div className="text-center">
-          <p className="text-gray-400 text-sm">
-            &copy; {currentYear} EduBlog. All rights reserved.
-          </p>
-        </div>
-      </div>
-    </footer>
-  );
+            <div className="text-center border-t border-black">
+                    <p className={`text-xs mt-2`}>
+                        <span>
+                            ©2024 {translations.siteName} - All rights reserved.
+                        </span>
+                    </p>
+                </div>
+        </footer>
+    );
 };
 
 export default Footer;

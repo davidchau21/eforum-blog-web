@@ -12,16 +12,19 @@ import EditorJS from "@editorjs/editorjs";
 import { tools } from "./tools.component";
 import axios from "axios";
 import { ThemeContext, UserContext } from "../App";
+import { getTranslations } from "../../translations";
 
 const BlogEditor = () => {
 
     let { blog, blog: { title, banner, content, tags, des }, setBlog, textEditor, setTextEditor, setEditorState } = useContext(EditorContext)
 
-    let { userAuth: { access_token } } = useContext(UserContext)
+    let { userAuth: { access_token, language } } = useContext(UserContext)
     let { theme } = useContext(ThemeContext);
     let { blog_id } = useParams();
 
     let navigate = useNavigate();
+
+    const currentTranslations = getTranslations(language);
 
     // useEffect
     useEffect(() => {
@@ -162,19 +165,19 @@ const BlogEditor = () => {
                     <img src={ theme == "light" ? darkLogo : lightLogo } />
                 </Link>
                 <p className="max-md:hidden text-black line-clamp-1 w-full">
-                    { title.length ? title : "New Blog" }
+                    {blog.title.length ? blog.title : currentTranslations.newBlog}
                 </p>
 
                 <div className="flex gap-4 ml-auto">
                     <button className="btn-dark py-2"
                         onClick={handlePublishEvent}
                     >
-                        Publish
+                        {currentTranslations.publish}
                     </button>
                     <button className="btn-light py-2"
                         onClick={handleSaveDraft}
                     >
-                        Save Draft
+                        {currentTranslations.saveDraft}
                     </button>
                 </div>
             </nav>

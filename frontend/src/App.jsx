@@ -56,7 +56,7 @@ const App = () => {
                     <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
                     <Route path="/editor/:blog_id" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
                     <Route path="/" element={<Navbar />}>
-                        <Route index element={<><HomePage /></>} />
+                        <Route index element={<><HomePage /> <Footer/></>} />
                         <Route path="dashboard" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
                             <Route path="blogs" element={<ManageBlogs />} />
                             <Route path="notifications" element={<Notifications />} />
@@ -65,11 +65,11 @@ const App = () => {
                             <Route path="edit-profile" element={<EditProfile />} />
                             <Route path="change-password" element={<ChangePassword />} />
                         </Route>
-                        <Route path="verify" element={<VerifyOtp />} />
+                        <Route path="verify" element={<><VerifyOtp /> <Footer /></> } />
                         <Route path="signin" element={<><UserAuthForm type="sign-in" /> <Footer /></> } />
-                        <Route path="signup" element={<UserAuthForm type="sign-up" />} />
-                        <Route path="new-password" element={<NewPasswordPage />} />
-                        <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                        <Route path="signup" element={<><UserAuthForm type="sign-up" /> <Footer /></> } />
+                        <Route path="new-password" element={<><NewPasswordPage /> <Footer /></> } />
+                        <Route path="forgot-password" element={<><ForgotPasswordPage /> <Footer /></>} />
                         <Route path="chat" element={<ProtectedRoute><ChatUI /></ProtectedRoute>} />
                         <Route path="search/:query" element={<SearchPage />} />
                         <Route path="user/:id" element={<ProfilePage />} />
