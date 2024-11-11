@@ -24,6 +24,7 @@ import PrivacyPage from "./pages/privacy.page";
 import PolicyPage from "./pages/policy.page";
 import ContactPage from "./pages/contact.page";
 import TermsOfServicePage from "./pages/terms-of-service.page";
+import SearchGooglePage from "./pages/search-google.page.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -57,35 +58,41 @@ const App = () => {
         <ThemeContext.Provider value={{ theme, setTheme }}>
             <UserContext.Provider value={{ userAuth, setUserAuth }}>
                 <SocketContextProvider>
-                    <Routes>
-                        <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
-                        <Route path="/editor/:blog_id" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
-                        <Route path="/" element={<Navbar />}>
-                            <Route index element={<><HomePage /> <Footer /></>} />
-                            <Route path="dashboard" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
-                                <Route path="blogs" element={<ManageBlogs />} />
-                                <Route path="notifications" element={<Notifications />} />
-                            </Route>
-                            <Route path="settings" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
-                                <Route path="edit-profile" element={<EditProfile />} />
-                                <Route path="change-password" element={<ChangePassword />} />
-                            </Route>
-                            <Route path="verify" element={<><VerifyOtp /> <Footer /></>} />
-                            <Route path="signin" element={<><UserAuthForm type="sign-in" /> <Footer /></>} />
-                            <Route path="signup" element={<><UserAuthForm type="sign-up" /> <Footer /></>} />
-                            <Route path="new-password" element={<><NewPasswordPage /> <Footer /></>} />
-                            <Route path="forgot-password" element={<><ForgotPasswordPage /> <Footer /></>} />
-                            <Route path="chat" element={<ProtectedRoute><ChatUI /></ProtectedRoute>} />
-                            <Route path="search/:query" element={<SearchPage />} />
-                            <Route path="user/:id" element={<ProfilePage />} />
-                            <Route path="blog/:blog_id" element={<BlogPage />} />
-                            <Route path="privacy" element={<><PrivacyPage /><Footer /></>} />
-                            <Route path="policy" element={<><PolicyPage /><Footer /></>} />
-                            <Route path="contact" element={<><ContactPage /><Footer /></>} />
-                            <Route path="terms-of-service" element={<><TermsOfServicePage /><Footer /></>} />
-                            <Route path="*" element={<PageNotFound />} />
-                        </Route>
-                    </Routes>
+                    <div className="flex flex-col min-h-screen">
+                        <div className="flex-grow">
+                            <Routes>
+                                <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+                                <Route path="/editor/:blog_id" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+                                <Route path="/" element={<Navbar />}>
+                                    <Route index element={<HomePage />} />
+                                    <Route path="dashboard" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
+                                        <Route path="blogs" element={<ManageBlogs />} />
+                                        <Route path="notifications" element={<Notifications />} />
+                                    </Route>
+                                    <Route path="settings" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
+                                        <Route path="edit-profile" element={<EditProfile />} />
+                                        <Route path="change-password" element={<ChangePassword />} />
+                                    </Route>
+                                    <Route path="verify" element={<VerifyOtp />} />
+                                    <Route path="signin" element={<UserAuthForm type="sign-in" />} />
+                                    <Route path="signup" element={<UserAuthForm type="sign-up" />} />
+                                    <Route path="new-password" element={<NewPasswordPage />} />
+                                    <Route path="forgot-password" element={<ForgotPasswordPage />} />
+                                    <Route path="chat" element={<ProtectedRoute><ChatUI /></ProtectedRoute>} />
+                                    <Route path="search/:query" element={<SearchPage />} />
+                                    <Route path="user/:id" element={<ProfilePage />} />
+                                    <Route path="blog/:blog_id" element={<BlogPage />} />
+                                    <Route path="privacy" element={<PrivacyPage />} />
+                                    <Route path="policy" element={<PolicyPage />} />
+                                    <Route path="contact" element={<ContactPage />} />
+                                    <Route path="terms-of-service" element={<TermsOfServicePage />} />
+                                    <Route path="search-google" element={<SearchGooglePage />} />
+                                    <Route path="*" element={<PageNotFound />} />
+                                </Route>
+                            </Routes>
+                        </div>
+                        <Footer />
+                    </div>
                 </SocketContextProvider>
 
             </UserContext.Provider>

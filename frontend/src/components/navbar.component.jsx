@@ -106,7 +106,7 @@ const Navbar = () => {
                         <i className="fi fi-rr-search text-xl"></i>
                     </button>
 
-                    <Link to="/editor" className="hidden md:flex gap-2 link">
+                    <Link to="/editor" className="hidden md:flex gap-2 link hover:text-emerald-500">
                         <i className="fi fi-rr-file-edit"></i>
                         <p>{currentTranslations.write}</p>
                     </Link>
@@ -127,12 +127,12 @@ const Navbar = () => {
                         access_token ? 
                         <>
 
-                            <Link to="/chat" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center">
+                            <Link to="/chat" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
                                 <i className="fi fi-rr-messages text-2xl block mt-1 "></i>
                             </Link>
 
                             <Link to="/dashboard/notifications">
-                                <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10">
+                                <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500">
                                     <i className="fi fi-rr-bell text-2xl block mt-1"></i>
                                     {
                                         new_notification_available ? 
