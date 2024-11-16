@@ -10,7 +10,7 @@ const VerifyOtp = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const email = location.state?.email; // Lấy email từ location state (chuyển qua từ trang signup)
+  const email = location.state?.email; 
 
   const handleVerifyOtp = (e) => {
     e.preventDefault();
@@ -22,19 +22,15 @@ const VerifyOtp = () => {
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + "/verify", { email, otp })
       .then(({ data }) => {
-        toast.success("OTP Verified Successfully");
-        // Sau khi OTP được xác thực, đăng nhập vào hệ thống
-        navigate("/", { replace: true }); // Chuyển hướng đến trang chủ sau khi đăng nhập thành công
+        navigate("/signin", { state: { message: 'OTP Verified Successfully. Please sign in' } }); 
       })
       .catch(({ response }) => {
         toast.error(response.data.message || "Error verifying OTP");
       });
-    console.log("emails: " + email);
-    console.log("otp: " + otp);
   };
 
   const handleBack = () => {
-    navigate(-1); // Quay lại trang trước đó
+    navigate(-1); 
   };
 
   return (
