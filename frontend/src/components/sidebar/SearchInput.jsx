@@ -17,6 +17,7 @@ const SearchInput = () => {
     const conversation = conversations.find((conversation) =>
       conversation.personal_info.username.toLowerCase().includes(search.toLowerCase())
     );
+    localStorage.setItem("search", search);
 
     if (conversation) {
       setSelectedConversation(conversation)
@@ -25,6 +26,9 @@ const SearchInput = () => {
       toast.error("No user found with this username")
     }
   };
+
+  
+
   return (
     <form className="flex items-center gap-2" onSubmit={handleSubmit}>
       <input

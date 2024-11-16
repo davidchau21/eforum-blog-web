@@ -24,7 +24,7 @@ export const setSocketId = (userId,socketId) => {
 const userSocketMap = {};
 
 io.on("connection", (socket) => {
-    console.log("a user connected", socket.id);
+    // console.log("a user connected", socket.id);
 
     const userId = socket.handshake.auth.token;
 
@@ -38,7 +38,7 @@ io.on("connection", (socket) => {
         for (const user of users){
             const receiverSocketId = getReceiverSocketId(user)
             if (receiverSocketId) {
-                console.log(receiverSocketId,'receiverSocketId')
+                // console.log(receiverSocketId,'receiverSocketId')
                 io.to(receiverSocketId).emit("newMessage", newMessage)
             }
         }
@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
         io.emit("online-users", Object.keys(userSocketMap));
     })
     socket.on("disconnect", () => {
-        console.log("user disconnected", socket.id);
+        // console.log("user disconnected", socket.id);
         if (userId) { // Kiểm tra nếu userId tồn tại trước khi xóa
           delete userSocketMap[userId];
         }
