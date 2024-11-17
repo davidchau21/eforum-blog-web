@@ -86,7 +86,7 @@ const BlogPage = () => {
 
                         <div className="mt-12">
                             <h2>{title}</h2>
-
+                            <hr className="border-grey my-2" />
                             <div className="flex max-sm:flex-col justify-between my-8">
                                 <div className="flex gap-5 items-start">
                                     <img src={profile_img} className="w-12 h-12 rounded-full" />
@@ -101,9 +101,10 @@ const BlogPage = () => {
                                 </div>
                                 <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Published on {getDay(publishedAt)}</p>
                             </div>
+                            <hr className="border-grey my-2" />
                         </div>
 
-                        <BlogInteraction />
+                        {/* <BlogInteraction /> */}
 
                         <div className="my-12 font-gelasio blog-page-content">
                             {

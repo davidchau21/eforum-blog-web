@@ -35,17 +35,19 @@ const Conversations = () => {
 
   console.log("conversations: ", conversations);
 
+  const filteredConversations = conversations.filter((conversation) => conversation.conversation !== null);
+
   return (
     <div className="py-2 flex flex-col overflow-auto">
       {loading ? (
         <Loader />
       ) : (
-        conversations.map((conversation, index) => (
+        filteredConversations.map((conversation, index) => (
           <Conversation
             key={conversation._id}
             online={online}
             conversation={conversation}
-            lastIndex={index === conversations.length - 1}
+            lastIndex={index === filteredConversations.length - 1}
           />
         ))
       )}

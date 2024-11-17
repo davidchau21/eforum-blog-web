@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import AnimationWrapper from "../common/page-animation";
 import InputBox from "../components/input.component";
 import googleIcon from "../imgs/google.png";
@@ -8,6 +8,7 @@ import axios from "axios";
 import { storeInSession } from "../common/session";
 import { UserContext } from "../App";
 import { authWithGoogle } from "../common/firebase";
+import { useLocation } from "react-router-dom";
 
 const UserAuthForm = ({ type }) => {
   let {
@@ -16,6 +17,14 @@ const UserAuthForm = ({ type }) => {
   } = useContext(UserContext);
 
   const navigate = useNavigate();
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.message) {
+      toast.success(location.state.message);
+    }
+  }, [location.state]);
 
   const userAuthThroughServer = (serverRoute, formData) => {
     axios

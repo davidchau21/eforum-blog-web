@@ -21,9 +21,8 @@ const NewPasswordPage = () => {
     }
 
     try {
-      await axios.post('http://localhost:3000/reset-password', { token, password, passwordConfirm });
-      toast.success('Password has been reset successfully');
-      navigate('/signin'); // Redirect to login page or another page after successful password reset
+      await axios.post(import.meta.env.VITE_SERVER_DOMAIN + '/reset-password', { token, password, passwordConfirm });
+      navigate('/signin', { state: { message: 'Password reset successful. Please sign in' } });
     } catch (error) {
       toast.error(error.response?.data.message || 'An error occurred');
     }

@@ -13,9 +13,10 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:3000/forgot-password", { email });
-      toast.success("Password reset link has been sent to your email");
-      navigate("/signin");
+      await axios.post(`${import.meta.env.VITE_SERVER_DOMAIN}/forgot-password`, { email });
+      navigate("/signin", {
+        state: { message: "Password reset link has been sent to your email" },
+      });
     } catch (error) {
       toast.error(error.response?.data.message || "An error occurred");
     }
