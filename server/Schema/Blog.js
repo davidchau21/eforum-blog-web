@@ -50,6 +50,10 @@ const blogSchema = mongoose.Schema({
             type: Number,
             default: 0
         },
+        total_share: {
+            type: Number,
+            default: 0
+        }
     },
     comments: {
         type: [Schema.Types.ObjectId],

@@ -840,25 +840,32 @@ server.post("/get-blog", (req, res) => {
 
 })
 
-server.post("/share-blog", (req, res) => {
-    let { blog_id, share_type, share_url, share_img } = req.body;
+server.post("/share-blog", verifyJWT, (req, res) => {
     let user_id = req.user;
+    let { blog_id, share_type, share_url, share_img } = req.body;
 
-    let share = new Notification({
-        type: "share",
-        blog: blog_id,
-        notification_for: user_id,
-        user: user_id
-    });
+    Blog.findOneAndUpdate({ _id: blog_id }, { $inc: { "activity.total_share": 1 } })
+    .then(blog => {
+        let share = new Notification({
+            type: "share",
+            blog: blog_id,
+            notification_for: blog.author,
+            user: user_id,
+            metadata: {
+                share_url,
+                share_img,
+                share_type,
+            },
+        });
 
-    share.save().then(notification => {
-        return res.status(200).json({ shared_by_user: true });
-    }).catch(err => {
+        share.save().then(notification => {
+            return res.status(200).json({ shared_by_user: true });
+        });
+    })
+    .catch(err => {
         return res.status(500).json({ error: err.message });
     });
-
-})
-
+});
 
 server.post("/like-blog", verifyJWT, (req, res) => {
 
