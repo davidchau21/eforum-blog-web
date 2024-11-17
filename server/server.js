@@ -303,10 +303,14 @@ server.post("/google-auth", async (req, res) => {
             return res.status(500).json({ "error": err.message })
         })
 
+        // if(user) { // login
+        //     if(!user.google_auth){
+        //         return res.status(403).json({ "error": "This email was signed up without google. Please log in with password to access the account" })
+        //     }
+        // }
         if(user) { // login
-            if(!user.google_auth){
-                return res.status(403).json({ "error": "This email was signed up without google. Please log in with password to access the account" })
-            }
+            user.google_auth = true; // Allow login with Google even if initially signed up without Google
+            await user.save();
         }
         else { // sign up
             
