@@ -137,81 +137,87 @@ const BlogInteraction = () => {
                     </button>
                     <p className="text-xl text-dark-grey">{total_comments}</p>
 
-                    <button
-                        onClick={() => setShowShareOptions(prev => !prev)}
-                        className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
-                    >
-                        <i className="fi fi-rr-share"></i>
-                    </button>
-                    {showShareOptions && (
-                        <div className="absolute bg-white border rounded shadow-lg p-4 flex flex-col gap-2 share-options">
-                            <TwitterShareButton
-                                url={urlShare}
-                                title={title}
-                                hashtags={["blog", title, "efurum"]}
-                                onClick={() => {
-                                    handleShare("twitter");
-                                    setShowShareOptions(false);
-                                }}>
-                                <i className="fi fi-brands-twitter text-xl hover:text-twitter"></i>
-                            </TwitterShareButton>
-                            <FacebookShareButton
-                                url={urlShare}
-                                hashtag="#blog"
-                                onClick={() => {
-                                    handleShare("facebook");
-                                    setShowShareOptions(false);
-                                }}>
-                                <i className="fi fi-brands-facebook text-xl hover:text-facebook"></i>
-                            </FacebookShareButton>
-                            <LinkedinShareButton
-                                url={urlShare}
-                                title={title}
-                                summary="blog"
-                                onClick={() => {
-                                    handleShare("linkedin");
-                                    setShowShareOptions(false);
-                                }}>
-                                <i className="fi fi-brands-linkedin text-xl hover:text-linkedin"></i>
-                            </LinkedinShareButton>
-                            <RedditShareButton
-                                url={urlShare}
-                                title={title}
-                                onClick={() => {
-                                    handleShare("reddit");
-                                    setShowShareOptions(false);
-                                }}>
-                                <i className="fi fi-brands-reddit text-xl hover:text-reddit"></i>
-                            </RedditShareButton>
-                            <TelegramShareButton
-                                url={urlShare}
-                                title={title}
-                                onClick={() => {
-                                    handleShare("telegram");
-                                    setShowShareOptions(false);
-                                }}>
-                                <i className="fi fi-brands-telegram text-xl hover:text-telegram"></i>
-                            </TelegramShareButton>
-                        </div>
-                    )}
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowShareOptions(prev => !prev)}
+                            className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
+                        >
+                            <i className="fi fi-rr-share"></i>
+                        </button>
+                        {showShareOptions && (
+                            <div className="absolute right-0 bg-white border rounded shadow-lg p-4 flex flex-col gap-2 share-options">
+                                <TwitterShareButton
+                                    url={urlShare}
+                                    title={title}
+                                    hashtags={["blog", title, "efurum"]}
+                                    onClick={() => {
+                                        handleShare("twitter");
+                                        setShowShareOptions(false);
+                                    }}>
+                                    <i className="fi fi-brands-twitter text-xl hover:text-twitter"></i>
+                                </TwitterShareButton>
+                                <FacebookShareButton
+                                    url={urlShare}
+                                    hashtag="#blog"
+                                    onClick={() => {
+                                        handleShare("facebook");
+                                        setShowShareOptions(false);
+                                    }}>
+                                    <i className="fi fi-brands-facebook text-xl hover:text-facebook"></i>
+                                </FacebookShareButton>
+                                <LinkedinShareButton
+                                    url={urlShare}
+                                    title={title}
+                                    summary="blog"
+                                    onClick={() => {
+                                        handleShare("linkedin");
+                                        setShowShareOptions(false);
+                                    }}>
+                                    <i className="fi fi-brands-linkedin text-xl hover:text-linkedin"></i>
+                                </LinkedinShareButton>
+                                <RedditShareButton
+                                    url={urlShare}
+                                    title={title}
+                                    onClick={() => {
+                                        handleShare("reddit");
+                                        setShowShareOptions(false);
+                                    }}>
+                                    <i className="fi fi-brands-reddit text-xl hover:text-reddit"></i>
+                                </RedditShareButton>
+                                <TelegramShareButton
+                                    url={urlShare}
+                                    title={title}
+                                    onClick={() => {
+                                        handleShare("telegram");
+                                        setShowShareOptions(false);
+                                    }}>
+                                    <i className="fi fi-brands-telegram text-xl hover:text-telegram"></i>
+                                </TelegramShareButton>
+                            </div>
+                        )}
+                    </div>
                     <p className="text-xl text-dark-grey">{total_share}</p>
                 </div>
 
                 <div className="flex gap-6 items-center">
-
                     {
                         username == author_username ?
                             <Link to={`/editor/${blog_id}`} className="underline hover:text-purple">Edit</Link> : ""
                     }
-                    <button
-                        onClick={() => {
-                            navigator.clipboard.writeText(urlShare);
-                            toast.success("Link copied to clipboard!");
-                        }}
-                        className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
-                    >
-                        <i className="fi fi-rr-link"></i>
-                    </button>
+                    <div className="relative group">
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(urlShare);
+                                toast.success("Link copied to clipboard!");
+                            }}
+                            className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80 group-hover:bg-blue-500"
+                        >
+                            <i className="fi fi-rr-link"></i>
+                        </button>
+                        <span className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2">
+                            Sao chép liên kết
+                        </span>
+                    </div>
                 </div>
             </div>
 

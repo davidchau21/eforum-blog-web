@@ -11,32 +11,27 @@ const url = 'https://api.scrapingdog.com/google_scholar/';
 
 // search one keyword 
 export const googleSearchOne = async (req, res) => {
-    const { query } = req.query; 
+    const { query, start = 1 } = req.query; 
     if (!query) return res.status(400).json({ error: 'Missing query parameter' });
 
     try {
         const response = await axios.get(googleSearchUrl, {
-            params: { key: googleApiKey, cx: googleCx, q: query, start: 1, num: 10 },
+            params: {
+                key: googleApiKey,
+                cx: googleCx,
+                q: query,
+                start: parseInt(start), 
+                num: 10, 
+            },
         });
 
-        const { items, searchInformation } = response.data;
-        const data = {
-            q: query,
-            time: searchInformation.searchTime,
-            items: items.map(o => ({
-                link: o.link,
-                title: o.title,
-                snippet: o.snippet,
-                img: (((o.pagemap || {}).cse_image || {})[0] || {}).src,
-            })),
-        };
-
-        res.status(200).json(data);
+        res.status(200).json(response.data);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error processing query' });
     }
 };
+
 // search one keyword
 export const duckduckgoSearchOne = async (req, res) => {
     const { query } = req.query; 
