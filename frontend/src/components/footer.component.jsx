@@ -23,15 +23,17 @@ const Footer = () => {
                         <img src={theme === "light" ? darkLogo : lightLogo} className="w-[70px] h-[70px]" alt="Logo" />
                     </Link>
                 </div>
-
                 {/* About Us Section */}
                 <div className="text-center md:text-left">
                     <p className="text-xl font-bold mt-2">{translations.aboutUs}</p>
-                    <p className="text-xs mt-2 max-w-lg mx-auto md:mx-0">{translations.aboutUsDes}</p>
-                    <p className="text-xl font-bold mt-4">{translations.contact}</p>
+                    <p className="text-xs mt-2 max-w-xs mx-auto md:mx-0">{translations.aboutUsDes}</p>
+                </div>
+                {/* Contact Section */}
+                <div className="text-center md:text-left">
+                    <p className="text-xl font-bold mt-2">{translations.contact}</p>
                     <p className="text-xs mt-2">
                         <span>
-                            contact@edublog.com - 
+                            contact@eforum.com - 
                             <span className="mx-2">
                                 <Link to="/contact" className="hover:underline">{translations.more}</Link>
                             </span>
@@ -56,17 +58,27 @@ const Footer = () => {
                 {/* Social Links Section */}
                 <div className="text-center md:text-left">
                     <p className="text-xl font-bold mt-2">{translations.social}</p>
-                    <div className="flex justify-center md:justify-start space-x-4 mt-2">
-                        <Link to="https://www.youtube.com/" className={`hover:opacity-50`}>
-                            <img src={youtube} className="w-8 h-8" alt="YouTube" />
+                    <div className="flex flex-col items-center md:items-start space-y-4 mt-2">
+                    <p className="text-xs">
+                        <Link to="https://www.youtube.com/" className="flex items-center gap-x-2 hover:opacity-50">
+                            <img src={youtube} className="w-8 h-8" alt="Logo" />
+                            Youtube
                         </Link>
-                        <Link to="https://www.facebook.com/" className={`hover:opacity-50`}>
-                            <img src={facebook} className="w-8 h-8" alt="Facebook" />
+                    </p>
+                    <p className="text-xs">
+                        <Link to="https://www.facebook.com/" className="flex items-center gap-x-2 hover:opacity-50">
+                            <img src={facebook} className="w-8 h-8" alt="Logo" />
+                            Facebook
                         </Link>
-                        <Link to="https://github.com/" className={`hover:opacity-50`}>
-                            <img src={github} className="w-8 h-8" alt="GitHub" />
+                    </p>
+                    <p className="text-xs">
+                        <Link to="https://github.com/" className="flex items-center gap-x-2 hover:opacity-50">
+                            <img src={github} className="w-8 h-8" alt="Logo" />
+                            GitHub
                         </Link>
-                    </div>
+                    </p>
+                </div>
+
                 </div>
             </div>
 
