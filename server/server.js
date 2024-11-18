@@ -542,7 +542,7 @@ server.post('/latest-blogs', (req, res) => {
 
     let { page } = req.body;
 
-    let maxLimit = 5;
+    let maxLimit = 6;
 
     Blog.find({ draft: false })
     .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")

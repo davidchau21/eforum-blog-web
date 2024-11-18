@@ -104,7 +104,7 @@
     }
 
     .tag{
-        @apply p-3 bg-grey rounded-full px-6 capitalize;
+        @apply p-3 bg-grey rounded-full px-6 capitalize hover:text-emerald-500;
     }
 
     .blog-title{
