@@ -107,7 +107,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
             </div>
 
             {
-                type !== 'like' && type !== 'share' ? 
+                type !== 'like' && type !== 'share' && comment ? 
                 <p className="ml-14 pl-5 font-gelasio text-xl my-5">{comment.comment}</p> : ""
             }
 

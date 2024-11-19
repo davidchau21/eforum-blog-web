@@ -23,6 +23,7 @@
     "@editorjs/quote": "^2.5.0",
     "@flaticon/flaticon-uicons": "^2.2.0",
     "@google/generative-ai": "^0.21.0",
+    "@material-tailwind/react": "^2.1.10",
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",
     "emoji-picker-react": "^4.12.0",

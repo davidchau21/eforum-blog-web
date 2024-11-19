@@ -104,7 +104,7 @@ const BlogPage = () => {
                             <hr className="border-grey my-2" />
                         </div>
 
-                        {/* <BlogInteraction /> */}
+                        <BlogInteraction />
 
                         <div className="my-12 font-gelasio blog-page-content">
                             {
