@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useContext } from "react";
+import { getTranslations } from "../../translations";
+import { UserContext } from "../App";
 
 const SearchGooglePage = () => {
     const [text, setText] = useState('');
@@ -11,6 +14,11 @@ const SearchGooglePage = () => {
     const [totalResults, setTotalResults] = useState(0);
     const [timeTaken, setTimeTaken] = useState(0);
     const [hasSearched, setHasSearched] = useState(false);
+
+    const { userAuth } = useContext(UserContext);
+    const { language } = userAuth;
+    const translations = getTranslations(language);
+
 
     const handleSearchGoogle = async (start = 1) => {
         if (!text) {
@@ -42,7 +50,7 @@ const SearchGooglePage = () => {
         <div className="mt-12 mb-4 px-4 sm:px-6 lg:px-8">
             {/* Header */}
             <div className="mb-8 text-center">
-                <h1 className="text-3xl font-bold text-gray-800">Kho Tài Liệu</h1>
+                <h1 className="text-3xl font-bold text-gray">{translations.searchGoogle}</h1>
             </div>
 
             {/* Search Input */}

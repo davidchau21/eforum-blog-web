@@ -24,8 +24,10 @@
     }
 
     section{
-        @apply py-4 px-[5vw] md:px-[7vw] lg:px-[10vw];
+        @apply py-4 px-[5vw] md:px-[7vw] lg:px-[10vw] bg-white;
     }
+
+
 
     ::selection {
         @apply bg-purple/30;
@@ -40,7 +42,7 @@
     }
 
     .h-cover{
-        @apply min-h-[calc(100vh-80px)];
+        @apply min-h-[calc(100vh-80px)] bg-white;
     }
 
     .center{
@@ -113,6 +115,10 @@
 
     .blog-index{
         @apply text-4xl sm:text-3xl lg:text-5xl font-bold text-emerald-500 leading-none;
+    }
+
+    .search-google{
+        @apply bg-white;
     }
 }
 
