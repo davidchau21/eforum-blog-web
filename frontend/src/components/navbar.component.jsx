@@ -87,6 +87,10 @@ const Navbar = () => {
                     <img src={theme == "light" ? darkLogo : lightLogo} className="w-full" />
                 </Link>
 
+                {/* <button className="flex right-0 items-center justify-center hover:text-emerald-500" onClick={() => setSearchBoxVisibility(prev => !prev)}>
+                    <i className="fi fi-rr-search text-xl"></i>
+                </button> */}
+
                 <div className={"absolute bg-white w-full left-0 top-full mt-0.5 border-b border-grey py-4 px-[5vw] md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto md:show " + (searchBoxVisibility ? "show" : "hide")}>
                     <input
                         type="search"
@@ -98,61 +102,78 @@ const Navbar = () => {
                     <i className="fi fi-rr-search absolute right-[10%] md:pointer-events-none md:left-5 top-1/2 -translate-y-1/2 text-xl text-dark-grey"></i>
                 </div>
 
-                <div className="flex items-center gap-3 md:gap-6 ml-auto">
+                <div className="flex items-center gap-4 md:gap-6 ml-auto">
+                    {/* Search in mobile */}
+                    <button className="flex items-center justify-center hover:text-emerald-500 md:hidden" onClick={() => setSearchBoxVisibility(prev => !prev)}>
+                        <i className="fi fi-rr-search text-xl"></i>
+                    </button>
+
+                    {/* Notification in mobile */}
+                    <Link to="/dashboard/notifications" className="flex items-center gap-2 text-black hover:text-emerald-500 relative md:hidden">
+                        <i className="fi fi-rr-bell text-xl"></i>
+                        {new_notification_available && <span className="bg-red w-3 h-3 rounded-full absolute top-0 right-0"></span>}
+                    </Link>
+
 
                     {/* Mobile Menu Hamburger Icon */}
-                    <button
-                        className="md:hidden w-12 h-12 rounded-full flex items-center justify-center text-emerald-500"
-                        onClick={() => setMobileMenuVisible(prev => !prev)}
-                    >
-                        <i className="fi fi-rr-menu-burger text-xl"></i>
+                    <button className="w-6 h-6 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
+                        <img src={profile_img} className="w-full h-full object-cover rounded-full" />         
                     </button>
 
                     {/* Mobile Menu - Dropdown (Icons in a row) */}
                     {mobileMenuVisible && (
-                        <div className="absolute top-20 left-0 bg-white shadow-lg w-full py-2 md:hidden flex justify-between px-4">
-                            <Link to="/search-google" className="text-black flex items-center hover:text-emerald-500">
-                                <i className="fi fi-rr-book text-xl"></i>
+                        <div className="absolute top-20 right-0 bg-white shadow-lg py-4 md:hidden flex flex-col items-left gap-6 px-4 w-[50vw]">
+                            {access_token ? (
+                                <div className="relative flex items-center gap-2" onClick={handleUserNavPanel} onBlur={handleBlur}>
+                                    <i className="fi fi-rr-user text-xl"></i>
+                                    <span>{currentTranslations.profile}</span>
+                                    {userNavPanel && (
+                                        <UserNavigationPanel className="absolute top-full mt-2 z-10 shadow-lg bg-white w-full md:w-auto" />
+                                    )}
+                                </div>
+                            ) : (
+                                <>
+                                    <Link className="flex items-center gap-2 text-black hover:bg-gray-200" to="/signin">
+                                        <i className="fi fi-rr-sign-in text-xl"></i>
+                                        <span>{currentTranslations.signIn}</span>
+                                    </Link>
+                                    <Link className="flex items-center gap-2 text-black hover:bg-gray-200" to="/signup">
+                                        <i className="fi fi-rr-user-add text-xl"></i>
+                                        <span>{currentTranslations.signUp}</span>
+                                    </Link>
+                                </>
+                            )}
+                             <Link to="/editor" className="flex items-center gap-2 text-black hover:text-emerald-500">
+                                <i className="fi fi-rr-file-edit"></i>
+                                <p>{currentTranslations.write}</p>
                             </Link>
-                            <button className="text-black flex items-center hover:text-emerald-500" onClick={changeTheme}>
-                                <i className={"fi fi-rr-" + (theme == "light" ? "moon-stars" : "sun") + " text-xl"}></i>
+                            <Link to="/search-google" className="flex items-center gap-2 text-black hover:text-emerald-500">
+                                <i className="fi fi-rr-book text-xl"></i>
+                                <span>{currentTranslations.searchGoogle}</span>
+                            </Link>
+                            <button className="flex items-center gap-2 text-black hover:text-emerald-500" onClick={changeTheme}>
+                                <i className={"fi fi-rr-" + (theme === "light" ? "moon-stars" : "sun") + " text-xl"}></i>
+                                <span>{theme === "light" ? currentTranslations.darkMode : currentTranslations.lightMode}</span>
                             </button>
-                            <button className="text-black flex items-center" onClick={changeLanguage}>
+                            <button className="flex items-center gap-2 text-black hover:text-emerald-500" onClick={changeLanguage}>
                                 <img
                                     src={language === 'en' ? usFlag : vietnamFlag}
                                     alt={language === 'vi' ? "Cờ Mỹ" : "Cờ Việt"}
                                     className="w-6 h-6"
                                 />
+                                <span>{language === 'en' ? "English" : "Tiếng Việt"}</span>
                             </button>
                             {access_token && (
                                 <>
-                                    <Link to="/chat" className="text-black flex items-center hover:text-emerald-500">
+                                    <Link to="/chat" className="flex items-center gap-2 text-black hover:text-emerald-500">
                                         <i className="fi fi-rr-messages text-xl"></i>
-                                    </Link>
-                                    <Link to="/dashboard/notifications" className="text-black flex items-center hover:text-emerald-500">
-                                        <i className="fi fi-rr-bell text-xl"></i>
-                                        {new_notification_available && <span className="bg-red w-3 h-3 rounded-full absolute z-10 top-2 right-2"></span>}
+                                        <span>{currentTranslations.chat}</span>
                                     </Link>
                                 </>
                             )}
-                            {access_token ? (
-                                <div className="relative" onClick={handleUserNavPanel} onBlur={handleBlur}>
-                                    <button className="w-12 h-12 mt-1">
-                                        <img src={profile_img} className="w-full h-full object-cover rounded-full" />
-                                    </button>
-                                    {userNavPanel && (
-                                        <UserNavigationPanel className="absolute top-full left-0 mt-2 z-10 shadow-lg bg-white w-full md:w-auto" />
-                                    )}
-                                </div>
-                            ) : (
-                                <>
-                                    <Link className="text-black hover:bg-gray-200" to="/signin">{currentTranslations.signIn}</Link>
-                                    <Link className="text-black hover:bg-gray-200" to="/signup">{currentTranslations.signUp}</Link>
-                                </>
-                            )}
+                            
                         </div>
                     )}
-
 
                     {/* Desktop-Only Items */}
                     <div className="hidden md:flex items-center gap-3">
