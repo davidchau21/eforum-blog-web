@@ -117,7 +117,7 @@ const Navbar = () => {
 
                     {/* Mobile Menu Hamburger Icon */}
                     <button className="w-6 h-6 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
-                        <img src={profile_img} className="w-full h-full object-cover rounded-full" />         
+                        <img src={profile_img} className="w-full h-full object-cover rounded-full" />
                     </button>
 
                     {/* Mobile Menu - Dropdown (Icons in a row) */}
@@ -143,7 +143,7 @@ const Navbar = () => {
                                     </Link>
                                 </>
                             )}
-                             <Link to="/editor" className="flex items-center gap-2 text-black hover:text-emerald-500">
+                            <Link to="/editor" className="flex items-center gap-2 text-black hover:text-emerald-500">
                                 <i className="fi fi-rr-file-edit"></i>
                                 <p>{currentTranslations.write}</p>
                             </Link>
@@ -171,24 +171,24 @@ const Navbar = () => {
                                     </Link>
                                 </>
                             )}
-                            
+
                         </div>
                     )}
 
                     {/* Desktop-Only Items */}
                     <div className="hidden md:flex items-center gap-3">
 
-                    <Link to="/editor" className="hidden md:flex gap-2 hover:text-emerald-500">
-                        <i className="fi fi-rr-file-edit"></i>
-                        <p>{currentTranslations.write}</p>
-                    </Link>
+                        <Link to="/editor" className="hidden md:flex gap-2 hover:text-emerald-500">
+                            <i className="fi fi-rr-file-edit"></i>
+                            <p>{currentTranslations.write}</p>
+                        </Link>
 
-                    <Link to="/search-google" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
-                        <i className="fi fi-rr-book"></i>
-                    </Link>
+                        <Link to="/search-google" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
+                            <i className="fi fi-rr-book"></i>
+                        </Link>
 
                         <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500" onClick={changeTheme}>
-                            <i className={"fi fi-rr-" + (theme == "light" ? "moon-stars" : "sun") + " text-2xl block mt-1" }></i>
+                            <i className={"fi fi-rr-" + (theme == "light" ? "moon-stars" : "sun") + " text-2xl block mt-1"}></i>
                         </button>
 
                         <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 flex items-center justify-center" onClick={changeLanguage}>
@@ -199,47 +199,48 @@ const Navbar = () => {
                             />
                         </button>
 
-                    {
-                        access_token ? 
-                        <>
+                        {
+                            access_token ?
+                                <>
 
-                            <Link to="/chat" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
-                                <i className="fi fi-rr-messages text-2xl block mt-1 "></i>
-                            </Link>
+                                    <Link to="/chat" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
+                                        <i className="fi fi-rr-messages text-2xl block mt-1 "></i>
+                                    </Link>
 
-                            <Link to="/dashboard/notifications">
-                                <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500">
-                                    <i className="fi fi-rr-bell text-2xl block mt-1"></i>
-                                    {
-                                        new_notification_available ? 
-                                        <span className="bg-red w-3 h-3 rounded-full absolute z-10 top-2 right-2"></span> : ""
-                                    }
-                                    
-                                </button>
-                            </Link>
+                                    <Link to="/dashboard/notifications">
+                                        <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500">
+                                            <i className="fi fi-rr-bell text-2xl block mt-1"></i>
+                                            {
+                                                new_notification_available ?
+                                                    <span className="bg-red w-3 h-3 rounded-full absolute z-10 top-2 right-2"></span> : ""
+                                            }
 
-                            <div className="relative" onClick={handleUserNavPanel} onBlur={handleBlur}>
-                                <button className="w-12 h-12 mt-1">
-                                    <img src={profile_img} className="w-full h-full object-cover rounded-full" />
-                                </button>
+                                        </button>
+                                    </Link>
 
-                                {
-                                    userNavPanel ? <UserNavigationPanel /> : ""
-                                }
+                                    <div className="relative" onClick={handleUserNavPanel} onBlur={handleBlur}>
+                                        <button className="w-12 h-12 mt-1">
+                                            <img src={profile_img} className="w-full h-full object-cover rounded-full" />
+                                        </button>
 
-                            </div>
-                        </>
-                        :
-                        <>
-                            <Link className="btn-dark py-2" to="/signin">
-                            {currentTranslations.signIn}
-                            </Link>
-                            <Link className="btn-light py-2 hidden md:block" to="/signup">
-                            {currentTranslations.signUp}
-                            </Link>
-                        </>
-                    }
+                                        {
+                                            userNavPanel ? <UserNavigationPanel /> : ""
+                                        }
 
+                                    </div>
+                                </>
+                                :
+                                <>
+                                    <Link className="btn-dark py-2" to="/signin">
+                                        {currentTranslations.signIn}
+                                    </Link>
+                                    <Link className="btn-light py-2 hidden md:block" to="/signup">
+                                        {currentTranslations.signUp}
+                                    </Link>
+                                </>
+                        }
+
+                    </div>
                 </div>
 
             </nav>
