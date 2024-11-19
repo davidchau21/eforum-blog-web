@@ -37,6 +37,7 @@ const UserAuthForm = ({ type }) => {
         } else {
           storeInSession("user", JSON.stringify(data));
           setUserAuth(data);
+          toast.success("Login successful! Welcome back.");
         }
       })
       .catch(({ response }) => {
@@ -86,22 +87,39 @@ const UserAuthForm = ({ type }) => {
 
   const handleGoogleAuth = (e) => {
     e.preventDefault();
-
-    authWithGoogle()
+  
+    toast.promise(
+      authWithGoogle(), // Thực hiện đăng nhập với Google
+      {
+        loading: "Logging in...",  // Thông báo khi đang đăng nhập
+        success: "Login successful with Google! Welcome back.",  // Thông báo khi thành công
+        error: "Trouble logging in through Google",  // Thông báo khi có lỗi
+      },
+      {
+        duration: 6000,  // Thời gian hiển thị thông báo
+      }
+    )
       .then((user) => {
+        console.log("Google login successful ", user);  // Kiểm tra user trả về
         let serverRoute = "/google-auth";
-
         let formData = {
           access_token: user.accessToken,
         };
-
+  
+        // Gửi yêu cầu đăng nhập tới server
         userAuthThroughServer(serverRoute, formData);
+  
+        // Đảm bảo có độ trễ trước khi chuyển trang
+        setTimeout(() => {
+          navigate("/", { replace: true });  // Chuyển trang sau khi thông báo hiển thị đủ
+        }, 6000); // Độ trễ 5 giây (5000ms)
       })
       .catch((err) => {
-        toast.error("trouble login through google");
-        return console.log(err);
+        console.log("Google login error ", err);  // Kiểm tra lỗi
       });
   };
+  
+  
 
   return access_token ? (
     <Navigate to="/" />
