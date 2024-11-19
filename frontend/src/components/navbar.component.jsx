@@ -183,10 +183,6 @@ const Navbar = () => {
                             <p>{currentTranslations.write}</p>
                         </Link>
 
-                        <Link to="/search-google" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
-                            <i className="fi fi-rr-book"></i>
-                        </Link>
-
                         <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500" onClick={changeTheme}>
                             <i className={"fi fi-rr-" + (theme == "light" ? "moon-stars" : "sun") + " text-2xl block mt-1"}></i>
                         </button>
@@ -202,6 +198,9 @@ const Navbar = () => {
                         {
                             access_token ?
                                 <>
+                                     <Link to="/search-google" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
+                                        <i className="fi fi-rr-book"></i>
+                                    </Link>
 
                                     <Link to="/chat" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
                                         <i className="fi fi-rr-messages text-2xl block mt-1 "></i>
