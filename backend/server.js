@@ -910,7 +910,7 @@ server.post("/get-blog", (req, res) => {
   let incrementVal = mode != "edit" ? 1 : 0;
 
   Blog.findOneAndUpdate(
-    { blog_id, isActive: true, isDeleted: { $in: [false, null] } },
+    { blog_id, isDeleted: { $in: [false, null] } },
     { $inc: { "activity.total_reads": incrementVal } }
   )
     .populate(
