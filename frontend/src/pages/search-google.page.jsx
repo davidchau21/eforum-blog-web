@@ -14,6 +14,7 @@ const SearchGooglePage = () => {
     const [totalResults, setTotalResults] = useState(0);
     const [timeTaken, setTimeTaken] = useState(0);
     const [hasSearched, setHasSearched] = useState(false);
+    const [searching, setSearching] = useState(false);
 
     const { userAuth } = useContext(UserContext);
     const { language } = userAuth;
@@ -21,10 +22,12 @@ const SearchGooglePage = () => {
 
 
     const handleSearchGoogle = async (start = 1) => {
-        if (!text) {
+        if (!text.trim()) {
             setError('Search term is required');
             return;
         }
+        setSearching(true);
+        setError(null);
 
         try {
             const response = await axios.get(
@@ -34,15 +37,35 @@ const SearchGooglePage = () => {
             const { items, searchInformation, queries } = response.data;
 
             setSearchResults(items || []);
-            setTotalResults(searchInformation.totalResults || 0);
-            setTimeTaken(searchInformation.searchTime || 0);
+            setTotalResults(searchInformation?.totalResults || 0);
+            setTimeTaken(searchInformation?.searchTime || 0);
             setNextPage(queries?.nextPage?.[0]?.startIndex || null);
             setPreviousPage(queries?.request?.[0]?.startIndex > 1 ? queries.request[0].startIndex - 10 : null);
             setCurrentPage(start / 10 + 1);
-            setError(null);
             setHasSearched(true);
         } catch (err) {
             setError(err.response?.data?.message || 'Something went wrong with Google search');
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const handleSearchGoogleScholar = async () => {
+        if (!text.trim()) {
+            setError('Search term is required');
+            return;
+        }
+        setSearching(true);
+        setError(null);
+
+        try {
+            const response = await axios.get(import.meta.env.VITE_SERVER_DOMAIN + `/search/scholar?query=${text}`);
+            setSearchResults(response.data.scholar_results || []);
+            setHasSearched(true);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Something went wrong with Google Scholar search');
+        } finally {
+            setSearching(false);
         }
     };
 
@@ -63,23 +86,24 @@ const SearchGooglePage = () => {
                         onChange={(e) => setText(e.target.value)}
                         placeholder="Enter your search term"
                     />
-                    <i className="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
                 </div>
             </div>
 
             {/* Search Buttons */}
             <div className="flex justify-center space-x-4 mb-8">
                 <button
-                    className="bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200"
+                    className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
                     onClick={() => handleSearchGoogle(1)}
+                    disabled={searching}
                 >
-                    Google Search
+                    {searching ? 'Searching...' : 'Google Search'}
                 </button>
                 <button
-                    className="bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200"
-                    onClick={() => setError('Google Scholar is not implemented yet')}
+                    className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+                    onClick={() => handleSearchGoogleScholar()}
+                    disabled={searching}
                 >
-                    Google Scholar
+                    {searching ? 'Searching Scholar...' : 'Google Scholar'}
                 </button>
             </div>
 
@@ -88,27 +112,36 @@ const SearchGooglePage = () => {
 
             {/* Search Results */}
             {hasSearched && (
-                <div className="flex justify-center">
-                    <div className="w-full max-w-3xl">
-                        {totalResults > 0 && (
-                            <div className="mb-4 text-center">
-                                <p>
-                                    About {totalResults} results ({timeTaken} seconds)
-                                </p>
-                            </div>
-                        )}
-                        <ul>
-                            {searchResults.map((result, index) => (
-                                <li key={index} className="mb-4">
-                                    <a href={result.link} target="_blank" rel="noopener noreferrer">
-                                        <h4 className="text-blue-700">{result.title}</h4>
-                                    </a>
-                                    <p className="text-gray-600">{result.snippet}</p>
-                                    <small className="text-gray-500">{result.link}</small>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
+                <div className="flex flex-col items-center">
+                    {totalResults > 0 && (
+                        <div className="mb-4 text-center">
+                            <p>
+                                About <strong>{totalResults}</strong> results (<strong>{timeTaken}</strong> seconds)
+                            </p>
+                        </div>
+                    )}
+                    <ul className="w-full max-w-3xl">
+                        {searchResults.map((result, index) => (
+                            <li key={index} className="border-b border-gray-200 py-4">
+                                <a href={result.title_link || result.link} target="_blank" rel="noopener noreferrer">
+                                    <h4 className="text-blue-700 font-semibold"><strong>{result.title}</strong></h4>
+                                </a>
+                                <p className="text-gray-600">{result.snippet}</p>
+                                {result.resources && (
+                                    <ul className="mt-2">
+                                        {result.resources.map((resource, i) => (
+                                            <li key={i} className="text-sm text-gray-500">
+                                                <a href={resource.link} target="_blank" rel="noopener noreferrer">
+                                                    <strong className='text-x text-lime-600 '>[{resource.type}] {resource.title}</strong>
+                                                </a>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                                <small className="text-gray-500">{result.displayed_link || result.link}</small>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             )}
 
@@ -119,17 +152,17 @@ const SearchGooglePage = () => {
                         <button
                             onClick={() => handleSearchGoogle(previousPage)}
                             className="bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 mx-2"
+                            disabled={searching}
                         >
                             Previous
                         </button>
                     )}
-                    <span className="mx-4">
-                        Page {currentPage}
-                    </span>
+                    <span className="mx-4">Page {currentPage}</span>
                     {nextPage && (
                         <button
                             onClick={() => handleSearchGoogle(nextPage)}
                             className="bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 mx-2"
+                            disabled={searching}
                         >
                             Next
                         </button>
