@@ -1,0 +1,22 @@
+.custom-table {
+  .ant-table-container {
+    .ant-table-body {
+      &::-webkit-scrollbar-track {
+        border: 1px solid #bebfc1;
+        background-color: #bebfc1;
+        height: 90%;
+      }
+
+      &::-webkit-scrollbar {
+        width: 5px;
+        background-color: #bebfc1;
+        height: 90%;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background-color: #58595b;
+        border-radius: 5px;
+      }
+    }
+  }
+}

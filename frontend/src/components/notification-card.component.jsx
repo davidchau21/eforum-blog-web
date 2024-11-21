@@ -72,7 +72,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
                     </h1>
 
                     {
-                        type === "reply" ? 
+                        type === "reply" && replied_on_comment ? 
                         <div className="p-4 mt-4 rounded-md bg-grey">
                             <p>{replied_on_comment.comment}</p>
                         </div> :
@@ -107,7 +107,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
             </div>
 
             {
-                type !== 'like' && type !== 'share' ? 
+                type !== 'like' && type !== 'share' && comment ? 
                 <p className="ml-14 pl-5 font-gelasio text-xl my-5">{comment.comment}</p> : ""
             }
 

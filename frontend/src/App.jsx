@@ -86,7 +86,7 @@ const App = () => {
                                     <Route path="policy" element={<PolicyPage />} />
                                     <Route path="contact" element={<ContactPage />} />
                                     <Route path="terms-of-service" element={<TermsOfServicePage />} />
-                                    <Route path="search-google" element={<SearchGooglePage />} />
+                                    <Route path="search-google" element={<ProtectedRoute><SearchGooglePage /></ProtectedRoute>} />
                                     <Route path="*" element={<PageNotFound />} />
                                 </Route>
                             </Routes>
