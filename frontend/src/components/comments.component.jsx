@@ -62,22 +62,22 @@ const CommentsContainer = () => {
             <CommentField action="comment" />
 
             {
-                commentsArr && commentsArr.length ?
+                commentsArr && commentsArr.length ? (
                 commentsArr.map((comment, i) => {
                     return <AnimationWrapper key={i}>
-                        <CommentCard index={i} leftVal={comment.childrenLevel * 4} commentData={comment} />
+                        <CommentCard index={i} leftVal={comment.childrenLevel * 4} commentData={comment} fetchComments={fetchComments}/>
                     </AnimationWrapper>
-                }) : <NoDataMessage message="No Comments" />
+                }) ): ( <NoDataMessage message="No Comments" /> )
             }
 
             {
-                total_parent_comments > totalParentCommentsLoaded ?
+                total_parent_comments > totalParentCommentsLoaded ? (
                 <button 
                 onClick={loadMoreComments}
                 className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2">
                     Load More
                 </button>
-                : ""
+                ) : ( "" )
             }
 
         </div>

@@ -576,9 +576,9 @@ server.get("/trending-blogs", (req, res) => {
 
     Blog.find({ draft: false })
     .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")
-    .sort({ "activity.total_read": -1, "activity.total_likes": -1, "publishedAt": -1 })
+    .sort({ "activity.total_likes": -1, "activity.total_share": -1, "activity.total_comments": -1, "activity.total_reads": -1})
     .select("blog_id title publishedAt -_id")
-    .limit(5)
+    .limit(10)
     .then(blogs => {
         return res.status(200).json({ blogs })
     })
@@ -843,6 +843,48 @@ server.post("/get-blog", (req, res) => {
     })
 
 })
+
+server.get("/admin-blogs", (req, res) => {
+    const adminRole = "ADMIN"; 
+
+    Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] } })
+        .populate({
+            path: "author",
+            match: { "personal_info.role": adminRole },
+            select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
+        })
+        .select("title des content banner activity publishedAt blog_id tags")
+        .then((blogs) => {
+            const adminBlogs = blogs.filter(blog => blog.author !== null);
+            return res.status(200).json({ blogs: adminBlogs });
+        })
+        .catch((err) => {
+            return res.status(500).json({ error: err.message });
+        });
+});
+
+server.get("/get-user-blogs", (req, res) => {
+
+    const adminRole = "ADMIN"; 
+
+    Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] } })
+        .populate({
+            path: "author",
+            match: { "personal_info.role": { $ne: adminRole } },
+            select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
+        })
+        .sort({ "publishedAt": -1 })
+        .select("blog_id title des banner activity tags publishedAt -_id")
+        .then((blogs) => {
+            const adminBlogs = blogs.filter(blog => blog.author !== null);
+            return res.status(200).json({ blogs: adminBlogs });
+        })
+        .catch((err) => {
+            return res.status(500).json({ error: err.message });
+        });
+});
+
+
 
 server.post("/share-blog", verifyJWT, (req, res) => {
     let user_id = req.user;

@@ -1,0 +1,30 @@
+.text-field {
+  .ant-input-filled:focus-within,
+  .ant-input-filled:focus {
+    border-color: $color-brown-1;
+  }
+
+  .ant-form-item-row {
+    .ant-form-item-label {
+      label {
+        font-family: "Exo 2", sans-serif;
+      }
+    }
+
+    .ant-form-item-control {
+      .ant-form-item-control-input {
+        .ant-form-item-control-input-content {
+          input {
+            font-family: "Exo 2", sans-serif;
+          }
+        }
+      }
+
+      .ant-form-item-explain {
+        .ant-form-item-explain-error {
+          font-family: "Exo 2", sans-serif;
+        }
+      }
+    }
+  }
+}

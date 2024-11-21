@@ -28,7 +28,7 @@ const SearchGooglePage = () => {
 
         try {
             const response = await axios.get(
-                `http://localhost:3000/search/google?query=${text}&start=${start}`
+                import.meta.env.VITE_SERVER_DOMAIN + `/search/google?query=${text}&start=${start}`
             );
 
             const { items, searchInformation, queries } = response.data;

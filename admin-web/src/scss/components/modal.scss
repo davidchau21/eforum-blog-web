@@ -1,0 +1,24 @@
+.modal--error,
+.modal--success {
+  .ant-modal-content {
+    .ant-modal-body {
+      .ant-modal-confirm-body-wrapper {
+        .ant-modal-confirm-body {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-items: center;
+
+          .ant-modal-confirm-paragraph {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+          }
+        }
+      }
+    }
+  }
+}

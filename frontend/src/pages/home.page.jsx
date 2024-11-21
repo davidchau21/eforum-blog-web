@@ -14,15 +14,15 @@ import { getTranslations } from "../../translations";
 import { UserContext } from "../App";
 
 const HomePage = () => {
-    let [blogs, setBlog] = useState(null);
-    let [trendingBlogs, setTrendingBlog] = useState(null);
-    let [adminBlogs, setAdminBlogs] = useState(null); // Thêm state cho bài viết admin
-    let [pageState, setPageState] = useState("home");
+    const [blogs, setBlogs] = useState(null);
+    const [trendingBlogs, setTrendingBlogs] = useState(null);
+    const [adminBlogs, setAdminBlogs] = useState(null);
+    const [pageState, setPageState] = useState("home");
     const { userAuth } = useContext(UserContext);
     const { language } = userAuth;
     const translations = getTranslations(language);
 
-    let categories = [
+    const categories = [
         "programming",
         "hollywood",
         "film making",
@@ -36,30 +36,23 @@ const HomePage = () => {
     const fetchAdminBlogs = () => {
         axios
             .get(import.meta.env.VITE_SERVER_DOMAIN + "/admin-blogs")
-            .then(({ data }) => {
-                setAdminBlogs(data.blogs);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+            .then(({ data }) => setAdminBlogs(data.blogs))
+            .catch(console.log);
     };
 
     const fetchLatestBlogs = ({ page = 1 }) => {
         axios
             .post(import.meta.env.VITE_SERVER_DOMAIN + "/latest-blogs", { page })
             .then(async ({ data }) => {
-                let formatedData = await filterPaginationData({
+                const formattedData = await filterPaginationData({
                     state: blogs,
                     data: data.blogs,
                     page,
                     countRoute: "/all-latest-blogs-count",
                 });
-
-                setBlog(formatedData);
+                setBlogs(formattedData);
             })
-            .catch((err) => {
-                console.log(err);
-            });
+            .catch(console.log);
     };
 
     const fetchBlogsByCategory = ({ page = 1 }) => {
@@ -69,75 +62,54 @@ const HomePage = () => {
                 page,
             })
             .then(async ({ data }) => {
-                let formatedData = await filterPaginationData({
+                const formattedData = await filterPaginationData({
                     state: blogs,
                     data: data.blogs,
                     page,
                     countRoute: "/search-blogs-count",
                     data_to_send: { tag: pageState },
                 });
-
-                setBlog(formatedData);
+                setBlogs(formattedData);
             })
-            .catch((err) => {
-                console.log(err);
-            });
+            .catch(console.log);
     };
 
     const fetchTrendingBlogs = () => {
         axios
             .get(import.meta.env.VITE_SERVER_DOMAIN + "/trending-blogs")
-            .then(({ data }) => {
-                setTrendingBlog(data.blogs);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
+            .then(({ data }) => setTrendingBlogs(data.blogs))
+            .catch(console.log);
     };
 
     const loadBlogByCategory = (e) => {
-        let category = e.target.innerText.toLowerCase();
-
-        setBlog(null);
-
-        if (pageState == category) {
-            setPageState("home");
-            return;
-        }
-
-        setPageState(category);
+        const category = e.target.innerText.toLowerCase();
+        setBlogs(null);
+        setPageState(pageState === category ? "home" : category);
     };
 
     useEffect(() => {
         activeTabRef.current.click();
-
-        if (pageState == "home") {
+        if (pageState === "home") {
             fetchLatestBlogs({ page: 1 });
         } else {
             fetchBlogsByCategory({ page: 1 });
         }
-
-        if (!trendingBlogs) {
-            fetchTrendingBlogs();
-        }
-
-        if (!adminBlogs) {
-            fetchAdminBlogs();
-        }
+        if (!trendingBlogs) fetchTrendingBlogs();
+        if (!adminBlogs) fetchAdminBlogs();
     }, [pageState]);
 
     return (
         <AnimationWrapper>
-            <section className="h-cover flex justify-center gap-4">
-                {/* Admin blog*/}
-                <div className="min-w-[40%] lg:min-w-[200px] max-w-min border-r border-grey pr-8 pt-3 max-md:hidden">
-                    <h1 className="font-medium text-xl mb-8">
+            <section className="container mx-auto flex flex-col lg:flex-row gap-6 py-8 px-4">
+                {/* Admin Blogs */}
+                <div className="hidden lg:block lg:w-1/4">
+                    <h1 className="font-semibold text-lg mb-4">
                         {translations.adminPosts}
                     </h1>
                     {adminBlogs == null ? (
                         <Loader />
                     ) : adminBlogs.length ? (
-                        <div className="flex flex-col gap-6">
+                        <div className="space-y-4">
                             {adminBlogs.map((blog, i) => (
                                 <AnimationWrapper
                                     transition={{
@@ -155,13 +127,13 @@ const HomePage = () => {
                     )}
                 </div>
 
-                {/* latest blogs */}
-                <div className="w-full">
+                {/* Latest Blogs */}
+                <div className="w-full lg:w-1/2">
                     <InPageNavigation
-                        routes={[pageState, "trending blogs"]}
-                        defaultHidden={["trending blogs"]}
+                        routes={[pageState, "trending blogs", "admin blogs"]}
+                        defaultHidden={["trending blogs", "admin blogs"]}
                     >
-                        <>
+                        <div>
                             {blogs == null ? (
                                 <Loader />
                             ) : blogs.results.length ? (
@@ -184,71 +156,86 @@ const HomePage = () => {
                             ) : (
                                 <NoDataMessage message="No blogs published" />
                             )}
-
                             <LoadMoreDataBtn
                                 state={blogs}
                                 fetchDataFun={
-                                    pageState == "home"
+                                    pageState === "home"
                                         ? fetchLatestBlogs
                                         : fetchBlogsByCategory
                                 }
                             />
-                        </>
-
-                        {trendingBlogs == null ? (
-                            <Loader />
-                        ) : trendingBlogs.length ? (
-                            trendingBlogs.map((blog, i) => (
-                                <AnimationWrapper
-                                    transition={{
-                                        duration: 1,
-                                        delay: i * 0.1,
-                                    }}
-                                    key={i}
-                                >
-                                    <MinimalBlogPost blog={blog} index={i} />
-                                </AnimationWrapper>
-                            ))
-                        ) : (
-                            <NoDataMessage
-                                message={translations.noTrendingBlogs}
-                            />
-                        )}
+                        </div>
+                        <div>
+                            {trendingBlogs == null ? (
+                                <Loader />
+                            ) : trendingBlogs.length ? (
+                                trendingBlogs.map((blog, i) => (
+                                    <AnimationWrapper
+                                        transition={{
+                                            duration: 1,
+                                            delay: i * 0.1,
+                                        }}
+                                        key={i}
+                                    >
+                                        <MinimalBlogPost blog={blog} />
+                                    </AnimationWrapper>
+                                ))
+                            ) : (
+                                <NoDataMessage
+                                    message={translations.noTrendingBlogs}
+                                />
+                            )}
+                        </div>
+                        <div>
+                            {adminBlogs == null ? (
+                                <Loader />
+                            ) : adminBlogs.length ? (
+                                adminBlogs.map((blog, i) => (
+                                    <AnimationWrapper
+                                        transition={{
+                                            duration: 1,
+                                            delay: i * 0.1,
+                                        }}
+                                        key={i}
+                                    >
+                                        <MinimalBlogPost blog={blog} />
+                                    </AnimationWrapper>
+                                ))
+                            ) : (
+                                <NoDataMessage message="No admin posts available" />
+                            )}
+                        </div>
                     </InPageNavigation>
                 </div>
 
-                {/* filters and trending blogs */}
-                <div className="min-w-[40%] lg:min-w-[200px] max-w-min border-l border-grey pl-8 pt-3 max-md:hidden">
-                    <div className="flex flex-col gap-10">
+                {/* Filters */}
+                <div className="hidden lg:block lg:w-1/4">
+                    <div className="space-y-8">
                         <div>
-                            <h1 className="font-medium text-xl mb-8">
+                            <h1 className="font-semibold text-lg mb-4">
                                 {translations.subjects}
                             </h1>
-
-                            <div className="flex gap-3 flex-wrap">
+                            <div className="flex flex-wrap gap-2">
                                 {categories.map((category, i) => (
                                     <button
-                                        onClick={loadBlogByCategory}
-                                        className={
-                                            "tag " +
-                                            (pageState == category
-                                                ? " bg-black text-white "
-                                                : " ")
-                                        }
                                         key={i}
+                                        onClick={loadBlogByCategory}
+                                        className={`px-4 py-2 rounded-full border ${
+                                            pageState === category
+                                                ? "bg-black text-white"
+                                                : "bg-white text-black border-gray-300"
+                                        }`}
                                     >
                                         {category}
                                     </button>
                                 ))}
                             </div>
                         </div>
-
                         <div>
-                            <h1 className="font-medium text-xl mb-8">
+                            <h1 className="font-semibold text-lg mb-4">
                                 {translations.trending}
-                                <i className="fi fi-rr-arrow-trend-up"></i>
+                                <i className="fi fi-rr-arrow-trend-up ml-2"></i>
                             </h1>
-
                             {trendingBlogs == null ? (
                                 <Loader />
                             ) : trendingBlogs.length ? (
