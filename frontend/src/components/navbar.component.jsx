@@ -105,20 +105,35 @@ const Navbar = () => {
                 <div className="flex items-center gap-4 md:gap-6 ml-auto">
                     {/* Search in mobile */}
                     <button className="flex items-center justify-center hover:text-emerald-500 md:hidden" onClick={() => setSearchBoxVisibility(prev => !prev)}>
-                        <i className="fi fi-rr-search text-xl"></i>
+                        <i className="fi fi-rr-search text-black text-2xl"></i>
                     </button>
 
                     {/* Notification in mobile */}
-                    <Link to="/dashboard/notifications" className="flex items-center gap-2 text-black hover:text-emerald-500 relative md:hidden">
-                        <i className="fi fi-rr-bell text-xl"></i>
-                        {new_notification_available && <span className="bg-red w-3 h-3 rounded-full absolute top-0 right-0"></span>}
-                    </Link>
+                    {access_token && (
+                        <>
+                            <Link to="/dashboard/notifications" className="flex items-center gap-2 text-black hover:text-emerald-500 relative md:hidden">
+                                <i className="fi fi-rr-bell text-2xl"></i>
+                                {new_notification_available && <span className="bg-red w-3 h-3 rounded-full absolute top-0 right-0"></span>}
+                            </Link>
+                        </>
+                    )}
+                    
 
 
                     {/* Mobile Menu Hamburger Icon */}
+<<<<<<< HEAD
+                    <button className="w-8 h-8 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
+                        {profile_img ? (
+                            <img src={profile_img} className="w-full h-full object-cover rounded-full" />
+                        ) : (
+                            <i className="fi fi-rr-menu-burger text-3xl"></i> // Icon menu burger khi không có ảnh
+                        )}
+=======
                     <button className="w-6 h-6 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
                         <img src={profile_img} className="w-full h-full object-cover rounded-full" />
+>>>>>>> 44ee3c6a2751b9ac61dfdcb56c5b88343fd009f8
                     </button>
+
 
                     {/* Mobile Menu - Dropdown (Icons in a row) */}
                     {mobileMenuVisible && (
@@ -133,11 +148,11 @@ const Navbar = () => {
                                 </div>
                             ) : (
                                 <>
-                                    <Link className="flex items-center gap-2 text-black hover:bg-gray-200" to="/signin">
-                                        <i className="fi fi-rr-sign-in text-xl"></i>
+                                    <Link className="flex items-center gap-2 text-black hover:text-emerald-500" to="/signin">
+                                        <i className="fi fi-rr-user text-xl"></i>
                                         <span>{currentTranslations.signIn}</span>
                                     </Link>
-                                    <Link className="flex items-center gap-2 text-black hover:bg-gray-200" to="/signup">
+                                    <Link className="flex items-center gap-2 text-black hover:text-emerald-500" to="/signup">
                                         <i className="fi fi-rr-user-add text-xl"></i>
                                         <span>{currentTranslations.signUp}</span>
                                     </Link>
@@ -155,14 +170,6 @@ const Navbar = () => {
                                 <i className={"fi fi-rr-" + (theme === "light" ? "moon-stars" : "sun") + " text-xl"}></i>
                                 <span>{theme === "light" ? currentTranslations.darkMode : currentTranslations.lightMode}</span>
                             </button>
-                            <button className="flex items-center gap-2 text-black hover:text-emerald-500" onClick={changeLanguage}>
-                                <img
-                                    src={language === 'en' ? usFlag : vietnamFlag}
-                                    alt={language === 'vi' ? "Cờ Mỹ" : "Cờ Việt"}
-                                    className="w-6 h-6"
-                                />
-                                <span>{language === 'en' ? "English" : "Tiếng Việt"}</span>
-                            </button>
                             {access_token && (
                                 <>
                                     <Link to="/chat" className="flex items-center gap-2 text-black hover:text-emerald-500">
@@ -171,7 +178,18 @@ const Navbar = () => {
                                     </Link>
                                 </>
                             )}
+<<<<<<< HEAD
+                            <button className="flex items-center gap-2 text-black hover:text-emerald-500" onClick={changeLanguage}>
+                                <img
+                                    src={language === 'en' ? usFlag : vietnamFlag}
+                                    alt={language === 'vi' ? "Cờ Mỹ" : "Cờ Việt"}
+                                    className="w-6 h-6"
+                                />
+                                <span>{language === 'en' ? "English" : "Tiếng Việt"}</span>
+                            </button>
+=======
 
+>>>>>>> 44ee3c6a2751b9ac61dfdcb56c5b88343fd009f8
                         </div>
                     )}
 
