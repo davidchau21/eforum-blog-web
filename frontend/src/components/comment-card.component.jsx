@@ -194,12 +194,6 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                         {fullname} @{commented_by_username}
                     </p>
                     <p className="min-w-fit">{getDay(commentedAt)}</p>
-                </div>
-
-                <div className="flex gap-3 items-center mb-8">
-                    <img src={profile_img} className="w-6 h-6 rounded-full" />
-                    <p className="line-clamp-1">{fullname} @{commented_by_username}</p>
-                    <p className="min-w-fit">{getDay(commentedAt)}</p>
                     {username !== commented_by_username && !isReport && (
                         <button
                             onClick={report}
