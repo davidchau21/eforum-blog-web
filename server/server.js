@@ -847,7 +847,7 @@ server.post("/get-blog", (req, res) => {
 server.get("/admin-blogs", (req, res) => {
     const adminRole = "ADMIN"; 
 
-    Blog.find({ draft: false })
+    Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] } })
         .populate({
             path: "author",
             match: { "personal_info.role": adminRole },
@@ -867,7 +867,7 @@ server.get("/get-user-blogs", (req, res) => {
 
     const adminRole = "ADMIN"; 
 
-    Blog.find({ draft: false })
+    Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] } })
         .populate({
             path: "author",
             match: { "personal_info.role": { $ne: adminRole } },

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { BlogContext } from "../pages/blog.page";
 import { Link } from "react-router-dom";
 import { UserContext } from "../App";
@@ -9,7 +9,7 @@ import { FacebookShareButton, LinkedinShareButton, RedditShareButton, TelegramSh
 const BlogInteraction = () => {
     const [showShareOptions, setShowShareOptions] = useState(false);
 
-    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } } }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper } = useContext(BlogContext);
+    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } } }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper, isReport } = useContext(BlogContext);
 
     let { userAuth: { username, access_token } } = useContext(UserContext);
 
@@ -113,10 +113,30 @@ const BlogInteraction = () => {
         };
     }, [showShareOptions]);
 
+    const report = useCallback(async () => {
+        axios
+            .post(
+                import.meta.env.VITE_SERVER_DOMAIN + `/blogs/report/${blog_id}`,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${access_token}`,
+                    },
+                }
+            )
+            .then(() => {
+                toast.success("Report Blog successfully");
+                fetchBlog();
+            })
+            .catch((err) => {
+                toast.error("Have Error");
+            });
+    }, [access_token, blog_id]);
+
     return (
         <>
             <Toaster />
-            
+
             <hr className="border-grey my-2" />
 
             <div className="flex gap-6 justify-between">
@@ -218,6 +238,21 @@ const BlogInteraction = () => {
                             Sao chép liên kết
                         </span>
                     </div>
+                    {access_token && !isReport && (
+                        <div className="relative group">
+                            <button
+                                onClick={() => {
+                                    report();
+                                }}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80 group-hover:bg-green-300"
+                            >
+                                <i className="fi fi-rr-flag text-rose-400"></i>
+                            </button>
+                            <span className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2">
+                                Báo cáo bài viết
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
 
