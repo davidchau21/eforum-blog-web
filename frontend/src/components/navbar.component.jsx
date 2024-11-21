@@ -121,17 +121,12 @@ const Navbar = () => {
 
 
                     {/* Mobile Menu Hamburger Icon */}
-<<<<<<< HEAD
                     <button className="w-8 h-8 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
                         {profile_img ? (
                             <img src={profile_img} className="w-full h-full object-cover rounded-full" />
                         ) : (
                             <i className="fi fi-rr-menu-burger text-3xl"></i> // Icon menu burger khi không có ảnh
                         )}
-=======
-                    <button className="w-6 h-6 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
-                        <img src={profile_img} className="w-full h-full object-cover rounded-full" />
->>>>>>> 44ee3c6a2751b9ac61dfdcb56c5b88343fd009f8
                     </button>
 
 
@@ -178,7 +173,6 @@ const Navbar = () => {
                                     </Link>
                                 </>
                             )}
-<<<<<<< HEAD
                             <button className="flex items-center gap-2 text-black hover:text-emerald-500" onClick={changeLanguage}>
                                 <img
                                     src={language === 'en' ? usFlag : vietnamFlag}
@@ -187,9 +181,6 @@ const Navbar = () => {
                                 />
                                 <span>{language === 'en' ? "English" : "Tiếng Việt"}</span>
                             </button>
-=======
-
->>>>>>> 44ee3c6a2751b9ac61dfdcb56c5b88343fd009f8
                         </div>
                     )}
 
