@@ -73,7 +73,7 @@ const SupportChat = () => {
           {/* Nút đóng cửa sổ chat */}
           <button
             onClick={toggleChat}
-            className="absolute top-2 right-2 bg-blue-500 p-2 rounded-full shadow-md hover:bg-blue-600 focus:outline-none transition-all duration-300"
+            className="absolute top-2 right-2 bg-emerald-500 p-2 rounded-full shadow-md hover:bg-emerald-800 focus:outline-none transition-all duration-300"
           >
             <DownOutlined className="text-white text-lg" />
           </button>
@@ -99,7 +99,7 @@ const SupportChat = () => {
               onChange={handleUserInput}
             />
             <button
-              className="flex-shrink-0 px-4 py-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 focus:outline-none transition-all duration-300 shadow-md"
+              className="flex-shrink-0 px-4 py-2 rounded-full bg-emerald-500 text-white hover:bg-emerald-800 focus:outline-none transition-all duration-300 shadow-md"
               onClick={sendMessage}
               disabled={isLoading}
             >

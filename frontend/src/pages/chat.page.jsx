@@ -6,7 +6,7 @@ import AnimationWrapper from "../common/page-animation";
 const ChatUI = () => {
   return (
     <AnimationWrapper>
-      <section className="flex flex-col sm:flex-row h-full sm:h-screen rounded-lg overflow-hidden bg-gray-100 p-4 shadow-lg">
+      <section className="flex flex-col sm:flex-row h-full sm:h-screen rounded-lg overflow-hidden bg-gray-100 p-4 shadow-lg bg-white">
         {/* Sidebar */}
         <div className="sm:w-[300px] flex-none bg-white rounded-lg shadow-md border border-gray-300 h-full sm:h-auto">
           <Sidebar />
