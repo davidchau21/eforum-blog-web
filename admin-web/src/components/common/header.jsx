@@ -2,6 +2,7 @@ import logo from "@/assets/images/logo.png";
 import { CircleUserRound } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+
 const Header = () => {
   const navigate = useNavigate();
 
@@ -11,12 +12,13 @@ const Header = () => {
         className="flex items-center cursor-pointer"
         onClick={() => navigate("/")}
       >
-        <h3 className="text-lg font-bold text-brown-1">Admin Edu Blog</h3>
+        {/* <h3 className="text-lg font-bold text-emerald-500">Admin EForum</h3> */}
+        <img src={logo} className="w-12 h-12" />
       </div>
 
       <div className="flex items-center gap-3">
         <span className="text-lg font-semibold">Admin</span>
-        <CircleUserRound width={40} height={40} className="cursor-pointer" />
+        <CircleUserRound width={40} height={40} />
       </div>
     </header>
   );

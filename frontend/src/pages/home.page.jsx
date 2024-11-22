@@ -109,7 +109,7 @@ const HomePage = () => {
 
     return (
         <AnimationWrapper>
-            <section className="container mx-auto flex flex-col lg:flex-row gap-6 py-8 px-4">
+            <section className="w-full min-h-screen flex flex-col lg:flex-row gap-6 py-8 px-4">
                 {/* Admin Blogs */}
                 <div className="hidden lg:block lg:w-1/4">
                     <h1 className="font-semibold text-lg mb-4">

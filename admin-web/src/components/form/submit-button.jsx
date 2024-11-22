@@ -16,7 +16,7 @@ const SubmitButton = ({
         loading={loading}
         htmlType="submit"
         className={clsx(
-          "w-full text-base bg-brown-1 hover:!bg-brown-3 duration-300 h-10 font-exo-2",
+          "w-full text-base bg-emerald-500 hover:!bg-emerald-600 duration-300 h-10 font-exo-2",
           className
         )}
         type="primary"

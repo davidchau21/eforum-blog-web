@@ -158,7 +158,7 @@ const StaffManagement = () => {
           <Button
             type="primary"
             icon={<Plus size={24} />}
-            className="h-9 bg-brown-1 hover:!bg-brown-3 duration-300 text-sm font-medium"
+            className="h-9 bg-emerald-500 hover:!bg-emerald-600 duration-300 text-sm font-medium"
             onClick={() => navigate("/users/create")}
           >
             Thêm người dùng
