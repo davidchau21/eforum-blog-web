@@ -119,7 +119,6 @@ const Navbar = () => {
                     )}
                     
 
-
                     {/* Mobile Menu Hamburger Icon */}
                     <button className="w-10 h-10 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
                         {profile_img ? (

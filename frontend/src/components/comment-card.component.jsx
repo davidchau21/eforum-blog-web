@@ -178,7 +178,6 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     return (
         <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px` }}>
             <div className="my-5 p-6 rounded-md border border-grey">
-<<<<<<< HEAD
                 
             {/* Chuyển hướng đến trang cá nhân của người dùng */}
             <div className="flex gap-3 items-center mb-8">
@@ -197,7 +196,6 @@ const CommentCard = ({ index, leftVal, commentData }) => {
             <p className="min-w-fit">{getDay(commentedAt)}</p>
         </div>
 
-=======
                 <div className="flex gap-3 items-center mb-8">
                     <img src={profile_img} className="w-6 h-6 rounded-full" />
                     <p className="line-clamp-1">{fullname} @{commented_by_username}</p>
@@ -211,7 +209,6 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                         </button>
                     )}
                 </div>
->>>>>>> 44ee3c6a2751b9ac61dfdcb56c5b88343fd009f8
 
                 <p className="font-gelasio text-xl ml-3">{comment}</p>
 
