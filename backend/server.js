@@ -50,12 +50,14 @@ import blogRouter from "./router/blogRouter.js";
 import commnentRouter from "./router/commentRouter.js";
 import reportRouter from "./router/reportRouter.js";
 import searchRouter from "./router/searchRouter.js";
+import notificationRouter from "./router/notificationRouter.js";
 
 server.use("/message", messageRouter);
 server.use("/users", userRouter);
 server.use("/tags", tagRouter);
 server.use("/files", fileRouter);
 server.use("/blogs", blogRouter);
+server.use("/notifications", notificationRouter);
 server.use("/comments", commnentRouter);
 server.use("/reports", reportRouter);
 server.use("/search", searchRouter);

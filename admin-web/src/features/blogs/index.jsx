@@ -82,6 +82,12 @@ const BlogManagement = () => {
         ),
       },
       {
+        title: <TableHeaderColumn label="Tác giả" />,
+        render: (_, record) => (
+          <TableDataColumn label={`${(record.author.personal_info.username)}`} />
+        ),
+      },
+      {
         title: <TableHeaderColumn label="Ngày tạo" />,
         render: (_, record) => (
           <TableDataColumn label={`${formatDate(record.publishedAt)}`} />
@@ -198,7 +204,7 @@ const BlogManagement = () => {
           <Button
             type="primary"
             icon={<Plus size={24} />}
-            className="h-9 bg-brown-1 hover:!bg-brown-3 duration-300 text-sm font-medium"
+            className="h-9 bg-emerald-500 hover:!bg-emerald-600 duration-300 text-sm font-medium"
             onClick={() => navigate("/blogs/create")}
           >
             Thêm blog

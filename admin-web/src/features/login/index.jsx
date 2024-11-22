@@ -9,6 +9,7 @@ import useLocalStorage from "@/hooks/useLocalStorage";
 import { Form } from "antd";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import manage from "../../assets/images/manage.jpg";
 
 const LoginPage = () => {
   const [form] = Form.useForm();
@@ -38,11 +39,21 @@ const LoginPage = () => {
   }, [getLocalStorage]);
 
   return (
-    <div className="flex items-center justify-center w-full min-h-screen bg-gray-200">
-      <div className="w-2/3 border border-gray-200 rounded-xl max-h-[550px] flex bg-white">
+    
+    <div
+      className="flex items-center justify-center w-full min-h-screen bg-gray-200"
+      style={{
+        backgroundImage: `url(${manage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundColor: "rgba(255, 255, 255, 0.2)", // Màu trắng mờ (hoặc tùy chỉnh)
+        backgroundBlendMode: "overlay", // Trộn màu với ảnh
+      }}
+    >
+      <div className="w-1/3 border border-gray-200 rounded-xl max-h-[550px] flex bg-white">
         <div className="flex flex-col items-center justify-center w-full min-h-full gap-3 p-4">
           <div className="flex flex-col items-center justify-center gap-1">
-            <h3 className="text-2xl font-bold uppercase text-brown-1">
+            <h3 className="text-2xl font-bold uppercase text-emerald-500">
               Chào mừng
             </h3>
             <p className="text-base text-black">
