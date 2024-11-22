@@ -12,7 +12,7 @@ const tagRouter = express.Router();
 
 tagRouter.get("/", isAuthenticate, getAllTags);
 tagRouter.get("/:id", isAuthenticate, getTagById);
-tagRouter.post("/", isAdmin, createTag);
+tagRouter.post("/", createTag);
 tagRouter.put("/:id", isAdmin, updateTag);
 tagRouter.delete("/:id", isAdmin, deleteTag);
 

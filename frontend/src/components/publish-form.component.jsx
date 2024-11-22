@@ -1,11 +1,12 @@
 import { Toaster, toast } from "react-hot-toast";
 import AnimationWrapper from "../common/page-animation";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { EditorContext } from "../pages/editor.pages";
 import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
+import bannerDefault from "../imgs/banner-default.png";
 
 const PublishForm = () => {
 
@@ -17,6 +18,9 @@ const PublishForm = () => {
     let { blog, blog: { banner, title, tags, des, content }, setEditorState, setBlog } = useContext(EditorContext);
 
     let { userAuth: { access_token } } = useContext(UserContext);
+
+    const [availableTags, setAvailableTags] = useState([]);
+    const [filteredTags, setFilteredTags] = useState([]);
 
     let navigate = useNavigate();
 
@@ -37,81 +41,105 @@ const PublishForm = () => {
     }
 
     const handleTitleKeyDown = (e) => {
-        if(e.keyCode == 13) { // enter key
+        if (e.keyCode == 13) { // enter key
             e.preventDefault();
         }
     }
 
     const handleKeyDown = (e) => {
-        if(e.keyCode == 13 || e.keyCode == 188) {
+        if (e.keyCode == 13 || e.keyCode == 188) {
             e.preventDefault();
 
-            let tag = e.target.value;
+            let tag = e.target.value.trim();
 
-            if(tags.length < tagLimit){
-                if(!tags.includes(tag) && tag.length){
-                    setBlog({ ...blog, tags: [ ...tags, tag ] })
+            if (tags.length < tagLimit) {
+                if (!tags.includes(tag) && tag.length) {
+                    setBlog({ ...blog, tags: [...tags, tag] })
                 }
-            } else{
+            } else {
                 toast.error(`You can add max ${tagLimit} Tags`)
             }
-            
+
             e.target.value = "";
         }
-
     }
 
-    const publishBlog = (e) => {
-
-        if(e.target.className.includes("disable")) {
+    const publishBlog = async (e) => {
+        if (e.target.className.includes("disable")) {
             return;
         }
 
-        if(!title.length){
-            return toast.error("Write blog title before publishing")
+        if (!title.length) {
+            return toast.error("Write blog title before publishing");
         }
 
-        if(!des.length || des.length > characterLimit){
-            return toast.error(`Write a description about your blog withing ${characterLimit} characters to publish`)
+        if (!des.length || des.length > characterLimit) {
+            return toast.error(`Write a description about your blog within ${characterLimit} characters to publish`);
         }
 
-        if(!tags.length){
-            return toast.error("Enter at least 1 tag to help us rank your blog")
-        } 
+        if (!tags.length) {
+            return toast.error("Enter at least 1 tag to help us rank your blog");
+        }
 
         let loadingToast = toast.loading("Publishing....");
 
         e.target.classList.add('disable');
 
         let blogObj = {
-            title, banner, des, content, tags, draft: false
-        }
+            title,
+            banner: banner.length === 0 ? bannerDefault : banner,
+            des,
+            content,
+            tags,
+            draft: false,
+        };
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", { ...blogObj, id: blog_id }, {
-            headers: {
-                'Authorization': `Bearer ${access_token}`
-            }
-        })
-        .then(() => {
-            
-            e.target.classList.remove('disable');
+        try {
+            await Promise.all(
+                tags.map(async (tag) => {
+                    try {
+                        await axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/tags", { tag_name: tag }, {
+                            headers: { 'Authorization': `Bearer ${access_token}` },
+                        });
+                    } catch (error) {
+                        console.error(`Failed to save tag: ${tag}`, error);
+                    }
+                })
+            );
+
+            await axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/create-blog", { ...blogObj, id: blog_id }, {
+                headers: {
+                    'Authorization': `Bearer ${access_token}`,
+                },
+            });
 
             toast.dismiss(loadingToast);
             toast.success("Published 👍");
 
             setTimeout(() => {
-                navigate("/dashboard/blogs")
+                navigate("/dashboard/blogs");
             }, 500);
-
-        })
-        .catch(( { response } ) => {
+        } catch (error) {
             e.target.classList.remove('disable');
             toast.dismiss(loadingToast);
+            toast.error(error.response?.data?.error || "An error occurred while publishing the blog");
+        } finally {
+            e.target.classList.remove('disable');
+        }
+    };
 
-            return toast.error(response.data.error)
-        })
+    useEffect(() => {
+        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags",
+            { headers: { 'Authorization': `Bearer ${access_token}` } }
+        )
+            .then(response => {
+                const fetchedTags = response.data.list || [];
+                setAvailableTags(fetchedTags);
+                setFilteredTags({ list: fetchedTags, total: fetchedTags.length });
+            })
+            .catch(error => console.error("Failed to fetch tags:", error));
+    }, []);
 
-    }
 
     return (
         <AnimationWrapper>
@@ -120,7 +148,7 @@ const PublishForm = () => {
                 <Toaster />
 
                 <button className="w-12 h-12 absolute right-[5vw] z-10 top-[5%] lg:top-[10%]"
-                onClick={handleCloseEvent}
+                    onClick={handleCloseEvent}
                 >
                     <i className="fi fi-br-cross"></i>
                 </button>
@@ -132,9 +160,9 @@ const PublishForm = () => {
                         <img src={banner} />
                     </div>
 
-                    <h1 className="text-4xl font-medium mt-2 leading-tight line-clamp-2">{ title }</h1>
+                    <h1 className="text-4xl font-medium mt-2 leading-tight line-clamp-2">{title}</h1>
 
-                    <p className="font-gelasio line-clamp-2 text-xl leading-7 mt-4">{ des }</p>
+                    <p className="font-gelasio line-clamp-2 text-xl leading-7 mt-4">{des}</p>
                 </div>
 
                 <div className="border-grey lg:border-1 lg:pl-8">
@@ -143,7 +171,7 @@ const PublishForm = () => {
 
                     <p className="text-dark-grey mb-2 mt-9">Short description about your blog</p>
 
-                    <textarea 
+                    <textarea
                         maxLength={characterLimit}
                         defaultValue={des}
                         className="h-40 resize-none leading-7 input-box pl-4"
@@ -152,23 +180,46 @@ const PublishForm = () => {
                     >
                     </textarea>
 
-                    <p className="mt-1 text-dark-grey text-sm text-right">{ characterLimit - des.length } characters left</p>
-                    
-                    <p className="text-dark-grey mb-2 mt-9">Topics - ( Helps is searching and ranking your blog post )</p>
+                    <p className="mt-1 text-dark-grey text-sm text-right">{characterLimit - des.length} characters left</p>
 
+                    {/* <p className="text-dark-grey mb-2 mt-9">Topics - ( Helps is searching and ranking your blog post )</p> */}
+                    <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose from existing topics</p>
+                    <select
+                        className="select select-bordered w-full max-w-2xl mb-2"
+                        defaultValue=""
+                        onChange={(e) => {
+                            const selectedTag = e.target.value;
+                            if (selectedTag && !tags.includes(selectedTag) && tags.length < tagLimit) {
+                                setBlog({ ...blog, tags: [...tags, selectedTag] });
+                            } else if (tags.length >= tagLimit) {
+                                toast.error(`You can add max ${tagLimit} Tags`);
+                            }
+                        }}
+                    >
+                        <option value="" disabled>
+                            Choose a topic
+                        </option>
+                        {availableTags.map((tag, index) => (
+                            <option key={index} value={tag.tag_name}>
+                                {tag.tag_name}
+                            </option>
+                        ))}
+                    </select>
+
+                    <p className="text-dark-grey mb-2 mr-32 w-1/2">Or create a new one topic</p>
                     <div className="relative input-box pl-2 py-2 pb-4">
-                        <input type="text" placeholder="Topic" className="sticky input-box bg-white top-0 left-0  pl-4 mb-3 focus:bg-white "
-                        onKeyDown={handleKeyDown}
-                         />
-                        
-                        {   
+                        <input type="text" placeholder="A new topic" className="sticky input-box bg-white top-0 left-0  pl-4 mb-3 focus:bg-white "
+                            onKeyDown={handleKeyDown}
+                        />
+
+                        {
                             tags.map((tag, i) => {
                                 return <Tag tag={tag} tagIndex={i} key={i} />
-                            }) 
+                            })
                         }
                     </div>
 
-                    <p className="mt-1 mb-4 text-dark-grey text-right" >{ tagLimit - tags.length } Tags left</p>
+                    <p className="mt-1 mb-4 text-dark-grey text-right" >{tagLimit - tags.length} Tags left</p>
 
                     <button className="btn-dark px-8"
                         onClick={publishBlog}

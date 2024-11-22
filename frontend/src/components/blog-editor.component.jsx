@@ -85,9 +85,9 @@ const BlogEditor = () => {
 
     const handlePublishEvent = () => {
         
-        if(!banner.length){
-            return toast.error("Upload a blog banner to publish it")
-        }
+        // if(!banner.length){
+        //     return toast.error("Upload a blog banner to publish it")
+        // }
 
         if(!title.length){
             return toast.error("Write blog title to publish it")
