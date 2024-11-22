@@ -21,17 +21,20 @@ const HomePage = () => {
     const { userAuth } = useContext(UserContext);
     const { language } = userAuth;
     const translations = getTranslations(language);
+    const [tags, setTags] = useState([]);
+    let { userAuth: { access_token } } = useContext(UserContext);
 
-    const categories = [
-        "programming",
-        "hollywood",
-        "film making",
-        "social media",
-        "cooking",
-        "tech",
-        "finance",
-        "travel",
-    ];
+    useEffect(() => {
+        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags",
+            { headers: { 'Authorization': `Bearer ${access_token}` } }
+        )
+            .then(response => {
+                const fetchedTags = response.data.list || [];
+                setTags(fetchedTags);
+            })
+            .catch(error => console.error("Failed to fetch tags:", error));
+    }, []);
+
 
     const fetchAdminBlogs = () => {
         axios
@@ -82,9 +85,15 @@ const HomePage = () => {
     };
 
     const loadBlogByCategory = (e) => {
-        const category = e.target.innerText.toLowerCase();
+        const category = e.target.innerText;
         setBlogs(null);
         setPageState(pageState === category ? "home" : category);
+    };
+
+    const loadBlogByTag = (e) => {
+        const tag = e.target.value;
+        setBlogs(null);
+        setPageState(pageState === tag ? "home" : tag);
     };
 
     useEffect(() => {
@@ -216,17 +225,38 @@ const HomePage = () => {
                                 {translations.subjects}
                             </h1>
                             <div className="flex flex-wrap gap-2">
-                                {categories.map((category, i) => (
+                                <select
+                                    className="select select-bordered w-full max-w-2xl mb-2"
+                                    defaultValue=""
+                                    onChange={(e) => { 
+                                        loadBlogByTag(e);
+                                        if (e.target.value === "All Subjects") {
+                                            setPageState("home");
+                                        }
+                                     }}
+
+
+                                >
+                                    <option>
+                                        All Subjects
+                                    </option>
+                                    {tags.map((tag, index) => (
+                                        <option key={index} value={tag.tag_name}>
+                                            {tag.tag_name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {tags.slice(0,10).map((tag, i) => (
                                     <button
                                         key={i}
-                                        onClick={loadBlogByCategory}
+                                        onClick={(e) => loadBlogByCategory(e, tag.tag_name)}
                                         className={`px-4 py-2 rounded-full border ${
-                                            pageState === category
+                                            pageState === tag.tag_name
                                                 ? "bg-black text-white"
                                                 : "bg-white text-black border-gray-300"
                                         }`}
                                     >
-                                        {category}
+                                        {tag.tag_name}
                                     </button>
                                 ))}
                             </div>

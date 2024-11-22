@@ -1314,7 +1314,7 @@ server.post("/notifications", verifyJWT, (req, res) => {
       Notification.updateMany(findQuery, { seen: true })
         .skip(skipDocs)
         .limit(maxLimit)
-        .then(() => console.log("notification seen"));
+        // .then(() => console.log("notification seen"));
 
       return res.status(200).json({ notifications });
     })
