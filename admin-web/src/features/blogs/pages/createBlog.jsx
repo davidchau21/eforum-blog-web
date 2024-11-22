@@ -196,13 +196,13 @@ const CreateBlog = () => {
         <div id="textEditor" className="font-gelasio"></div>
         <div className="flex gap-4 ml-auto">
           <button
-            className="w-full text-base bg-brown-1 hover:!bg-brown-3 duration-300 h-10 font-exo-2 font-bold text-white"
+            className="w-full text-base bg-emerald-500 hover:!bg-emerald-600 duration-300 h-10 font-exo-2 font-bold text-white"
             onClick={() => handleUploadBlog(false)}
           >
             Publish
           </button>
           <button
-            className="w-full text-base bg-brown-1 hover:!bg-brown-3 duration-300 h-10 font-exo-2 font-bold text-white"
+            className="w-full text-base bg-emerald-500 hover:!bg-emerald-600 duration-300 h-10 font-exo-2 font-bold text-white"
             onClick={() => handleUploadBlog(true)}
           >
             Draft

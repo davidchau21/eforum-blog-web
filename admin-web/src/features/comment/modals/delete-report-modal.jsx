@@ -49,7 +49,7 @@ const DeleteReportModal = ({ isOpen, onClose, blog }) => {
       <Button
         text="Xoá"
         className={clsx(
-          "w-full text-base bg-brown-1 hover:!bg-brown-3 duration-300 h-10 font-exo-2 text-white"
+          "w-full text-base bg-emerald-500 hover:!bg-emerald-600 duration-300 h-10 font-exo-2 text-white"
         )}
         loading={pendingDelete}
         onClick={deleteCategory}

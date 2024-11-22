@@ -127,14 +127,6 @@ const BlogPage = () => {
                                     </div>
                                     <div className="flex items-center gap-1">
                                         <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Published on {getDay(publishedAt)}</p>
-                                        {access_token && !isReport && (
-                                            <button
-                                                onClick={report}
-                                                className="w-8 h-8 rounded-full flex items-center justify-center bg-grey/80"
-                                            >
-                                                <i className="fi-rr-shield-exclamation text-rose-400"></i>
-                                            </button>
-                                        )}
                                     </div>
                                 </div>
                                 <hr className="border-grey my-2" />

@@ -105,23 +105,22 @@ const Navbar = () => {
                 <div className="flex items-center gap-4 md:gap-6 ml-auto">
                     {/* Search in mobile */}
                     <button className="flex items-center justify-center hover:text-emerald-500 md:hidden" onClick={() => setSearchBoxVisibility(prev => !prev)}>
-                        <i className="fi fi-rr-search text-black text-2xl"></i>
+                        <i className="fi fi-rr-search text-black text-3xl"></i>
                     </button>
 
                     {/* Notification in mobile */}
                     {access_token && (
                         <>
                             <Link to="/dashboard/notifications" className="flex items-center gap-2 text-black hover:text-emerald-500 relative md:hidden">
-                                <i className="fi fi-rr-bell text-2xl"></i>
+                                <i className="fi fi-rr-bell text-3xl"></i>
                                 {new_notification_available && <span className="bg-red w-3 h-3 rounded-full absolute top-0 right-0"></span>}
                             </Link>
                         </>
                     )}
                     
 
-
                     {/* Mobile Menu Hamburger Icon */}
-                    <button className="w-8 h-8 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
+                    <button className="w-10 h-10 md:hidden rounded-full flex items-center justify-center hover:text-emerald-500" onClick={() => setMobileMenuVisible(prev => !prev)}>
                         {profile_img ? (
                             <img src={profile_img} className="w-full h-full object-cover rounded-full" />
                         ) : (

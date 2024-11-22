@@ -1,6 +1,7 @@
 import { ERole } from "@/enums/staff";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { setProfile } from "@/redux/globalSlice";
+
 import clsx from "clsx";
 import {
   BadgeDollarSign,
@@ -14,10 +15,12 @@ import {
   Menu,
   MessageCircleCode,
   Users,
+  Bell,
 } from "lucide-react";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
+import NotificationCard from "../../../../frontend/src/components/notification-card.component";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
@@ -50,6 +53,11 @@ const Sidebar = () => {
       label: "Bình luận",
       icon: <MessageCircleCode width={24} height={24} />,
       link: "/comments",
+    },
+    {
+      label: "Thông báo",
+      icon: <Bell width={24} height={24} />,
+      link: "/notifications",
     },
     // {
     //   label: "Nguyên liệu",
@@ -95,8 +103,8 @@ const Sidebar = () => {
               clsx(
                 "flex items-center w-full h-12 gap-3 px-4 duration-300 rounded-md shadow outline-none",
                 {
-                  "bg-white text-brown-1 hover:bg-[#e9ecef]": !isActive,
-                  "bg-brown-1 text-white": isActive,
+                  "bg-white text-white-1 hover:bg-[#e9ecef]": !isActive,
+                  "bg-emerald-500 text-white": isActive,
                 }
               )
             }
@@ -111,7 +119,7 @@ const Sidebar = () => {
       <button
         onClick={onLogout}
         type="button"
-        className="flex items-center w-full h-12 gap-3 px-4 bg-white rounded-md shadow text-brown-1 hover:bg-[#e9ecef] outline-none duration-300"
+        className="flex items-center w-full h-12 gap-3 px-4 bg-white rounded-md shadow text-emerald-500 hover:bg-[#e9ecef] outline-none duration-300"
       >
         <LogOut width={24} height={24} />
         <span className="text-base font-medium">Đăng xuất</span>

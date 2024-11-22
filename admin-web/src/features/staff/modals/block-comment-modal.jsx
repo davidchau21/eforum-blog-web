@@ -48,7 +48,7 @@ const BlockCommentModal = ({ isOpen, onClose, user }) => {
       <Button
         text={user?.blocked_comment ? "Mở khóa" : "Khóa"}
         className={clsx(
-          "w-full text-base bg-brown-1 hover:!bg-brown-3 duration-300 h-10 font-exo-2 text-white"
+          "w-full text-base bg-emerald-500 hover:!bg-emerald-600 duration-300 h-10 font-exo-2 text-white"
         )}
         loading={pendingBlock}
         onClick={blockComment}

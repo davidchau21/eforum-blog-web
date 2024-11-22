@@ -11,6 +11,7 @@ import BlogManagement from "./features/blogs";
 import CreateBlog from "./features/blogs/pages/createBlog";
 import EditBlog from "./features/blogs/pages/editBlog";
 import CommentManagement from "./features/comment";
+import NotificationManagement from "./features/notifications";
 
 const App = () => {
   return (
@@ -18,6 +19,7 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<MainLayout />}>
         <Route path="/tags" element={<CategoryManagement />} />
+        <Route path="/notifications" element={<NotificationManagement />} />
         <Route path="/users/create" element={<CreateStaff />} />
         <Route path="/users/:id" element={<EditStaff />} />
         <Route path="/users" element={<StaffManagement />} />
