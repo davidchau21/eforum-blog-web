@@ -142,7 +142,7 @@ export const userOnline = async (req, res, next) => {
     const loggedInUserId = req.user.id;
     const socketId = req.body.socketId;
 
-    console.log("socketId", socketId, loggedInUserId);
+    // console.log("socketId", socketId, loggedInUserId);
     if (!socketId) return res.status(200).json({ date: Date.now() });
     setSocketId(loggedInUserId, socketId);
     EE.emit("online");

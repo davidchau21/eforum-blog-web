@@ -15,14 +15,14 @@ export const SocketContextProvider = ({ children }) => {
 
   useEffect(() => {
     if (userAuth) {
-      const newSocket = socketIOClient("http://localhost:3000", {
+      const newSocket = socketIOClient(import.meta.env.VITE_SERVER_DOMAIN, {
         auth: {
           token: userAuth?._id,
         },
       });
 
       setSocket(newSocket);
-      
+
       return () => {
         newSocket.disconnect()
       };

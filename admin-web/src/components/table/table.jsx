@@ -23,7 +23,7 @@ const CustomTable = ({
     // Set a timeout to automatically stop the loading after 30 seconds
     const timer = setTimeout(() => {
       setIsLoading(false); // Stop loading after 30 seconds
-    }, 30000); // 30000 ms = 30 seconds
+    }, 10000); // 10000 ms = 10 seconds
 
     // Cleanup the timeout if loading is already completed before the 30 seconds
     return () => clearTimeout(timer); // Cleanup if component unmounts or loading state changes

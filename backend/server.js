@@ -912,7 +912,7 @@ server.post("/get-blog", (req, res) => {
   let incrementVal = mode != "edit" ? 1 : 0;
 
   Blog.findOneAndUpdate(
-    { blog_id, isActive: true, isDeleted: { $in: [false, null] } },
+    { blog_id, isDeleted: { $in: [false, null] } },
     { $inc: { "activity.total_reads": incrementVal } }
   )
     .populate(
@@ -1316,7 +1316,7 @@ server.post("/notifications", verifyJWT, (req, res) => {
       Notification.updateMany(findQuery, { seen: true })
         .skip(skipDocs)
         .limit(maxLimit)
-        .then(() => console.log("notification seen"));
+        // .then(() => console.log("notification seen"));
 
       return res.status(200).json({ notifications });
     })
