@@ -26,18 +26,17 @@ const LoadMoreDataBtn = ({ state, fetchDataFun, additionalParam }) => {
 
   return (
     <div ref={observerRef} className="flex justify-center mt-8">
-      {state && state.totalDocs > state.results.length ? (
+      {state && state.totalDocs > state.results.length && (
         <button
           onClick={() => fetchDataFun({ ...additionalParam, page: state.page + 1 })}
-          className="text-dark-grey px-3 text-emerald-500 rounded-md flex items-center gap-2"
+          className="text-dark-grey px-3 rounded-md flex items-center gap-2"
         >
           Loading...
         </button>
-      ) : (
-        <p className="text-dark-grey px-3 text-emerald-500 rounded-md flex items-center gap-2">
-            Đã hết bài viết.
-        </p>
-      )}
+      )
+      
+      }
+      
     </div>
   );
 };

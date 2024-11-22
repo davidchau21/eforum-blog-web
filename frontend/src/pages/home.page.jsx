@@ -163,16 +163,18 @@ const HomePage = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <NoDataMessage message="No blogs published" />
+                                <></>
+                                // <NoDataMessage message="No blogs published" />
                             )}
-                            <LoadMoreDataBtn
-                                state={blogs}
-                                fetchDataFun={
-                                    pageState === "home"
-                                        ? fetchLatestBlogs
-                                        : fetchBlogsByCategory
-                                }
-                            />
+                            {(blogs && blogs.totalDocs > blogs.results.length) && pageState !== "home" ? (
+                                <LoadMoreDataBtn
+                                    state={blogs}
+                                    fetchDataFun={pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory}
+                                />
+                            ) : (
+                                <NoDataMessage message="Can't load more" />
+                            )}
+
                         </div>
                         <div>
                             {trendingBlogs == null ? (
@@ -226,7 +228,7 @@ const HomePage = () => {
                             </h1>
                             <div className="flex flex-wrap gap-2">
                                 <select
-                                    className="select select-bordered w-full max-w-2xl mb-2"
+                                    className="select select-bordered w-full max-w-2xl mb-2 bg-white"
                                     defaultValue=""
                                     onChange={(e) => { 
                                         loadBlogByTag(e);
