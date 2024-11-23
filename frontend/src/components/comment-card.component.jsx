@@ -15,7 +15,10 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
     let { userAuth: { access_token, username } } = useContext(UserContext);
 
+    let [showConfirmModal, setShowConfirmModal] = useState(false);
+
     const [isReplying, setReplying] = useState(false);
+    
 
     const getParentIndex = () => {
         let startingPoint = index - 1;
@@ -195,13 +198,55 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                 </p>
                 <p className="min-w-fit">{getDay(commentedAt)}</p>
                 {username !== commented_by_username && !isReport && (
-                    <button
-                        onClick={report}
-                        class="w-8 h-8 rounded-full flex items-center justify-center bg-grey/80"
-                    >
-                        <i class="fi-rr-shield-exclamation text-rose-400"></i>
-                    </button>
+                    <div className="relative group">
+                        <button
+                            onClick={() => setShowConfirmModal(true)}
+                            className="w-8 h-8 rounded-full flex items-center justify-center bg-grey/80 group-hover:bg-blue-500"
+                        >
+                            <i className="fi fi-rr-flag text-rose-400"></i>
+                        </button>
+
+                        {/* Tooltip */}
+                        <span className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2">
+                            Report this comment
+                        </span>
+
+                        {/* Confirmation Modal */}
+                        {showConfirmModal && (
+                            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                                <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+                                    {/* Modal title */}
+                                    <p className="text-lg font-semibold text-black">Confirm Report</p>
+
+                                    {/* Modal content */}
+                                    <p className="text-sm text-black mt-2">
+                                        Are you sure you want to report this comment? This action cannot be undone.
+                                    </p>
+
+                                    {/* Cancel and Report buttons */}
+                                    <div className="mt-4 flex justify-center gap-8">
+                                        <button
+                                            onClick={() => setShowConfirmModal(false)}
+                                            className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                report(); // Call report function
+                                                setShowConfirmModal(false);
+                                            }}
+                                            className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                                        >
+                                            Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 )}
+
             </div>
 
                 <p className="font-gelasio text-xl ml-3">{comment}</p>
