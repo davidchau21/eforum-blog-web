@@ -13,7 +13,7 @@ const BlogInteraction = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
 
-    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } } }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper, isReport } = useContext(BlogContext);
+    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } }, isReport }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper } = useContext(BlogContext);
 
     let { userAuth: { username, access_token } } = useContext(UserContext);
 
@@ -244,7 +244,7 @@ const BlogInteraction = () => {
                             Copy link
                         </span>
                     </div>
-                    {access_token && (
+                    {access_token && !isReport && (
                         <div className="relative group">
                             {/* Report button */}
                             <button
