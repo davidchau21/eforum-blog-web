@@ -12,7 +12,7 @@ import {
   PointElement,
   ArcElement,
 } from "chart.js";
-import { User2Icon, FileIcon, MessageCircleIcon, CalendarIcon } from "lucide-react";
+import { User2Icon, FileIcon, MessageCircleIcon, CalendarIcon, ThumbsUp, Share2, BookOpen} from "lucide-react";
 import reportApi from "../../api/reportApi";
 
 // Đăng ký các thành phần của Chart.js
@@ -194,102 +194,114 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-6 flex flex-wrap gap-6">
-      <div className="w-full flex flex-wrap gap-6 justify-between mt-6">
-        {/* Các input chọn ngày */}
-        <h2 className="text-2xl font-semibold justify-center gap-4">Chọn khoảng thời gian</h2>
-        <div className="flex gap-4 justify-center w-full">
+    <div className="p-6 space-y-6">
+      {/* Header: Chọn khoảng thời gian */}
+      <div className="w-full bg-white rounded-lg shadow-lg p-6">
+        <h2 className="text-2xl font-semibold text-center mb-4">Chọn khoảng thời gian</h2>
+        <div className="flex gap-4 justify-center">
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm"
+            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
       </div>
-
-      <div className="w-full flex flex-wrap gap-6 justify-between mt-6">
-        <div className="w-full md:w-[32%] lg:w-[20%] flex flex-col gap-6">
-          <div className="h-[120px] bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <User2Icon size={44} color="white" />
-              <p className="text-3xl font-bold text-right text-white">
-                {totalUser}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng người dùng
-            </h1>
+  
+      {/* 6 thẻ và biểu đồ tròn */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 6 thẻ: 2 cột, 3 thẻ mỗi cột */}
+        <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="h-[120px] bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <User2Icon size={44} color="white" />
+            <p className="text-3xl font-bold text-right text-white">{totalUser}</p>
           </div>
-          <div className="h-[120px] bg-gradient-to-r from-teal-400 to-green-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <FileIcon size={44} color="white" />
-              <p className="text-3xl font-bold text-right text-white">
-                {totalBlog}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng bài viết
-            </h1>
-          </div>
-          <div className="h-[120px] bg-gradient-to-r from-pink-400 to-red-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <MessageCircleIcon size={44} color="white" />
-              <p className="text-3xl font-bold text-right text-white">
-                {totalComment}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng bình luận
-            </h1>
-          </div>
-
-          <div className="h-[120px] bg-gradient-to-r from-yellow-400 to-yellow-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <CalendarIcon size={44} color="white" />
-              <p className="text-3xl font-bold text-right text-white">
-                {totalLike}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng like
-            </h1>
-          </div>
+          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng người dùng</h1>
         </div>
 
-        <div className="w-full md:w-[48%] lg:w-[40%] bg-white rounded-lg shadow-lg p-6">
+        <div className="h-[120px] bg-gradient-to-r from-teal-400 to-green-500 px-5 py-5 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <FileIcon size={44} color="white" />
+            <p className="text-3xl font-bold text-right text-white">{totalBlog}</p>
+          </div>
+          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng bài viết</h1>
+        </div>
+
+        <div className="h-[120px] bg-gradient-to-r from-pink-400 to-red-500 px-5 py-5 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <MessageCircleIcon size={44} color="white" />
+            <p className="text-3xl font-bold text-right text-white">{totalComment}</p>
+          </div>
+          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng bình luận</h1>
+        </div>
+
+        {/* Các thẻ dưới với gradient khác và icon thay đổi */}
+        <div className="h-[120px] bg-gradient-to-r from-purple-400 to-pink-500 px-5 py-5 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <ThumbsUp size={44} color="white" /> {/* Đổi icon thành ThumbUpIcon cho "Like" */}
+            <p className="text-3xl font-bold text-right text-white">{totalLike}</p>
+          </div>
+          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng like</h1>
+        </div>
+
+        <div className="h-[120px] bg-gradient-to-r from-orange-400 to-yellow-500 px-5 py-5 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <Share2 size={44} color="white" /> {/* Đổi icon thành ShareIcon cho "Share" */}
+            <p className="text-3xl font-bold text-right text-white">{totalShare}</p>
+          </div>
+          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượt chia sẻ</h1>
+        </div>
+
+        <div className="h-[120px] bg-gradient-to-r from-indigo-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <BookOpen size={44} color="white" /> {/* Đổi icon thành BookIcon cho "Read" */}
+            <p className="text-3xl font-bold text-right text-white">{totalRead}</p>
+          </div>
+          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượt đọc</h1>
+        </div>
+
+        </div>
+  
+        {/* Biểu đồ tròn */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-center text-2xl font-semibold text-gray-800 mb-4">Thống kê tương tác</h2>
           <div className="flex justify-center items-center">
-            <div className="w-[80%]">
-              <Pie data={pieData} options={{ responsive: true }} />
+            {/* Thêm kích thước cụ thể cho biểu đồ */}
+            <div className="w-[300px] h-[300px] md:w-[300px] md:h-[300px]">
+              <Pie 
+                data={pieData} 
+                options={{ 
+                  responsive: true, 
+                  maintainAspectRatio: false 
+                }} 
+              />
             </div>
           </div>
         </div>
+
       </div>
-
-      <div className="w-full flex flex-wrap gap-6 justify-between mt-6">
-        <div className="card w-full md:w-[48%] bg-white px-5 py-5 rounded-lg shadow-lg">
-          <div className="card-body">
-            <h2 className="text-2xl font-semibold mb-4">Số liệu người dùng và bài viết</h2>
-            <Line data={chartData} />
-          </div>
+  
+      {/* 2 biểu đồ cột và đường */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="w-full bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-semibold mb-4">Số liệu người dùng và bài viết</h2>
+          <Line data={chartData} />
         </div>
-
-        <div className="card w-full md:w-[48%] bg-white px-5 py-5 rounded-lg shadow-lg">
-          <div className="card-body">
-            <h2 className="text-2xl font-semibold mb-4">Tương tác hàng tuần</h2>
-            <Bar data={interactionData} />
-          </div>
+        <div className="w-full bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-semibold mb-4">Tương tác hàng tuần</h2>
+          <Bar data={interactionData} />
         </div>
       </div>
     </div>
   );
+  
 };
 
 export default Dashboard;

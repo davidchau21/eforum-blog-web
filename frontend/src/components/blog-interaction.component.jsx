@@ -243,7 +243,7 @@ const BlogInteraction = () => {
                             Copy link
                         </span>
                     </div>
-                    {access_token && !isReport && (
+                    {access_token && !isReport && username !== author_username && (
                         <div className="relative group">
                             {/* Report button */}
                             <button
