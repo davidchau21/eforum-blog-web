@@ -115,9 +115,11 @@ const PublishForm = () => {
 
             toast.dismiss(loadingToast);
             toast.success("Published 👍");
+            
 
             setTimeout(() => {
                 navigate("/dashboard/blogs");
+                toast.info("Your blog is now waiting for review");
             }, 500);
         } catch (error) {
             e.target.classList.remove('disable');
