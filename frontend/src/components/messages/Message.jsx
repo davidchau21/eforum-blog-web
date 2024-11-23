@@ -12,7 +12,11 @@ const Message = ({ message }) => {
   const profileImage = messageFromMe
     ? userAuth.profile_img
     : selectedConversation?.personal_info.profile_img;
-  const msgBgColor = messageFromMe ? "bg-blue-500" : "bg-blue-400";
+  const msgBgColor = message?.type?.startsWith("image")
+    ? "bg-transparent"
+    : messageFromMe
+    ? "bg-blue-500"
+    : "bg-blue-400";
   const formattedTime = formatTime(message.createdAt);
 
   const openModal = () => {
@@ -59,7 +63,7 @@ const Message = ({ message }) => {
         )}
       </div>
 
-      <div className="chat-footer opacity-50 text-xs flex gap-1 items-center text-slate-950">
+      <div className="chat-footer opacity-50 text-xs flex gap-1 items-center text-black">
         {formattedTime}
       </div>
 

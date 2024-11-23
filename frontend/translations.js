@@ -15,10 +15,10 @@ const translations = {
         newBlog: "Blog Mới",
         subjects: "Chủ đề",
         trendingBlogs: "Blog Xu Hướng",
-        adminPosts: "Tin tức",
         noBlogsPublished: "Không có blog nào được xuất bản",
         noTrendingBlogs: "Không có blog xu hướng nào",
         trending: "Xu Hướng",
+        adminPosts: "Tin tức",
         aboutUs: "Về chúng tôi",
         contact: "Liên hệ",
         termsOfService: "Điều khoản dịch vụ",
@@ -35,6 +35,17 @@ const translations = {
         chat: "Trò chuyện",
         notifications: "Thông báo",
         profile: "Cá nhân",
+        dashboard: "Bảng điều khiển",
+        blogs: "Bài viết",
+        write: "Viết bài",
+        editProfile: "Chỉnh sửa hồ sơ",
+        changePassword: "Đổi mật khẩu",
+        manageBlogs: "Quản lý bài viết",
+        searchBlogs: "Tìm kiếm bài viết",
+        noPublishedBlogs: "Không có bài viết đã xuất bản",
+        noDraftBlogs: "Không có bài viết nháp",
+        pageEnd: "Không còn bài viết",
+        
         aboutUsDes: "Chào mừng đến với EForum! Sứ mệnh của chúng tôi là tạo ra một nền tảng cung cấp nội dung giáo dục có giá trị đến người học và giáo viên trên toàn thế giới.",
         contactContent: {
             title: "Liên hệ với chúng tôi",
@@ -45,19 +56,19 @@ const translations = {
         policyContent: {
             title: "Chính sách trang web",
             userConduct: "Người dùng được yêu cầu tham gia một cách tôn trọng và tránh mọi hình thức quấy rối, phát ngôn thù hận, hoặc nội dung không phù hợp.",
-            contentOwnership: "Bằng việc gửi nội dung, người dùng cấp phép cho EduBlog hiển thị và quảng bá nội dung trên nền tảng. Người dùng giữ quyền sở hữu hoàn toàn nội dung của mình."
+            contentOwnership: "Bằng việc gửi nội dung, người dùng cấp phép cho EForum hiển thị và quảng bá nội dung trên nền tảng. Người dùng giữ quyền sở hữu hoàn toàn nội dung của mình."
         },
         privacyContent: {
             title: "Chính sách bảo mật",
-            intro: "Tại EduBlog, chúng tôi tôn trọng và coi trọng quyền riêng tư của bạn.",
+            intro: "Tại EForum, chúng tôi tôn trọng và coi trọng quyền riêng tư của bạn.",
             informationCollection: "Chúng tôi thu thập thông tin mà bạn cung cấp khi đăng ký, chẳng hạn như tên, địa chỉ email và sở thích của bạn.",
             dataUsage: "Thông tin của bạn được sử dụng để cung cấp và nâng cao dịch vụ của chúng tôi, cá nhân hóa trải nghiệm của bạn, và thông báo các cập nhật quan trọng."
         },
         termsOfServiceContent: {
             title: "Điều khoản dịch vụ",
-            intro: "Các điều khoản dịch vụ này điều chỉnh việc bạn sử dụng EduBlog và nêu rõ các điều kiện để truy cập nền tảng của chúng tôi.",
+            intro: "Các điều khoản dịch vụ này điều chỉnh việc bạn sử dụng EForum và nêu rõ các điều kiện để truy cập nền tảng của chúng tôi.",
             accountRegistration: "Người dùng phải đăng ký tài khoản để truy cập một số tính năng nhất định. Bằng cách tạo tài khoản, bạn đồng ý cung cấp thông tin chính xác và giữ cho nó được cập nhật.",
-            serviceLimitations: "EduBlog có quyền sửa đổi hoặc ngừng cung cấp dịch vụ bất kỳ lúc nào mà không cần thông báo trước."
+            serviceLimitations: "EForum có quyền sửa đổi hoặc ngừng cung cấp dịch vụ bất kỳ lúc nào mà không cần thông báo trước."
         },
     },
     en: {
@@ -85,7 +96,7 @@ const translations = {
         termsOfService: "Terms of Service",
         privacy: "Privacy",
         policy: "Policy",
-        siteName: "EduBlog",
+        siteName: "EForum",
         legal: "Legal",
         social: "Social media",
         more: "More...",
@@ -96,6 +107,17 @@ const translations = {
         chat: "Chat",
         notifications: "Notifications",
         profile: "Profile",
+        dashboard: "Dashboard",
+        blogs: "Blogs",
+        write: "Write",
+        editProfile: "Edit Profile",
+        changePassword: "Change Password",
+        manageBlogs: "Manage Blogs",
+        searchBlogs: "Search Blogs",
+        noPublishedBlogs: "No published blogs",
+        noDraftBlogs: "No draft blogs",
+        pageEnd: "There're nothing else",
+        
         aboutUsDes: "Welcome to EForum! Our mission is to create a platform that provides valuable educational content to learners and educators around the world.",
         contactContent: {
             title: "Contact Us",
@@ -106,21 +128,22 @@ const translations = {
         policyContent: {
             title: "Site Policy",
             userConduct: "Users are expected to engage respectfully and refrain from any form of harassment, hate speech, or inappropriate content.",
-            contentOwnership: "By submitting content, users grant EduBlog a license to display and promote their content on the platform. Users retain full ownership of their submissions."
+            contentOwnership: "By submitting content, users grant EForum a license to display and promote their content on the platform. Users retain full ownership of their submissions."
         },
         privacyContent: {
             title: "Privacy Policy",
-            intro: "At EduBlog, we respect and value your privacy.",
+            intro: "At EForum, we respect and value your privacy.",
             informationCollection: "We collect information that you provide when signing up, such as your name, email address, and preferences.",
             dataUsage: "Your information is used to provide and enhance our services, personalize your experience, and communicate important updates."
         },
         termsOfServiceContent: {
             title: "Terms of Service",
-            intro: "These Terms of Service govern your use of EduBlog and outline the conditions for accessing our platform.",
+            intro: "These Terms of Service govern your use of EForum and outline the conditions for accessing our platform.",
             accountRegistration: "Users must register for an account to access certain features. By creating an account, you agree to provide accurate information and keep it up to date.",
-            serviceLimitations: "EduBlog reserves the right to modify or discontinue services at any time, without prior notice."
+            serviceLimitations: "EForum reserves the right to modify or discontinue services at any time, without prior notice."
         },
     },
 };
 
+// Hàm lấy thông dịch
 export const getTranslations = (language) => translations[language] || translations.vi;

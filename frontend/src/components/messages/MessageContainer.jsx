@@ -19,14 +19,14 @@ const MessageContainer = () => {
         <NoChatSelected />
       ) : (
         <>
-          <div className="bg-slate-500 px-4 py-2 mb-2">
+          <div className=" border-b px-4 py-2 mb-2">
             <span className="label-text">To: </span>
-            <span className="text-gray-900 font-bold">
+            <span className="text-black font-bold">
               {selectedConversation?.personal_info.username}
             </span>
           </div>
 
-          <div className="flex-1  h-1/2 overflow-y-auto">
+          <div className="flex-1 h-1/2 overflow-y-auto">
             <Messages />
           </div>
 
