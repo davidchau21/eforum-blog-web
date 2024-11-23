@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import Sidebar from "../components/sidebar/Sidebar";
 import MessageContainer from "../components/messages/MessageContainer";
 import AnimationWrapper from "../common/page-animation";

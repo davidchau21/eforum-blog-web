@@ -26,7 +26,7 @@ const MessageContainer = () => {
             </span>
           </div>
 
-          <div className="flex-1  h-1/2 overflow-y-auto">
+          <div className="flex-1 h-1/2 overflow-y-auto">
             <Messages />
           </div>
 

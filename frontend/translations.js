@@ -15,10 +15,10 @@ const translations = {
         newBlog: "Blog Mới",
         subjects: "Chủ đề",
         trendingBlogs: "Blog Xu Hướng",
-        adminPosts: "Tin tức",
         noBlogsPublished: "Không có blog nào được xuất bản",
         noTrendingBlogs: "Không có blog xu hướng nào",
         trending: "Xu Hướng",
+        adminPosts: "Tin tức",
         aboutUs: "Về chúng tôi",
         contact: "Liên hệ",
         termsOfService: "Điều khoản dịch vụ",
@@ -37,7 +37,6 @@ const translations = {
         profile: "Cá nhân",
         dashboard: "Bảng điều khiển",
         blogs: "Bài viết",
-        notifications: "Thông báo",
         write: "Viết bài",
         editProfile: "Chỉnh sửa hồ sơ",
         changePassword: "Đổi mật khẩu",
@@ -45,6 +44,7 @@ const translations = {
         searchBlogs: "Tìm kiếm bài viết",
         noPublishedBlogs: "Không có bài viết đã xuất bản",
         noDraftBlogs: "Không có bài viết nháp",
+        pageEnd: "Không còn bài viết",
         
         aboutUsDes: "Chào mừng đến với EForum! Sứ mệnh của chúng tôi là tạo ra một nền tảng cung cấp nội dung giáo dục có giá trị đến người học và giáo viên trên toàn thế giới.",
         contactContent: {
@@ -109,7 +109,6 @@ const translations = {
         profile: "Profile",
         dashboard: "Dashboard",
         blogs: "Blogs",
-        notifications: "Notifications",
         write: "Write",
         editProfile: "Edit Profile",
         changePassword: "Change Password",
@@ -117,6 +116,8 @@ const translations = {
         searchBlogs: "Search Blogs",
         noPublishedBlogs: "No published blogs",
         noDraftBlogs: "No draft blogs",
+        pageEnd: "There're nothing else",
+        
         aboutUsDes: "Welcome to EForum! Our mission is to create a platform that provides valuable educational content to learners and educators around the world.",
         contactContent: {
             title: "Contact Us",
@@ -144,4 +145,5 @@ const translations = {
     },
 };
 
+// Hàm lấy thông dịch
 export const getTranslations = (language) => translations[language] || translations.vi;

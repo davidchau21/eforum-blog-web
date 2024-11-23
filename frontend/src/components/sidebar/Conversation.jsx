@@ -29,7 +29,7 @@ const Conversation = ({ conversation, lastIndex, online }) => {
         </div>
         <div className="flex flex-col flex-1">
           <div className="flex justify-between">
-            <h1 className="font-bold">{conversation.personal_info.username}</h1>
+            <h1 className="font-bold text-black">{conversation.personal_info.username}</h1>
             {/* {lastMessageTime && <span className="text-xs text-gray-400">{lastMessageTime}</span>} */}
           </div>
           {/* <p className="text-sm text-gray-400">{lastMessage}</p> */}

@@ -63,7 +63,7 @@ const Message = ({ message }) => {
         )}
       </div>
 
-      <div className="chat-footer opacity-50 text-xs flex gap-1 items-center text-slate-950">
+      <div className="chat-footer opacity-50 text-xs flex gap-1 items-center text-black">
         {formattedTime}
       </div>
 

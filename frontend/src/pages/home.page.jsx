@@ -112,7 +112,7 @@ const HomePage = () => {
             <section className="w-full min-h-screen flex flex-col lg:flex-row gap-6 py-8 px-4">
                 {/* Admin Blogs */}
                 <div className="hidden lg:block lg:w-1/4">
-                    <h1 className="font-semibold text-lg mb-4">
+                    <h1 className="font-semibold text-lg mb-4 text-black">
                         {translations.adminPosts}
                     </h1>
                     {adminBlogs == null ? (
@@ -143,42 +143,43 @@ const HomePage = () => {
                         defaultHidden={["trending blogs", "admin blogs"]}
                     >
                         <div>
-                            {blogs == null ? (
-                                <Loader />
-                            ) : blogs.results.length ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {blogs.results.map((blog, i) => (
-                                        <AnimationWrapper
-                                            transition={{
-                                                duration: 1,
-                                                delay: i * 0.1,
-                                            }}
-                                            key={i}
-                                        >
-                                            <BlogPostCard
-                                                content={blog}
-                                                author={blog.author.personal_info}
-                                            />
-                                        </AnimationWrapper>
-                                    ))}
-                                </div>
-                            ) : (
-                                <></>
-                                // <NoDataMessage message="No blogs published" />
-                            )}
-                            {(blogs && blogs.totalDocs > blogs.results.length) && pageState !== "home" ? (
-                                <LoadMoreDataBtn
-                                    state={blogs}
-                                    fetchDataFun={pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory}
-                                />
-                            ) : (
-                                <NoDataMessage message="Can't load more" />
-                            )}
+                        {blogs == null ? (
+                        <Loader />
+                        ) : blogs?.results?.length ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {blogs.results.map((blog, i) => (
+                                    <AnimationWrapper
+                                        transition={{
+                                            duration: 1,
+                                            delay: i * 0.1,
+                                        }}
+                                        key={i}
+                                    >
+                                        <BlogPostCard
+                                            content={blog}
+                                            author={blog.author.personal_info}
+                                        />
+                                    </AnimationWrapper>
+                                ))}
+                            </div>
+                        ) : (
+                            <NoDataMessage message="No blogs published" />
+                        )}
+
+                        {blogs?.totalDocs > blogs?.results?.length && blogs?.results?.length > 0 && pageState !== "home" ? (
+                            <LoadMoreDataBtn
+                                state={blogs}
+                                fetchDataFun={pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory}
+                            />
+                        ) : blogs?.results?.length > 0 ? (
+                            <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">{translations.pageEnd}</p>
+                        ) : null}
+
 
                         </div>
                         <div>
                             {trendingBlogs == null ? (
-                                <Loader />
+                        <Loader />
                             ) : trendingBlogs.length ? (
                                 trendingBlogs.map((blog, i) => (
                                     <AnimationWrapper
@@ -223,12 +224,12 @@ const HomePage = () => {
                 <div className="hidden lg:block lg:w-1/4">
                     <div className="space-y-8">
                         <div>
-                            <h1 className="font-semibold text-lg mb-4">
+                            <h1 className="font-semibold text-black text-lg mb-4">
                                 {translations.subjects}
                             </h1>
                             <div className="flex flex-wrap gap-2">
                                 <select
-                                    className="select select-bordered w-full max-w-2xl mb-2 bg-white"
+                                    className="select select-bordered w-full text-black max-w-2xl mb-2 bg-white"
                                     defaultValue=""
                                     onChange={(e) => { 
                                         loadBlogByTag(e);
@@ -264,7 +265,7 @@ const HomePage = () => {
                             </div>
                         </div>
                         <div>
-                            <h1 className="font-semibold text-lg mb-4">
+                            <h1 className="font-semibold text-lg mb-4 text-black">
                                 {translations.trending}
                                 <i className="fi fi-rr-arrow-trend-up ml-2"></i>
                             </h1>

@@ -188,7 +188,7 @@ const EditBlog = () => {
   return (
     <div className="w-full p-5">
       <div className="mx-auto max-w-[650px] w-full">
-        <div className="relative aspect-video hover:opacity-80 bg-white border-4 border-grey">
+        <div className="relative aspect-video hover:opacity-80 bg-white">
           <label htmlFor="uploadBanner" style={{ cursor: "pointer" }}>
             <img
               src={blog.banner}

@@ -18,7 +18,7 @@ const Navbar = () => {
     const handleMenuClose = () => {
         setMobileMenuVisible(false);
     };
-    const toggleUserNavPanel = () => {
+     const toggleUserNavPanel = () => {
         setUserNavPanel(prevState => {
             const newState = !prevState;
             if (!newState) {
@@ -145,7 +145,7 @@ const Navbar = () => {
                 <div className="absolute top-20 right-0 bg-white shadow-lg py-4 md:hidden flex flex-col items-left gap-6 px-4 w-[50vw]">
                     {access_token ? (
                         <div 
-                            className="relative flex items-center gap-2" 
+                            className="relative flex items-center gap-2 text-black" 
                             onClick={toggleUserNavPanel}  // Đổi tên hàm ở đây
                             onBlur={handleMenuClose} // Khi mất focus, menu sẽ đóng
                         >
@@ -225,11 +225,11 @@ const Navbar = () => {
                             access_token ?
                                 <>
                                      <Link to="/search-google" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
-                                        <i className="fi fi-rr-book"></i>
+                                        <i className="fi fi-rr-book text-2xl block mt-1"></i>
                                     </Link>
 
                                     <Link to="/chat" className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500">
-                                        <i className="fi fi-rr-messages text-2xl block mt-1 "></i>
+                                        <i className="fi fi-rr-messages text-2xl block mt-1"></i>
                                     </Link>
 
                                     <Link to="/dashboard/notifications">
