@@ -2,33 +2,31 @@ import Alert from "../Schema/Alert.js";
 import User from "../Schema/User.js";
 export const createAlert = async (req, res, next) => {
   try {
-    const { message } = req.body;
+    const { message, userIds } = req.body;
 
-    // Kiểm tra thông báo đã tồn tại hay chưa
+    // Kiểm tra nếu không có người dùng hoặc thông báo không hợp lệ
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({ message: "No users available to notify." });
+    }
+
+    // Kiểm tra thông báo đã tồn tại cho cùng danh sách userIds
     const existingAlert = await Alert.findOne({
       message,
+      notification_for: { $all: userIds }, // So khớp tất cả userIds
     });
 
     if (existingAlert) {
-      return res.status(400).json({ message: "Alert already exists" });
+      return res.status(400).json({ message: "Alert already exists." });
     }
 
-    // Lấy tất cả người dùng (trừ admin)
-    const users = await User.find({ 'personal_info.role': { $ne: 'ADMIN' } });
-
-    // Kiểm tra nếu không có người dùng
-    if (!users.length) {
-      return res.status(404).json({ message: "No users available to notify." });
-    }
-
-    // Tạo thông báo với trường blog là null, title từ notification_info
+    // Tạo thông báo mới
     const alert = await Alert.create({
-      notification_for: users.map((user) => user.id), // Gửi tới tất cả người dùng
-      user: req.user.id, // Admin là người tạo thông báo
+      notification_for: userIds, // Lưu danh sách ID người nhận
+      user: req.user.id, // ID admin là người tạo thông báo
       message: message,
-    });   
+    });
 
-    return res.status(200).json(alert);
+    return res.status(200).json({ message: "Notification created successfully.", alert });
   } catch (error) {
     return next(error);
   }
