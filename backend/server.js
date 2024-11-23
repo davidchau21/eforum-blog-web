@@ -339,9 +339,10 @@ server.post("/google-auth", async (req, res) => {
         let username = await generateUsername(email);
 
         user = new User({
-          personal_info: { fullname: name, email, username },
+          personal_info: { fullname: name, email, username, role: "USER" },
           google_auth: true,
           verified: true, // Automatically set verified to true
+
         });
 
         await user
