@@ -11,9 +11,9 @@ const BlogInteraction = () => {
     const [showShareOptions, setShowShareOptions] = useState(false);
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    
 
-    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } }, isReport }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper } = useContext(BlogContext);
+
+    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } } }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper, isReport } = useContext(BlogContext);
 
     let { userAuth: { username, access_token } } = useContext(UserContext);
 
@@ -127,15 +127,17 @@ const BlogInteraction = () => {
                         Authorization: `Bearer ${access_token}`,
                     },
                 }
-            )
-            .then(() => {
-                toast.success("Report Blog successfully");
-                fetchBlog();
-            })
-            .catch((err) => {
-                toast.error("Have Error");
-            });
-    }, [access_token, blog_id]);
+            );
+            setBlog((prevBlog) => ({
+                ...prevBlog,
+                isReport: true,
+            }));
+            toast.success("Report Blog successfully");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to report the blog");
+        }
+    }, [access_token, blog_id, setBlog]);
 
     return (
         <>
@@ -242,19 +244,54 @@ const BlogInteraction = () => {
                             Copy link
                         </span>
                     </div>
-                    {access_token && !isReport && (
+                    {access_token && (
                         <div className="relative group">
+                            {/* Report button */}
                             <button
-                                onClick={() => {
-                                    report();
-                                }}
-                                className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80 group-hover:bg-green-300"
+                                onClick={() => setShowConfirmModal(true)}
+                                className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80 hover:bg-green-300 transition-all"
                             >
                                 <i className="fi fi-rr-flag text-rose-400"></i>
                             </button>
+
+                            {/* Tooltip */}
                             <span className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2">
-                                Báo cáo bài viết
+                                Report this post
                             </span>
+
+                            {/* Confirmation Modal */}
+                            {showConfirmModal && (
+                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                                    <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+                                        {/* Modal title */}
+                                        <p className="text-lg font-semibold text-black">Confirm Report</p>
+
+                                        {/* Modal content */}
+                                        <p className="text-sm text-black mt-2">
+                                            Are you sure you want to report this post? This action cannot be undone.
+                                        </p>
+
+                                        {/* Cancel and Report buttons */}
+                                        <div className="mt-4 flex justify-center gap-8">
+                                            <button
+                                                onClick={() => setShowConfirmModal(false)}
+                                                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    report(); // Call report function
+                                                    setShowConfirmModal(false);
+                                                }}
+                                                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                                            >
+                                                Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
