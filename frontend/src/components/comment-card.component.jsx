@@ -203,9 +203,9 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                     {username !== commented_by_username && !isReport && (
                         <button
                             onClick={report}
-                            class="w-8 h-8 rounded-full flex items-center justify-center bg-grey/80"
+                            className="w-8 h-8 rounded-full flex items-center justify-center bg-grey/80"
                         >
-                            <i class="fi-rr-shield-exclamation text-rose-400"></i>
+                            <i className="fi-rr-shield-exclamation text-rose-400"></i>
                         </button>
                     )}
                 </div>

@@ -4,6 +4,7 @@ import EventEmitter from "eventemitter3";
 import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
 import Conversation from "../Schema/Conversation.js";
+import EE from "../socket/eventManager.js"
 const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 

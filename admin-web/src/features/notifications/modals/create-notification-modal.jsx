@@ -12,7 +12,7 @@ const CreateNotificationModal = ({ isOpen, onClose }) => {
   const [form] = Form.useForm();
   const [pendingCreate, createNotification] = useHandleAsyncRequest(
     async (data) => {
-      const { ok, errors } = await notificationApi.createTag(data);
+      const { ok, errors } = await notificationApi.createNotification(data);
       if (ok) {
         onClose("create", true);
       }
@@ -54,7 +54,7 @@ const CreateNotificationModal = ({ isOpen, onClose }) => {
         onFinish={createNotification}
       >
         <TextField
-          name="notification_info"
+          name="message"
           label="Nội dung thông báo"
           variant="filled"
           placeholder="Nhập thông báo"

@@ -9,7 +9,7 @@ import { FacebookShareButton, LinkedinShareButton, RedditShareButton, TelegramSh
 const BlogInteraction = () => {
     const [showShareOptions, setShowShareOptions] = useState(false);
 
-    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } } }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper, isReport } = useContext(BlogContext);
+    let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } }, isReport }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper } = useContext(BlogContext);
 
     let { userAuth: { username, access_token } } = useContext(UserContext);
 
@@ -114,8 +114,8 @@ const BlogInteraction = () => {
     }, [showShareOptions]);
 
     const report = useCallback(async () => {
-        axios
-            .post(
+        try {
+            await axios.post(
                 import.meta.env.VITE_SERVER_DOMAIN + `/blogs/report/${blog_id}`,
                 null,
                 {
@@ -123,16 +123,18 @@ const BlogInteraction = () => {
                         Authorization: `Bearer ${access_token}`,
                     },
                 }
-            )
-            .then(() => {
-                toast.success("Report Blog successfully");
-                fetchBlog();
-            })
-            .catch((err) => {
-                toast.error("Have Error");
-            });
-    }, [access_token, blog_id]);
-
+            );
+            setBlog((prevBlog) => ({
+                ...prevBlog,
+                isReport: true,
+            }));
+            toast.success("Report Blog successfully");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to report the blog");
+        }
+    }, [access_token, blog_id, setBlog]);
+    
     return (
         <>
             <Toaster />
@@ -241,9 +243,7 @@ const BlogInteraction = () => {
                     {access_token && !isReport && (
                         <div className="relative group">
                             <button
-                                onClick={() => {
-                                    report();
-                                }}
+                                onClick={report}
                                 className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80 group-hover:bg-green-300"
                             >
                                 <i className="fi fi-rr-flag text-rose-400"></i>
