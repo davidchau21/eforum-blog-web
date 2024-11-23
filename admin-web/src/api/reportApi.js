@@ -31,8 +31,10 @@ const reportApi = {
         endDate
       }
     }));
+  },
+  getStats: () => {
+    return handleResponse(axiosClient.get(`/reports/get-stats`));
   }
-
 };
 
 export default reportApi;

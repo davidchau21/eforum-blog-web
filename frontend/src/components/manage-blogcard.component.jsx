@@ -10,7 +10,7 @@ const BlogStats = ({ stats }) => {
         <div className="flex gap-2 max-lg:mb-6 max-lg:pb-6 border-grey max-lg:border-b">
             {
                 Object.keys(stats).map((key, i) => {
-                    return !key.includes("parent") ? <div key={i} className={"flex flex-col items-center w-full h-full justify-center p-4 px-6 " + (i != 0 ? " border-grey border-l " : "")}>
+                    return !key.includes("parent") ? <div key={i} className={"flex flex-col items-center w-full h-full justify-center p-4 px-6 " + (i !== 0 ? " border-grey border-l " : "")}>
                         <h1 className="text-xl lg:text-2xl mb-2">{stats[key].toLocaleString()}</h1>
                         <p className="max-lg:text-dark-grey capitalize">{key.split("_")[1]}</p>
                     </div> : ""
@@ -28,8 +28,8 @@ export const ManagePublishedBlogCard = ({ blog }) => {
     let [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const deleteBlogHandler = () => {
-        deleteBlog(blog, access_token); // Gọi hàm deleteBlog
-        setShowConfirmModal(false); // Đóng modal sau khi gọi xóa
+        deleteBlog(blog, access_token); // Call the deleteBlog function
+        setShowConfirmModal(false); // Close the modal after calling delete
     };
 
     return (
@@ -58,20 +58,20 @@ export const ManagePublishedBlogCard = ({ blog }) => {
             {showConfirmModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-                        <p className="text-lg font-semibold text-black">Xác nhận xóa</p>
-                        <p className="text-sm text-black mt-2">Bạn có chắc chắn muốn xóa bài viết này không?</p>
+                        <p className="text-lg font-semibold text-black">Confirm Deletion</p>
+                        <p className="text-sm text-black mt-2">Are you sure you want to delete this blog post?</p>
                         <div className="mt-4 flex justify-center gap-4">
                             <button
                                 onClick={() => setShowConfirmModal(false)}
                                 className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
                             >
-                                Hủy
+                                Cancel
                             </button>
                             <button
-                                onClick={deleteBlogHandler} // Gọi hàm deleteBlogHandler
+                                onClick={deleteBlogHandler} // Call the deleteBlogHandler
                                 className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
                             >
-                                Xóa
+                                Delete
                             </button>
                         </div>
                     </div>
@@ -84,35 +84,67 @@ export const ManagePublishedBlogCard = ({ blog }) => {
 
 
 export const ManageDraftBlogPost = ({ blog }) => {
-
     let { title, des, blog_id, index } = blog;
-
     let { userAuth: { access_token } } = useContext(UserContext);
 
+    const [showConfirmModal, setShowConfirmModal] = useState(false); // Added state for modal
+
     index++;
-    
+
+    const deleteBlogHandler = () => {
+        deleteBlog(blog, access_token); // Call the deleteBlog function
+        setShowConfirmModal(false); // Close the modal after deletion
+    };
+
     return (
-        <div className="flex gap-5 lg:gap-10 pb-6 border-b mb-6 border-grey">
+        <>
+            <div className="flex gap-5 lg:gap-10 pb-6 border-b mb-6 border-grey">
+                <h1 className="blog-index text-center pl-4 md:pl-6 flex-none">{ index < 10 ? "0" + index : index }</h1>
 
-            <h1 className="blog-index text-center pl-4 md:pl-6 flex-none">{ index < 10 ? "0" + index : index }</h1>
+                <div>
+                    <h1 className="blog-title mb-3">{title}</h1>
+                    <p className="line-clamp-2 font-gelasio">{des.length ? des : "No Description"}</p>
 
-            <div>
+                    <div className="flex gap-6 mt-3">
+                        <Link to={`/editor/${blog_id}`} className="pr-4 py-2 underline">Edit</Link>
 
-                <h1 className="blog-title mb-3">{title}</h1>
-
-                <p className="line-clamp-2 font-gelasio">{des.length ? des : "No Description"}</p>
-
-                <div className="flex gap-6 mt-3">
-                    <Link to={`/editor/${blog_id}`} className="pr-4 py-2 underline">Edit</Link>
-
-                    <button className="pr-4 py-2 underline text-red" onClick={(e) => deleteBlog(blog, access_token, e.target)}>Delete</button>
+                        <button 
+                            className="pr-4 py-2 underline text-red" 
+                            onClick={() => setShowConfirmModal(true)} // Show modal
+                        >
+                            Delete
+                        </button>
+                    </div>
                 </div>
-
             </div>
 
-        </div>
-    )
-}
+            {/* Modal for confirmation */}
+            {showConfirmModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-80">
+                        <p className="text-lg font-semibold text-black">Confirm Deletion</p>
+                        <p className="text-sm text-black mt-2">Are you sure you want to delete this blog post?</p>
+                        <div className="mt-4 flex justify-center gap-4">
+                            <button
+                                onClick={() => setShowConfirmModal(false)}
+                                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={deleteBlogHandler} // Call deleteBlogHandler
+                                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+};
+
 
 const deleteBlog = (blog, access_token) => {
     let { index, blog_id, setStateFunc } = blog;

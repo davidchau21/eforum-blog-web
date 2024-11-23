@@ -119,7 +119,7 @@ export const blogStatistics = async (req, res) => {
   try {
     // Tính tổng số likes, shares, và comments từ tất cả các blog chưa bị xóa
     const blogStats = await Blog.aggregate([
-      { $match: { isActive: true } }, 
+      { $match: { isActive: true } },
       {
         $group: {
           _id: null,
@@ -296,6 +296,32 @@ export const blogStatisticsByDate = async (req, res) => {
     });
 
     return res.status(200).json(statsFormatted);
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+export const getStats = async (req, res) => {
+  try {
+    const totalStats = await Blog.aggregate([
+      { $match: { isDeleted: { $in: [false, null] } } },
+      {
+        $group: {
+          _id: null,
+          totalLikes: { $sum: "$activity.total_likes" },
+          totalShares: { $sum: "$activity.total_share" },
+          totalReads: { $sum: "$activity.total_reads" },
+        },
+      },
+    ]);
+
+    const result = {
+      totalLikes: totalStats[0]?.totalLikes || 0,
+      totalShares: totalStats[0]?.totalShares || 0,
+      totalReads: totalStats[0]?.totalReads || 0,
+    };
+
+    return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }

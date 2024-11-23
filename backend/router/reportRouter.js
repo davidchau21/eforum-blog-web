@@ -3,6 +3,7 @@ import { isAdmin } from "../middleware/verifyToken.js";
 import {
   blogStatistics,
   blogStatisticsByDate,
+  getStats,
   totalBlog,
   totalComment,
   totalUser,
@@ -21,5 +22,6 @@ reportRouter.get("/user-chart-bydate", isAdmin, userGrowthChart);
 reportRouter.get("/blog-statistic", isAdmin, blogStatistics);
 reportRouter.get("/weekly-interactions", isAdmin, weeklyInteractionStatistics);
 reportRouter.get("/blog-statistics-bydate", isAdmin, blogStatisticsByDate);
+reportRouter.get("/get-stats", isAdmin, getStats);
 
 export default reportRouter;

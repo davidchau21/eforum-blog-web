@@ -12,7 +12,6 @@ const BlogInteraction = () => {
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-
     let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username } }, isReport }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper } = useContext(BlogContext);
 
     let { userAuth: { username, access_token } } = useContext(UserContext);
