@@ -591,33 +591,56 @@ server.post("/reset-password", async (req, res) => {
   }
 });
 
-server.post("/latest-blogs", (req, res) => {
-  let { page } = req.body;
+// server.post("/latest-blogs", (req, res) => {
+//   let { page } = req.body;
 
-  let maxLimit = 6;
+//   let maxLimit = 6;
 
-  Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] } })
-    .populate(
-      "author",
-      "personal_info.profile_img personal_info.username personal_info.fullname -_id"
-    )
-    .sort({ publishedAt: -1 })
-    .select("blog_id title des banner activity tags publishedAt -_id")
-    .skip((page - 1) * maxLimit)
-    .limit(maxLimit)
-    .then((blogs) => {
-      return res.status(200).json({ blogs });
-    })
-    .catch((err) => {
-      return res.status(500).json({ error: err.message });
-    });
-});
+//   Blog.find({ draft: false, isActive: true })
+//     .populate(
+//       "author",
+//       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
+//     )
+//     .sort({ publishedAt: -1 })
+//     .select("blog_id title des banner activity tags publishedAt -_id")
+//     .skip((page - 1) * maxLimit)
+//     .limit(maxLimit)
+//     .then((blogs) => {
+//       return res.status(200).json({ blogs });
+//     })
+//     .catch((err) => {
+//       return res.status(500).json({ error: err.message });
+//     });
+//   });
+
+  server.post("/latest-blogs", (req, res) => {
+    let { page } = req.body;
+  
+    let maxLimit = 6;
+  
+    Blog.find({ draft: false, isActive: true })
+      .populate({
+        path: "author",
+        match: { "personal_info.role": { $ne: "ADMIN" } },
+        select: "personal_info.profile_img personal_info.username personal_info.fullname -_id"
+      })
+      .sort({ publishedAt: -1 })
+      .select("blog_id title des banner activity tags publishedAt -_id")
+      .skip((page - 1) * maxLimit)
+      .limit(maxLimit)
+      .then((blogs) => {
+        const filteredBlogs = blogs.filter(blog => blog.author !== null);
+        return res.status(200).json({ blogs: filteredBlogs });
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err.message });
+      });
+  });
 
 server.post("/all-latest-blogs-count", (req, res) => {
   Blog.countDocuments({
     draft: false,
     isActive: true,
-    isDeleted: { $in: [false, null] },
   })
     .then((count) => {
       return res.status(200).json({ totalDocs: count });
@@ -629,7 +652,7 @@ server.post("/all-latest-blogs-count", (req, res) => {
 });
 
 server.get("/trending-blogs", (req, res) => {
-  Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] } })
+  Blog.find({ draft: false, isActive: true})
     .populate(
       "author",
       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
@@ -666,7 +689,7 @@ server.post("/search-blogs", (req, res) => {
 
   let maxLimit = limit ? limit : 2;
 
-  Blog.find({ ...findQuery, isActive: true, isDeleted: { $in: [false, null] } })
+  Blog.find({ ...findQuery, isActive: true })
     .populate(
       "author",
       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
@@ -699,7 +722,6 @@ server.post("/search-blogs-count", (req, res) => {
   Blog.countDocuments({
     ...findQuery,
     isActive: true,
-    isDeleted: { $in: [false, null] },
   })
     .then((count) => {
       return res.status(200).json({ totalDocs: count });
@@ -847,7 +869,7 @@ server.post("/create-blog", verifyJWT, (req, res) => {
     }
   }
 
-  tags = tags.map((tag) => tag.toLowerCase());
+  tags = tags.map((tag) => tag);
 
   let blog_id =
     id ||
@@ -914,7 +936,7 @@ server.post("/get-blog", (req, res) => {
   let incrementVal = mode != "edit" ? 1 : 0;
 
   Blog.findOneAndUpdate(
-    { blog_id, isDeleted: { $in: [false, null] } },
+    { blog_id },
     { $inc: { "activity.total_reads": incrementVal } }
   )
     .populate(
@@ -950,7 +972,7 @@ server.post("/get-blog", (req, res) => {
 server.get("/admin-blogs", (req, res) => {
   const adminRole = "ADMIN"; 
 
-  Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] } })
+  Blog.find({ draft: false, isActive: true})
       .populate({
           path: "author",
           match: { "personal_info.role": adminRole },
@@ -970,7 +992,7 @@ server.get("/get-user-blogs", (req, res) => {
 
   const adminRole = "ADMIN"; 
 
-  Blog.find({ draft: false, isActive: true, isDeleted: { $in: [false, null] }  })
+  Blog.find({ draft: false, isActive: true })
       .populate({
           path: "author",
           match: { "personal_info.role": { $ne: adminRole } },

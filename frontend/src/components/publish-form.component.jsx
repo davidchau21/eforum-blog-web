@@ -115,7 +115,7 @@ const PublishForm = () => {
 
             toast.dismiss(loadingToast);
             toast.success("Published 👍");
-            
+
 
             setTimeout(() => {
                 navigate("/dashboard/blogs");
@@ -155,20 +155,20 @@ const PublishForm = () => {
                 </button>
 
                 <div className="max-w-[550px] center">
-  <p className="text-dark-grey mb-1">Preview</p>
+                    <p className="text-dark-grey mb-1">Preview</p>
 
-  <div className="w-full aspect-video rounded-lg overflow-hidden bg-grey mt-4">
-    <img 
-      src={banner || bannerDefault} // Nếu không có banner, dùng bannerDefault
-      alt="Preview Banner"
-      onError={(e) => e.target.src = bannerDefault} // Thay ảnh khi không tải được
-    />
-  </div>
+                    <div className="w-full aspect-video rounded-lg overflow-hidden bg-grey mt-4">
+                        <img
+                            src={banner || bannerDefault} // Nếu không có banner, dùng bannerDefault
+                            alt="Preview Banner"
+                            onError={(e) => e.target.src = bannerDefault} // Thay ảnh khi không tải được
+                        />
+                    </div>
 
-  <h1 className="text-4xl font-medium mt-2 leading-tight line-clamp-2">{title}</h1>
+                    <h1 className="text-4xl font-medium mt-2 leading-tight line-clamp-2">{title}</h1>
 
-  <p className="font-gelasio line-clamp-2 text-xl leading-7 mt-4">{des}</p>
-</div>
+                    <p className="font-gelasio line-clamp-2 text-xl leading-7 mt-4">{des}</p>
+                </div>
 
 
                 <div className="border-grey lg:border-1 lg:pl-8">
