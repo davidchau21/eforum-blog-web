@@ -77,26 +77,6 @@ const BlogPage = () => {
         setTotalParentCommentsLoaded(0);
     }
 
-    const report = useCallback(async () => {
-        axios
-            .post(
-                import.meta.env.VITE_SERVER_DOMAIN + `/blogs/report/${blog_id}`,
-                null,
-                {
-                    headers: {
-                        Authorization: `Bearer ${access_token}`,
-                    },
-                }
-            )
-            .then(() => {
-                toast.success("Report Blog successfully");
-                fetchBlog();
-            })
-            .catch((err) => {
-                toast.error("Have Error");
-            });
-    }, [access_token, blog_id]);
-
     return (
         <AnimationWrapper>
             {

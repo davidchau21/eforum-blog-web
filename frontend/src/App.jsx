@@ -58,7 +58,7 @@ const App = () => {
         <ThemeContext.Provider value={{ theme, setTheme }}>
             <UserContext.Provider value={{ userAuth, setUserAuth }}>
                 <SocketContextProvider>
-                    <div className="flex flex-col min-h-screen">
+                    <div className="flex flex-col min-h-screen bg-white">
                         <div className="flex-grow">
                             <Routes>
                                 <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />

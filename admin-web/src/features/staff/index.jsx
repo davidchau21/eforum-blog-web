@@ -66,6 +66,12 @@ const StaffManagement = () => {
         ),
       },
       {
+        title: <TableHeaderColumn label="Vai trò" />,
+        render: (_, record) => (
+          <TableDataColumn label={record?.personal_info?.role || ""} />
+        ),
+      },
+      {
         dataIndex: "status",
         title: <TableHeaderColumn label="Trạng thái" />,
         render: (_, record) => (

@@ -99,7 +99,7 @@ const SearchGooglePage = () => {
                     {searching ? 'Searching...' : 'Google Search'}
                 </button>
                 <button
-                    className="bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+                    className="bg-emerald-500 text-white py-2 px-4 rounded-md hover:bg-emerald-600"
                     onClick={() => handleSearchGoogleScholar()}
                     disabled={searching}
                 >

@@ -11,9 +11,12 @@ const NotificationCard = ({ data, index, notificationState }) => {
     let {
         seen, type, reply, createdAt, comment, replied_on_comment, user,
         user: { personal_info: { fullname, username, profile_img } },
-        blog, blog: { _id, blog_id, title },
+        blog,
         _id: notification_id, metadata
     } = data;
+
+    const blog_id = blog?.blog_id || null;
+    const blog_title = blog?.title || "Blog no longer available";
 
     let { userAuth: { username: author_username, profile_img: author_profile_img, access_token } } = useContext(UserContext);
 
@@ -76,9 +79,13 @@ const NotificationCard = ({ data, index, notificationState }) => {
                         <div className="p-4 mt-4 rounded-md bg-grey">
                             <p>{replied_on_comment.comment}</p>
                         </div> :
-                        <Link to={`/blog/${blog_id}`} className="font-medium text-dark-grey hover:underline line-clamp-1">
-                            {`"${title}"`}
-                        </Link>
+                        blog_id ? (
+                            <Link to={`/blog/${blog_id}`} className="font-medium text-dark-grey hover:underline line-clamp-1">
+                                {`"${blog_title}"`}
+                            </Link>
+                        ) : (
+                            <span className="font-medium text-red-500">{blog_title}</span>
+                        )
                     }
 
                     {
@@ -129,10 +136,10 @@ const NotificationCard = ({ data, index, notificationState }) => {
                 isReplying && (
                     <div className="mt-8">
                         <NotificationCommentField
-                            _id={_id}
+                            _id={blog_id || notification_id}
                             blog_author={user}
                             index={index}
-                            replyingTo={comment._id}
+                            replyingTo={comment?._id}
                             setReplying={setReplying}
                             notification_id={notification_id}
                             notificationData={notificationState}
@@ -164,5 +171,6 @@ const NotificationCard = ({ data, index, notificationState }) => {
         </div>
     );
 };
+
 
 export default NotificationCard;

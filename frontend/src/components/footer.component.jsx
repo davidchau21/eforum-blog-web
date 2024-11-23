@@ -72,7 +72,7 @@ const Footer = () => {
                         </Link>
                     </p>
                     <p className="text-xs">
-                        <Link to="https://github.com/" className="flex items-center gap-x-2 hover:opacity-50">
+                        <Link to="https://github.com/davidchau21/edu-blog-web" className="flex items-center gap-x-2 hover:opacity-50">
                             <img src={github} className="w-8 h-8" alt="Logo" />
                             GitHub
                         </Link>

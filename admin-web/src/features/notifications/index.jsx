@@ -17,8 +17,7 @@ const NotificationManagement = () => {
   const [notificationList, setNotificationList] = useState({ total: 0, items: [] });
   const [isShowCreateModal, setShowCreateModal] = useState(false);
   const [selectedNotification, setSelectedNotification] = useState(undefined);
-  const [selectedDeleteNotification, setSelectedDeleteNotification] =
-    useState(undefined);
+  const [selectedDeleteNotification, setSelectedDeleteNotification] = useState(undefined);
 
   const columns = useMemo(
     () => [
@@ -28,7 +27,7 @@ const NotificationManagement = () => {
         render: (_id) => <TableDataColumn label={_id} />,
       },
       {
-        dataIndex: "notification_info",
+        dataIndex: "message",
         title: <TableHeaderColumn label="Nội dung thông báo" />,
         render: (name) => <TableDataColumn label={name} />,
       },
@@ -82,7 +81,7 @@ const NotificationManagement = () => {
   }, []);
 
   const onGet = useCallback(async () => {
-    const { ok, body } = await notificationApi.getAllTags({
+    const { ok, body } = await notificationApi.getAllNotification({
       limit: 10,
       page: pagination.page - 1,
     });
@@ -130,7 +129,7 @@ const NotificationManagement = () => {
       /> */}
       <DeleteNotificationModal
         isOpen={!!selectedDeleteNotification}
-        category={selectedDeleteNotification}
+        alert={selectedDeleteNotification}
         onClose={onCloseModal}
       />
     </div>

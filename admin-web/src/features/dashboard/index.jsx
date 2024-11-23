@@ -98,7 +98,7 @@ const Dashboard = () => {
     
 
       {/* Biểu đồ Monthly Active Users */}
-      <div className="card w-full md:w-[48%] bg-white shadow-xl px-5 py-5 rounded-lg ">
+      <div className="card w-full md:w-[48%] bg-white px-5 py-5 rounded-lg mt-28">
         <div className="card-body">
           <h2 className="text-2xl font-semibold">Lượng người dùng hằng ngày</h2>
           <Line data={activeUsersData} />
@@ -106,7 +106,7 @@ const Dashboard = () => {
       </div>
 
       {/* Biểu đồ Revenue */}
-      <div className="card w-full md:w-[48%] bg-white shadow-xl px-5 py-5 rounded-lg">
+      <div className="card w-full md:w-[48%] bg-white px-5 py-5 rounded-lg mt-28">
         <div className="card-body">
           <h2 className="text-2xl font-semibold">Tương tác bài viết hằng ngày</h2>
           <Bar data={revenueData} />

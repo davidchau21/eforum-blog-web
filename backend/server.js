@@ -50,14 +50,14 @@ import blogRouter from "./router/blogRouter.js";
 import commnentRouter from "./router/commentRouter.js";
 import reportRouter from "./router/reportRouter.js";
 import searchRouter from "./router/searchRouter.js";
-import notificationRouter from "./router/notificationRouter.js";
+import alertRouter from "./router/alertRouter.js";
 
 server.use("/message", messageRouter);
 server.use("/users", userRouter);
 server.use("/tags", tagRouter);
 server.use("/files", fileRouter);
 server.use("/blogs", blogRouter);
-server.use("/notifications", notificationRouter);
+server.use("/alert", alertRouter);
 server.use("/comments", commnentRouter);
 server.use("/reports", reportRouter);
 server.use("/search", searchRouter);
@@ -1402,7 +1402,7 @@ server.post("/delete-blog", verifyJWT, (req, res) => {
 
       User.findOneAndUpdate(
         { _id: user_id },
-        { $pull: { blog: blog._id }, $inc: { "account_info.total_posts": -1 } }
+        { $pull: { blogs: blog._id }, $inc: { "account_info.total_posts": -1 } }
       ).then((user) => console.log("Blog deleted"));
 
       return res.status(200).json({ status: "done" });

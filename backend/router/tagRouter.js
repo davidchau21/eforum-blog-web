@@ -10,7 +10,7 @@ import {
 
 const tagRouter = express.Router();
 
-tagRouter.get("/", isAuthenticate, getAllTags);
+tagRouter.get("/", getAllTags);
 tagRouter.get("/:id", isAuthenticate, getTagById);
 tagRouter.post("/", createTag);
 tagRouter.put("/:id", isAdmin, updateTag);

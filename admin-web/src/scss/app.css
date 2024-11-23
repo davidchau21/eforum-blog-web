@@ -1,0 +1,103 @@
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.main-content {
+  overflow: auto;
+}
+.main-content::-webkit-scrollbar-track {
+  border: 1px solid #bebfc1;
+  background-color: #bebfc1;
+  height: 90%;
+}
+.main-content::-webkit-scrollbar {
+  width: 5px;
+  background-color: #bebfc1;
+  height: 90%;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background-color: #58595b;
+  border-radius: 5px;
+}
+
+.row-warning {
+  background-color: #fae0e4 !important;
+}
+.row-warning .ant-table-cell-row-hover {
+  background-color: #fae0e4 !important;
+}
+
+.row-danger {
+  background-color: #ff99ac !important;
+}
+.row-danger .ant-table-cell-row-hover {
+  background-color: #ff99ac !important;
+}
+
+body {
+  font-family: "Exo 2", sans-serif;
+}
+
+.font-exo-2 {
+  font-family: "Exo 2", sans-serif;
+}
+
+.text-field .ant-input-filled:focus-within,
+.text-field .ant-input-filled:focus {
+  border-color: #16b982;
+}
+.text-field .ant-form-item-row .ant-form-item-label label {
+  font-family: "Exo 2", sans-serif;
+}
+.text-field .ant-form-item-row .ant-form-item-control .ant-form-item-control-input .ant-form-item-control-input-content input {
+  font-family: "Exo 2", sans-serif;
+}
+.text-field .ant-form-item-row .ant-form-item-control .ant-form-item-explain .ant-form-item-explain-error {
+  font-family: "Exo 2", sans-serif;
+}
+
+.password-field .ant-input-filled:focus-within,
+.password-field .ant-input-filled:focus {
+  border-color: #16b982;
+}
+.password-field .ant-form-item-row .ant-form-item-label label {
+  font-family: "Exo 2", sans-serif;
+}
+.password-field .ant-form-item-row .ant-form-item-control .ant-form-item-control-input .ant-form-item-control-input-content input {
+  font-family: "Exo 2", sans-serif;
+}
+.password-field .ant-form-item-row .ant-form-item-control .ant-form-item-explain .ant-form-item-explain-error {
+  font-family: "Exo 2", sans-serif;
+}
+
+.modal--error .ant-modal-content .ant-modal-body .ant-modal-confirm-body-wrapper .ant-modal-confirm-body,
+.modal--success .ant-modal-content .ant-modal-body .ant-modal-confirm-body-wrapper .ant-modal-confirm-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-items: center;
+}
+.modal--error .ant-modal-content .ant-modal-body .ant-modal-confirm-body-wrapper .ant-modal-confirm-body .ant-modal-confirm-paragraph,
+.modal--success .ant-modal-content .ant-modal-body .ant-modal-confirm-body-wrapper .ant-modal-confirm-body .ant-modal-confirm-paragraph {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.custom-table .ant-table-container .ant-table-body::-webkit-scrollbar-track {
+  border: 1px solid #bebfc1;
+  background-color: #bebfc1;
+  height: 90%;
+}
+.custom-table .ant-table-container .ant-table-body::-webkit-scrollbar {
+  width: 5px;
+  background-color: #bebfc1;
+  height: 90%;
+}
+.custom-table .ant-table-container .ant-table-body::-webkit-scrollbar-thumb {
+  background-color: #58595b;
+  border-radius: 5px;
+}/*# sourceMappingURL=app.css.map */

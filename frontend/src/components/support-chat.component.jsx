@@ -60,7 +60,7 @@ const SupportChat = () => {
       {!isOpen && (
         <button
           onClick={toggleChat}
-          className="bg-gradient-to-r from-green-500 to-blue-600 text-white p-4 rounded-full shadow-md hover:from-blue-500 hover:to-green-500 focus:outline-none transition-all duration-300"
+          className="bg-gradient-to-r from-emerald-500 to-blue-500 text-white p-4 rounded-full shadow-md hover:from-blue-500 hover:to-emerald-500 focus:outline-none transition-all duration-300"
 
         >
           <img src={chatBot} alt="chat" className="w-9 h-9" />
@@ -73,9 +73,9 @@ const SupportChat = () => {
           {/* Nút đóng cửa sổ chat */}
           <button
             onClick={toggleChat}
-            className="absolute top-2 right-2 bg-emerald-500 p-2 rounded-full shadow-md hover:bg-emerald-800 focus:outline-none transition-all duration-300"
+            className="absolute top-2 right-2 bg-blue-500 p-2 rounded-full shadow-md hover:bg-blue-600 focus:outline-none transition-all duration-300"
           >
-            <DownOutlined className="text-white text-lg" />
+            <DownOutlined className="text-black text-lg" />
           </button>
 
           <div className="flex-grow overflow-y-auto mb-4 p-3">
@@ -86,7 +86,7 @@ const SupportChat = () => {
           {/* Phần nhập tin nhắn */}
           <div className="flex items-center space-x-3 mt-3">
             <button
-              className="flex-shrink-0 px-4 py-2 rounded-full bg-rose-500 text-white hover:bg-rose-600 focus:outline-none transition-all duration-300 shadow-md"
+              className="flex-shrink-0 px-4 py-2 rounded-full bg-rose-500 text-black hover:bg-rose-600 focus:outline-none transition-all duration-300 shadow-md"
               onClick={clearChat}
             >
               <DeleteOutlined />
@@ -99,7 +99,7 @@ const SupportChat = () => {
               onChange={handleUserInput}
             />
             <button
-              className="flex-shrink-0 px-4 py-2 rounded-full bg-emerald-500 text-white hover:bg-emerald-800 focus:outline-none transition-all duration-300 shadow-md"
+              className="flex-shrink-0 px-4 py-2 rounded-full bg-blue-500 text-black hover:bg-blue-600 focus:outline-none transition-all duration-300 shadow-md"
               onClick={sendMessage}
               disabled={isLoading}
             >

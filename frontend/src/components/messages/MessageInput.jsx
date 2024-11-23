@@ -72,10 +72,10 @@ const MessageInput = () => {
           </div>
         )}
 
-        <div className="flex items-center relative">
+        <div className="flex items-center relative gap-2">
           <button
             type="button"
-            className="bg-blue-500 text-white rounded-full p-2"
+            className="btn bg-blue-500 text-white rounded-full"
             onClick={() => setShowEmojiPicker((prev) => !prev)}
           >
             <MdOutlineEmojiEmotions />
@@ -84,12 +84,12 @@ const MessageInput = () => {
           <input
             type="text"
             placeholder="Type a message..."
-            className="w-full py-2 px-3 border border-gray-300 rounded-full focus:outline-none"
+            className="w-full py-4 px-4 border border-gray-300 rounded-full focus:outline-none"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
 
-          <label className="btn bg-blue-500 text-white rounded-full p-2 ml-2">
+          <label className="btn w-12 h-10 bg-blue-500 text-white rounded-full ml-2">
             <MdOutlineCloudUpload />
             <input
               id="FileInput"
@@ -101,7 +101,7 @@ const MessageInput = () => {
 
           <button
             type="submit"
-            className="bg-blue-500 text-white rounded-full p-2 ml-2"
+            className="btn bg-blue-500 text-white rounded-full ml-2"
           >
             <BsSend />
           </button>

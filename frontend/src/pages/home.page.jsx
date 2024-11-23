@@ -23,11 +23,10 @@ const HomePage = () => {
     const translations = getTranslations(language);
     const [tags, setTags] = useState([]);
     let { userAuth: { access_token } } = useContext(UserContext);
+    const [adminAlert, setAdminAlert] = useState(null);
 
     useEffect(() => {
-        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags",
-            { headers: { 'Authorization': `Bearer ${access_token}` } }
-        )
+        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags")
             .then(response => {
                 const fetchedTags = response.data.list || [];
                 setTags(fetchedTags);
@@ -107,12 +106,66 @@ const HomePage = () => {
         if (!adminBlogs) fetchAdminBlogs();
     }, [pageState]);
 
+    useEffect(() => {
+        fetchAlert();
+    }, []);
+
+    // fecthing data alert from admin
+    const fetchAlert = () => {
+        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/alert", {
+            headers: { 'Authorization': `Bearer ${access_token}` },
+        })
+            .then(({ data }) => {
+                if (data.list && data.list.length > 0) {
+                    setAdminAlert(data.list[0].message); // Cập nhật thông báo từ API
+                    setTimeout(() => {
+                        setAdminAlert(null); // Tự động tắt thông báo sau 5 giây
+                    }, 5000);
+                }
+            })
+            .catch(console.log);
+    };
+
     return (
         <AnimationWrapper>
             <section className="w-full min-h-screen flex flex-col lg:flex-row gap-6 py-8 px-4">
+                {/*  Hiển thị thông báo nếu có */}
+                {/* {adminAlert && (
+                    <div
+                        role="alert"
+                        className="fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-yellow-100 border-l-4 border-yellow-500 shadow-lg rounded-md flex items-center justify-between z-50 transition-opacity duration-500 ease-in-out"
+                        style={{ opacity: 1 }}
+                        id="alert-box"
+                    >
+                        <div className="flex items-center">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-6 w-6 text-yellow-500 mr-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                                />
+                            </svg>
+                            <span className="text-yellow-700 font-medium">{adminAlert}</span>
+                        </div>
+                        <button
+                            className="text-yellow-700 hover:text-yellow-900 "
+                            onClick={() => setAdminAlert(null)}
+                        >
+                            ✖
+                        </button>
+                    </div>
+                )} */}
+
                 {/* Admin Blogs */}
                 <div className="hidden lg:block lg:w-1/4">
-                    <h1 className="font-semibold text-lg mb-4">
+                    <h1 className="font-semibold text-lg mb-4 text-black">
                         {translations.adminPosts}
                     </h1>
                     {adminBlogs == null ? (
@@ -139,44 +192,47 @@ const HomePage = () => {
                 {/* Latest Blogs */}
                 <div className="w-full lg:w-1/2">
                     <InPageNavigation
-                        routes={[pageState, "trending blogs", "admin blogs"]}
-                        defaultHidden={["trending blogs", "admin blogs"]}
+                        routes={[pageState, "trendings", "news"]}
+                        defaultHidden={["trendings", "news"]}
                     >
                         <div>
-                            {blogs == null ? (
-                                <Loader />
-                            ) : blogs.results.length ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {blogs.results.map((blog, i) => (
-                                        <AnimationWrapper
-                                            transition={{
-                                                duration: 1,
-                                                delay: i * 0.1,
-                                            }}
-                                            key={i}
-                                        >
-                                            <BlogPostCard
-                                                content={blog}
-                                                author={blog.author.personal_info}
-                                            />
-                                        </AnimationWrapper>
-                                    ))}
-                                </div>
-                            ) : (
-                                <NoDataMessage message="No blogs published" />
-                            )}
+                        {blogs == null ? (
+                        <Loader />
+                        ) : blogs?.results?.length ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {blogs.results.map((blog, i) => (
+                                    <AnimationWrapper
+                                        transition={{
+                                            duration: 1,
+                                            delay: i * 0.1,
+                                        }}
+                                        key={i}
+                                    >
+                                        <BlogPostCard
+                                            content={blog}
+                                            author={blog.author.personal_info}
+                                        />
+                                    </AnimationWrapper>
+                                ))}
+                            </div>
+                        ) : (
+                            <NoDataMessage message="No blogs published" />
+                        )}
+
+                        {blogs?.totalDocs > blogs?.results?.length && blogs?.results?.length > 0 && pageState !== "home" ? (
                             <LoadMoreDataBtn
                                 state={blogs}
-                                fetchDataFun={
-                                    pageState === "home"
-                                        ? fetchLatestBlogs
-                                        : fetchBlogsByCategory
-                                }
+                                fetchDataFun={pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory}
                             />
+                        ) : blogs?.results?.length > 0 ? (
+                            <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">{translations.pageEnd}</p>
+                        ) : null}
+
+
                         </div>
                         <div>
                             {trendingBlogs == null ? (
-                                <Loader />
+                        <Loader />
                             ) : trendingBlogs.length ? (
                                 trendingBlogs.map((blog, i) => (
                                     <AnimationWrapper
@@ -221,19 +277,19 @@ const HomePage = () => {
                 <div className="hidden lg:block lg:w-1/4">
                     <div className="space-y-8">
                         <div>
-                            <h1 className="font-semibold text-lg mb-4">
+                            <h1 className="font-semibold text-black text-lg mb-4">
                                 {translations.subjects}
                             </h1>
                             <div className="flex flex-wrap gap-2">
                                 <select
-                                    className="select select-bordered w-full max-w-2xl mb-2"
+                                    className="select select-bordered w-full text-black max-w-2xl mb-2 bg-white"
                                     defaultValue=""
-                                    onChange={(e) => { 
+                                    onChange={(e) => {
                                         loadBlogByTag(e);
                                         if (e.target.value === "All Subjects") {
                                             setPageState("home");
                                         }
-                                     }}
+                                    }}
 
 
                                 >
@@ -246,15 +302,14 @@ const HomePage = () => {
                                         </option>
                                     ))}
                                 </select>
-                                {tags.slice(0,10).map((tag, i) => (
+                                {tags.slice(0, 10).map((tag, i) => (
                                     <button
                                         key={i}
                                         onClick={(e) => loadBlogByCategory(e, tag.tag_name)}
-                                        className={`px-4 py-2 rounded-full border ${
-                                            pageState === tag.tag_name
-                                                ? "bg-black text-white"
-                                                : "bg-white text-black border-gray-300"
-                                        }`}
+                                        className={`px-4 py-2 rounded-full border ${pageState === tag.tag_name
+                                            ? "bg-black text-white"
+                                            : "bg-white text-black border-gray-300"
+                                            }`}
                                     >
                                         {tag.tag_name}
                                     </button>
@@ -262,7 +317,7 @@ const HomePage = () => {
                             </div>
                         </div>
                         <div>
-                            <h1 className="font-semibold text-lg mb-4">
+                            <h1 className="font-semibold text-lg mb-4 text-black">
                                 {translations.trending}
                                 <i className="fi fi-rr-arrow-trend-up ml-2"></i>
                             </h1>
