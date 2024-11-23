@@ -847,7 +847,7 @@ server.post("/create-blog", verifyJWT, (req, res) => {
     }
   }
 
-  tags = tags.map((tag) => tag.toLowerCase());
+  tags = tags.map((tag) => tag);
 
   let blog_id =
     id ||
