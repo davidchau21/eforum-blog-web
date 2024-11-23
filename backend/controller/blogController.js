@@ -1,6 +1,8 @@
 import { nanoid } from "nanoid";
 import Blog from "../Schema/Blog.js";
 import User from "../Schema/User.js";
+import Notification from "../Schema/Notification.js";
+import Comment from "../Schema/Comment.js";
 
 export const createOrUpdateBlog = async (req, res) => {
   try {
@@ -164,7 +166,7 @@ export const getBlogs = async (req, res) => {
   }
 };
 
-export const deleteBlog = async (req, res) => {
+export const deleteBlog1 = async (req, res) => {
   try {
     const blog_id = req.params.id;
     const existingBlog = await Blog.findOne({
@@ -180,6 +182,61 @@ export const deleteBlog = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+export const deleteBlog = async (req, res) => {
+  try {
+    const user_id = req.author; // Lấy ID người dùng từ JWT
+    const blog_id = req.params.id;
+
+    // Kiểm tra xem blog có tồn tại và chưa bị xóa
+    const existingBlog = await Blog.findOne({
+      blog_id,
+      isDeleted: { $in: [false, null] },
+    });
+    if (!existingBlog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    // Xóa blog
+    const blog = await Blog.findOneAndDelete({ blog_id });
+    if (!blog) {
+      return res.status(404).json({ error: "Unable to delete blog" });
+    }
+
+    // Xóa các thông báo liên quan
+    const notifications = await Notification.find({ blog: blog._id });
+    if (notifications.length > 0) {
+      await Notification.deleteMany({ blog: blog._id });
+      console.log("Notifications deleted");
+    } else {
+      console.log("No notifications to delete");
+    }
+
+    const comments = await Comment.find({ blog_id: blog._id });
+    if (comments.length > 0) {
+      await Comment.deleteMany({ blog_id: blog._id });
+      console.log("Comments deleted");
+    } else {
+      console.log("No comments to delete");
+    }
+
+    // Cập nhật người dùng
+    await User.findOneAndUpdate(
+      { _id: user_id },
+      {
+        $pull: { blogs: blog._id },
+        $inc: { "account_info.total_posts": -1 },
+      }
+    );
+    console.log("User's blog count updated");
+
+    return res.status(200).json({ message: "Blog deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting blog:", error.message);
+    return res.status(500).json({ error: error.message });
+  }
+};
+
 
 export const activateBlog = async (req, res) => {
   try {

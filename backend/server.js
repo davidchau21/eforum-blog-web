@@ -1402,7 +1402,7 @@ server.post("/delete-blog", verifyJWT, (req, res) => {
 
       User.findOneAndUpdate(
         { _id: user_id },
-        { $pull: { blog: blog._id }, $inc: { "account_info.total_posts": -1 } }
+        { $pull: { blogs: blog._id }, $inc: { "account_info.total_posts": -1 } }
       ).then((user) => console.log("Blog deleted"));
 
       return res.status(200).json({ status: "done" });
