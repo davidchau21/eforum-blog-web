@@ -216,7 +216,7 @@ export const deleteBlog = async (req, res) => {
     }
     const user_id = blog.author;
     await User.findOneAndUpdate(
-      { _id: user_id },
+      { _id: user_id, draft: false },
       {
         $pull: { blogs: blog._id },
         $inc: { "account_info.total_posts": -1 },
