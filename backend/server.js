@@ -341,6 +341,7 @@ server.post("/google-auth", async (req, res) => {
         user = new User({
           personal_info: { fullname: name, email, username },
           google_auth: true,
+          verified: true, // Automatically set verified to true
         });
 
         await user
