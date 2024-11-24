@@ -103,7 +103,7 @@ const formatDatatoSend = (user) => {
   const access_token = jwt.sign(
     { id: user._id, role: user.personal_info.role },
     process.env.SECRET_ACCESS_KEY,
-    { expiresIn: "2h" }
+    { expiresIn: "5h" }
   );
 
   return {
