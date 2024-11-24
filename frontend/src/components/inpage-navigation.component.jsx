@@ -26,8 +26,19 @@ const InPageNavigation = ({ routes, defaultHidden = [ ], defaultActiveIndex = 0,
 
     useEffect(() => {
 
+        const isMobile = width <= 768; // Check if it's mobile
+        const defaultIndex = isMobile ? routes.indexOf("Blogs Published") : defaultActiveIndex;
+
         if(width > 766 && inPageNavIndex != defaultActiveIndex){
             changePageState( activeTabRef.current, defaultActiveIndex )
+        }
+
+        if (inPageNavIndex === null && defaultIndex !== null) {
+            setInPageNavIndex(defaultIndex); // Set default index
+        }
+
+        if (inPageNavIndex !== null && width <= 768) {
+            changePageState(activeTabRef.current, inPageNavIndex); // Ensure the line position is updated
         }
 
         if(!isResizeEventAdded){
