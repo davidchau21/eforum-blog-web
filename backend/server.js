@@ -39,16 +39,13 @@ let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for e
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
 server.use(express.json());
-server.use(cors({
-  origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
-  exposedHeaders: ["Authorization"],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
-  secure: true
-}));
+server.use(cors(
+  // {
+  //   origin: "*",
+  //   methods: ["GET", "POST", "PUT", "DELETE"],
+  //   credentials: true,
+  // }
+));
 
 mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
@@ -626,34 +623,34 @@ server.post("/reset-password", async (req, res) => {
 //     });
 //   });
 
-  server.post("/latest-blogs", (req, res) => {
-    let { page } = req.body;
-  
-    let maxLimit = 6;
-  
-    Blog.find({ draft: false, isActive: true })
-      .populate({
-        path: "author",
-        match: { "personal_info.role": { $ne: "ADMIN" } },
-        select: "personal_info.profile_img personal_info.username personal_info.fullname -_id"
-      })
-      .sort({ publishedAt: -1 })
-      .select("blog_id title des banner activity tags publishedAt -_id")
-      // .skip((page - 1) * maxLimit)
-      // .limit(maxLimit)
-      .then((blogs) => {
-        // const filteredBlogs = blogs.filter(blog => blog.author !== null);
+server.post("/latest-blogs", (req, res) => {
+  let { page } = req.body;
 
-        // Tạo một danh sách các blog không phải ADMIN
-        const nonAdminBlogs = blogs.filter(blog => blog.author && blog.author.personal_info.role !== 'ADMIN');
-        // Nếu có trang hiện tại, áp dụng maxLimit cho các bài blog không phải ADMIN
-        const filteredBlogs = nonAdminBlogs.slice((page - 1) * maxLimit, page * maxLimit);
-        return res.status(200).json({ blogs: filteredBlogs });
-      })
-      .catch((err) => {
-        return res.status(500).json({ error: err.message });
-      });
-  });
+  let maxLimit = 6;
+
+  Blog.find({ draft: false, isActive: true })
+    .populate({
+      path: "author",
+      match: { "personal_info.role": { $ne: "ADMIN" } },
+      select: "personal_info.profile_img personal_info.username personal_info.fullname -_id"
+    })
+    .sort({ publishedAt: -1 })
+    .select("blog_id title des banner activity tags publishedAt -_id")
+    // .skip((page - 1) * maxLimit)
+    // .limit(maxLimit)
+    .then((blogs) => {
+      // const filteredBlogs = blogs.filter(blog => blog.author !== null);
+
+      // Tạo một danh sách các blog không phải ADMIN
+      const nonAdminBlogs = blogs.filter(blog => blog.author && blog.author.personal_info.role !== 'ADMIN');
+      // Nếu có trang hiện tại, áp dụng maxLimit cho các bài blog không phải ADMIN
+      const filteredBlogs = nonAdminBlogs.slice((page - 1) * maxLimit, page * maxLimit);
+      return res.status(200).json({ blogs: filteredBlogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
 
 server.post("/all-latest-blogs-count", (req, res) => {
   Blog.countDocuments({
@@ -670,7 +667,7 @@ server.post("/all-latest-blogs-count", (req, res) => {
 });
 
 server.get("/trending-blogs", (req, res) => {
-  Blog.find({ draft: false, isActive: true})
+  Blog.find({ draft: false, isActive: true })
     .populate(
       "author",
       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
@@ -988,43 +985,43 @@ server.post("/get-blog", (req, res) => {
 });
 
 server.get("/admin-blogs", (req, res) => {
-  const adminRole = "ADMIN"; 
+  const adminRole = "ADMIN";
 
-  Blog.find({ draft: false, isActive: true})
-      .populate({
-          path: "author",
-          match: { "personal_info.role": adminRole },
-          select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
-      })
-      .select("title des content banner activity publishedAt blog_id tags")
-      .then((blogs) => {
-          const adminBlogs = blogs.filter(blog => blog.author !== null);
-          return res.status(200).json({ blogs: adminBlogs });
-      })
-      .catch((err) => {
-          return res.status(500).json({ error: err.message });
-      });
+  Blog.find({ draft: false, isActive: true })
+    .populate({
+      path: "author",
+      match: { "personal_info.role": adminRole },
+      select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
+    })
+    .select("title des content banner activity publishedAt blog_id tags")
+    .then((blogs) => {
+      const adminBlogs = blogs.filter(blog => blog.author !== null);
+      return res.status(200).json({ blogs: adminBlogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
 });
 
 server.get("/get-user-blogs", (req, res) => {
 
-  const adminRole = "ADMIN"; 
+  const adminRole = "ADMIN";
 
   Blog.find({ draft: false, isActive: true })
-      .populate({
-          path: "author",
-          match: { "personal_info.role": { $ne: adminRole } },
-          select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
-      })
-      .sort({ "publishedAt": -1 })
-      .select("blog_id title des banner activity tags publishedAt -_id")
-      .then((blogs) => {
-          const adminBlogs = blogs.filter(blog => blog.author !== null);
-          return res.status(200).json({ blogs: adminBlogs });
-      })
-      .catch((err) => {
-          return res.status(500).json({ error: err.message });
-      });
+    .populate({
+      path: "author",
+      match: { "personal_info.role": { $ne: adminRole } },
+      select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
+    })
+    .sort({ "publishedAt": -1 })
+    .select("blog_id title des banner activity tags publishedAt -_id")
+    .then((blogs) => {
+      const adminBlogs = blogs.filter(blog => blog.author !== null);
+      return res.status(200).json({ blogs: adminBlogs });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
 });
 
 server.post("/share-blog", verifyJWT, (req, res) => {
@@ -1032,26 +1029,26 @@ server.post("/share-blog", verifyJWT, (req, res) => {
   let { blog_id, share_type, share_url, share_img } = req.body;
 
   Blog.findOneAndUpdate({ _id: blog_id }, { $inc: { "activity.total_share": 1 } })
-  .then(blog => {
+    .then(blog => {
       let share = new Notification({
-          type: "share",
-          blog: blog_id,
-          notification_for: blog.author,
-          user: user_id,
-          metadata: {
-              share_url,
-              share_img,
-              share_type,
-          },
+        type: "share",
+        blog: blog_id,
+        notification_for: blog.author,
+        user: user_id,
+        metadata: {
+          share_url,
+          share_img,
+          share_type,
+        },
       });
 
       share.save().then(notification => {
-          return res.status(200).json({ shared_by_user: true });
+        return res.status(200).json({ shared_by_user: true });
       });
-  })
-  .catch(err => {
+    })
+    .catch(err => {
       return res.status(500).json({ error: err.message });
-  });
+    });
 });
 
 server.post("/like-blog", verifyJWT, (req, res) => {
@@ -1358,7 +1355,7 @@ server.post("/notifications", verifyJWT, (req, res) => {
       Notification.updateMany(findQuery, { seen: true })
         .skip(skipDocs)
         .limit(maxLimit)
-        // .then(() => console.log("notification seen"));
+      // .then(() => console.log("notification seen"));
 
       return res.status(200).json({ notifications });
     })
@@ -1433,21 +1430,17 @@ server.post("/delete-blog", verifyJWT, (req, res) => {
   let { blog_id } = req.body;
 
   Blog.findOneAndDelete({ blog_id })
-    .then((blog) => {
-      Notification.deleteMany({ blog: blog._id }).then((data) =>
-        console.log("notifications deleted")
-      );
+    .then(blog => {
 
-      Comment.deleteMany({ blog_id: blog._id }).then((data) =>
-        console.log("comments deleted")
-      );
+      Notification.deleteMany({ blog: blog._id }).then(data => console.log('notifications deleted'));
 
-      User.findOneAndUpdate(
-        { _id: user_id, draft: false },
-        { $pull: { blogs: blog._id }, $inc: { "account_info.total_posts": -1 } }
-      ).then((user) => console.log("Blog deleted"));
+      Comment.deleteMany({ blog_id: blog._id }).then(data => console.log('comments deleted'));
 
-      return res.status(200).json({ status: "done" });
+      User.findOneAndUpdate({ _id: user_id }, { $pull: { blogs: blog._id }, $inc: { "account_info.total_posts": -1 } })
+        .then(user => console.log('Blog deleted'));
+
+      return res.status(200).json({ status: 'done' });
+
     })
     .catch((err) => {
       return res.status(500).json({ error: err.message });
