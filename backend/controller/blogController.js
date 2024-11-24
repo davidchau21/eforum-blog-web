@@ -185,25 +185,20 @@ export const deleteBlog1 = async (req, res) => {
 
 export const deleteBlog = async (req, res) => {
   try {
-    const user_id = req.author; // Lấy ID người dùng từ JWT
     const blog_id = req.params.id;
 
-    // Kiểm tra xem blog có tồn tại và chưa bị xóa
     const existingBlog = await Blog.findOne({
-      blog_id,
-      isDeleted: { $in: [false, null] },
+      blog_id
     });
     if (!existingBlog) {
       return res.status(404).json({ error: "Blog not found" });
     }
 
-    // Xóa blog
     const blog = await Blog.findOneAndDelete({ blog_id });
     if (!blog) {
       return res.status(404).json({ error: "Unable to delete blog" });
     }
 
-    // Xóa các thông báo liên quan
     const notifications = await Notification.find({ blog: blog._id });
     if (notifications.length > 0) {
       await Notification.deleteMany({ blog: blog._id });
@@ -219,10 +214,9 @@ export const deleteBlog = async (req, res) => {
     } else {
       console.log("No comments to delete");
     }
-
-    // Cập nhật người dùng
+    const user_id = blog.author;
     await User.findOneAndUpdate(
-      { _id: user_id },
+      { _id: user_id, draft: false },
       {
         $pull: { blogs: blog._id },
         $inc: { "account_info.total_posts": -1 },

@@ -103,7 +103,7 @@ const formatDatatoSend = (user) => {
   const access_token = jwt.sign(
     { id: user._id, role: user.personal_info.role },
     process.env.SECRET_ACCESS_KEY,
-    { expiresIn: "2h" }
+    { expiresIn: "5h" }
   );
 
   return {
@@ -1425,7 +1425,7 @@ server.post("/delete-blog", verifyJWT, (req, res) => {
       );
 
       User.findOneAndUpdate(
-        { _id: user_id },
+        { _id: user_id, draft: false },
         { $pull: { blogs: blog._id }, $inc: { "account_info.total_posts": -1 } }
       ).then((user) => console.log("Blog deleted"));
 

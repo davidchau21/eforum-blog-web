@@ -196,43 +196,45 @@ const HomePage = () => {
                         defaultHidden={["trendings", "news"]}
                     >
                         <div>
-                        {blogs == null ? (
-                        <Loader />
-                        ) : blogs?.results?.length ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {blogs.results.map((blog, i) => (
-                                    <AnimationWrapper
-                                        transition={{
-                                            duration: 1,
-                                            delay: i * 0.1,
-                                        }}
-                                        key={i}
-                                    >
-                                        <BlogPostCard
-                                            content={blog}
-                                            author={blog.author.personal_info}
-                                        />
-                                    </AnimationWrapper>
-                                ))}
-                            </div>
-                        ) : (
-                            <NoDataMessage message="No blogs published" />
-                        )}
-
-                        {blogs?.totalDocs > blogs?.results?.length && blogs?.results?.length > 0 && pageState !== "home" ? (
-                            <LoadMoreDataBtn
-                                state={blogs}
-                                fetchDataFun={pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory}
-                            />
-                        ) : blogs?.results?.length > 0 ? (
-                            <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">{translations.pageEnd}</p>
-                        ) : null}
-
+                            {blogs == null ? (
+                                <Loader />
+                            ) : blogs?.results?.length ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {blogs.results.map((blog, i) => (
+                                        <AnimationWrapper
+                                            transition={{
+                                                duration: 1,
+                                                delay: i * 0.1,
+                                            }}
+                                            key={i}
+                                        >
+                                            <BlogPostCard
+                                                content={blog}
+                                                author={blog.author.personal_info}
+                                            />
+                                        </AnimationWrapper>
+                                    ))}
+                                </div>
+                            ) : (
+                                <NoDataMessage message="No blogs published" />
+                            )}
+                            
+                            {blogs?.totalDocs > blogs?.results?.length && blogs?.results?.length > 0 && pageState === "home" ? (
+                                <LoadMoreDataBtn
+                                    state={blogs}
+                                    fetchDataFun={fetchLatestBlogs}
+                                    pageState={pageState} // Truyền trạng thái pageState vào đây
+                                />
+                            ) : blogs?.results?.length > 0 ? (
+                                <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">
+                                    {translations.pageEnd}
+                                </p>
+                            ) : null}
 
                         </div>
                         <div>
                             {trendingBlogs == null ? (
-                        <Loader />
+                                <Loader />
                             ) : trendingBlogs.length ? (
                                 trendingBlogs.map((blog, i) => (
                                     <AnimationWrapper
