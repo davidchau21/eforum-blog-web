@@ -6,7 +6,11 @@ import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
-import serviceAccountKey from "./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json" assert { type: "json" };
+import fs from "fs";
+const serviceAccountKey = JSON.parse(
+  fs.readFileSync("./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json", "utf8")
+);
+// import serviceAccountKey from "./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
 import aws from "aws-sdk";
 import crypto from "crypto";
