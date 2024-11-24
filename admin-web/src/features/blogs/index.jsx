@@ -61,7 +61,7 @@ const BlogManagement = () => {
       },
       {
         dataIndex: "title",
-        title: <TableHeaderColumn label="title" />,
+        title: <TableHeaderColumn label="Tiêu đề" />,
         render: (_, record) => <TableDataColumn label={record.title} />,
       },
       {

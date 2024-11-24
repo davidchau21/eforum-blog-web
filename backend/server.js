@@ -39,7 +39,13 @@ let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for e
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
 server.use(express.json());
-server.use(cors());
+server.use(cors(
+  {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    }
+));
 
 mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
@@ -630,10 +636,15 @@ server.post("/reset-password", async (req, res) => {
       })
       .sort({ publishedAt: -1 })
       .select("blog_id title des banner activity tags publishedAt -_id")
-      .skip((page - 1) * maxLimit)
-      .limit(maxLimit)
+      // .skip((page - 1) * maxLimit)
+      // .limit(maxLimit)
       .then((blogs) => {
-        const filteredBlogs = blogs.filter(blog => blog.author !== null);
+        // const filteredBlogs = blogs.filter(blog => blog.author !== null);
+
+        // Tạo một danh sách các blog không phải ADMIN
+        const nonAdminBlogs = blogs.filter(blog => blog.author && blog.author.personal_info.role !== 'ADMIN');
+        // Nếu có trang hiện tại, áp dụng maxLimit cho các bài blog không phải ADMIN
+        const filteredBlogs = nonAdminBlogs.slice((page - 1) * maxLimit, page * maxLimit);
         return res.status(200).json({ blogs: filteredBlogs });
       })
       .catch((err) => {

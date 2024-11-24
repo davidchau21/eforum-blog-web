@@ -29,7 +29,7 @@ const CategoryManagement = () => {
       },
       {
         dataIndex: "tag_name",
-        title: <TableHeaderColumn label="Tên thẻ tag" />,
+        title: <TableHeaderColumn label="Tên thẻ danh mục" />,
         render: (name) => <TableDataColumn label={name} />,
       },
       {
@@ -108,7 +108,7 @@ const CategoryManagement = () => {
             className="h-9 bg-emerald-600 hover:!bg-emerald-600 duration-300 text-sm font-medium"
             onClick={() => setShowCreateModal(true)}
           >
-            Thêm thẻ tag
+            Thêm thẻ danh mục
           </Button>
         </div>
       </div>
