@@ -97,20 +97,13 @@ const HomePage = () => {
 
     useEffect(() => {
         activeTabRef.current.click();
-
-        if (pageState == "home") {
+        if (pageState === "home") {
             fetchLatestBlogs({ page: 1 });
         } else {
             fetchBlogsByCategory({ page: 1 });
         }
-
-        if (!trendingBlogs) {
-            fetchTrendingBlogs();
-        }
-
-        if (!adminBlogs) {
-            fetchAdminBlogs();
-        }
+        if (!trendingBlogs) fetchTrendingBlogs();
+        if (!adminBlogs) fetchAdminBlogs();
     }, [pageState]);
 
     useEffect(() => {
@@ -234,14 +227,8 @@ const HomePage = () => {
                         ) : blogs?.results?.length > 0 ? (
                             <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">{translations.pageEnd}</p>
                         ) : null} */}
-                        {/* <LoadMoreDataBtn
-                            state={blogs}
-                            fetchDataFun={
-                                pageState == "home"
-                                    ? fetchLatestBlogs
-                                    : fetchBlogsByCategory
-                            }
-                        /> */}
+
+
                         {blogs?.results?.length > 0 ? (
                             <>
                                 <LoadMoreDataBtn
@@ -253,9 +240,6 @@ const HomePage = () => {
                                 </p>
                             </>
                         ) : null}
-
-                        
-
                         </div>
                         <div>
                             {trendingBlogs == null ? (
