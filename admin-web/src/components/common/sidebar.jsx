@@ -40,12 +40,12 @@ const Sidebar = () => {
       link: "/users",
     },
     {
-      label: "Thẻ tag",
+      label: "Danh mục",
       icon: <Menu width={24} height={24} />,
       link: "/tags",
     },
     {
-      label: "Blog",
+      label: "Bài đăng",
       icon: <Book width={24} height={24} />,
       link: "/blogs",
     },

@@ -97,13 +97,20 @@ const HomePage = () => {
 
     useEffect(() => {
         activeTabRef.current.click();
-        if (pageState === "home") {
+
+        if (pageState == "home") {
             fetchLatestBlogs({ page: 1 });
         } else {
             fetchBlogsByCategory({ page: 1 });
         }
-        if (!trendingBlogs) fetchTrendingBlogs();
-        if (!adminBlogs) fetchAdminBlogs();
+
+        if (!trendingBlogs) {
+            fetchTrendingBlogs();
+        }
+
+        if (!adminBlogs) {
+            fetchAdminBlogs();
+        }
     }, [pageState]);
 
     useEffect(() => {
@@ -219,15 +226,35 @@ const HomePage = () => {
                             <NoDataMessage message="No blogs published" />
                         )}
 
-                        {blogs?.totalDocs > blogs?.results?.length && blogs?.results?.length > 0 && pageState !== "home" ? (
+                        {/* {blogs?.totalDocs > blogs?.results?.length && blogs?.results?.length > 0 && pageState !== "home" ? (
                             <LoadMoreDataBtn
                                 state={blogs}
                                 fetchDataFun={pageState === "home" ? fetchLatestBlogs : fetchBlogsByCategory}
                             />
                         ) : blogs?.results?.length > 0 ? (
                             <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">{translations.pageEnd}</p>
+                        ) : null} */}
+                        {/* <LoadMoreDataBtn
+                            state={blogs}
+                            fetchDataFun={
+                                pageState == "home"
+                                    ? fetchLatestBlogs
+                                    : fetchBlogsByCategory
+                            }
+                        /> */}
+                        {blogs?.results?.length > 0 ? (
+                            <>
+                                <LoadMoreDataBtn
+                                    state={blogs}
+                                    fetchDataFun={pageState == "home" ? fetchLatestBlogs : fetchBlogsByCategory}
+                                />
+                                <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">
+                                    {/* {translations.pageEnd} */}
+                                </p>
+                            </>
                         ) : null}
 
+                        
 
                         </div>
                         <div>

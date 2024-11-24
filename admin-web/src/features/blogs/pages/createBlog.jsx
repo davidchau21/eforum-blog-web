@@ -34,7 +34,7 @@ const CreateBlog = () => {
   const [blog, setBlog] = useState({
     title: "",
     content: "",
-    banner: "",
+    banner: lightBanner, // Sử dụng ảnh mặc định ban đầu
     des: "",
     tags: [],
   });
@@ -67,6 +67,9 @@ const CreateBlog = () => {
         const imgUrl = body.uploadURL.split("?")[0];
         setBlog((prev) => ({ ...prev, banner: imgUrl }));
       }
+    } else {
+      // Nếu không chọn ảnh, dùng ảnh mặc định
+      setBlog((prev) => ({ ...prev, banner: lightBanner }));
     }
   };
 
@@ -81,8 +84,7 @@ const CreateBlog = () => {
 
   const handleError = (e) => {
     let img = e.target;
-
-    img.src = lightBanner;
+    img.src = lightBanner; // Dùng ảnh mặc định nếu ảnh tải bị lỗi
   };
 
   const handleUploadBlog = async (isDraft) => {
@@ -93,7 +95,7 @@ const CreateBlog = () => {
           if (data.blocks.length) {
             const body = {
               title: blog.title,
-              banner: blog.banner,
+              banner: blog.banner || lightBanner, // Dùng ảnh mặc định nếu không có banner
               des: blog.des,
               content: data,
               tags: blog.tags,
@@ -141,7 +143,7 @@ const CreateBlog = () => {
         <div className="relative aspect-video hover:opacity-80 bg-white">
           <label htmlFor="uploadBanner" style={{ cursor: "pointer" }}>
             <img
-              src={blog.banner}
+              src={blog.banner || lightBanner} // Dùng ảnh mặc định nếu không có banner
               className="z-20"
               alt="Upload Banner"
               onError={handleError}

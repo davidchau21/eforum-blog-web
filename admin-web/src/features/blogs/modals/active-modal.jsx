@@ -35,7 +35,7 @@ const ActiveModal = ({ isOpen, onClose, blog }) => {
       title={
         <div className="flex items-center justify-center w-full">
           <span className="text-base font-medium font-exo-2">
-            {blog?.isActive ? "Vô hiệu hoá blog" : "Kích hoạt blog"}
+            {blog?.isActive ? "Vô hiệu hoá bài đăng" : "Kích hoạt bài đăng"}
           </span>
         </div>
       }
@@ -45,7 +45,7 @@ const ActiveModal = ({ isOpen, onClose, blog }) => {
       <div className="flex items-center justify-center w-full">
         <span className="text-base font-medium font-exo-2">
           Bạn có chắc chắn muốn{" "}
-          {blog?.isActive ? "Vô hiệu hoá blog" : "Kích hoạt blog"} này không?
+          {blog?.isActive ? "Vô hiệu hoá bài đăng" : "Kích bài đăng"} này không?
         </span>
       </div>
       <Button
