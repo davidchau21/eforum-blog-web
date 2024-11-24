@@ -99,7 +99,7 @@ export const ManageDraftBlogPost = ({ blog }) => {
     return (
         <>
             <div className="flex gap-5 lg:gap-10 pb-6 border-b mb-6 border-grey">
-                <h1 className="blog-index text-center pl-4 md:pl-6 flex-none">{ index < 10 ? "0" + index : index }</h1>
+                {/* <h1 className="blog-index text-center pl-4 md:pl-6 flex-none">{ index < 10 ? "0" + index : index }</h1> */}
 
                 <div>
                     <h1 className="blog-title mb-3">{title}</h1>
