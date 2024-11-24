@@ -97,20 +97,13 @@ const HomePage = () => {
 
     useEffect(() => {
         activeTabRef.current.click();
-
-        if (pageState == "home") {
+        if (pageState === "home") {
             fetchLatestBlogs({ page: 1 });
         } else {
             fetchBlogsByCategory({ page: 1 });
         }
-
-        if (!trendingBlogs) {
-            fetchTrendingBlogs();
-        }
-
-        if (!adminBlogs) {
-            fetchAdminBlogs();
-        }
+        if (!trendingBlogs) fetchTrendingBlogs();
+        if (!adminBlogs) fetchAdminBlogs();
     }, [pageState]);
 
     useEffect(() => {
@@ -137,7 +130,7 @@ const HomePage = () => {
         <AnimationWrapper>
             <section className="w-full min-h-screen flex flex-col lg:flex-row gap-6 py-8 px-4">
                 {/*  Hiển thị thông báo nếu có */}
-                {/* {adminAlert && (
+                {adminAlert && (
                     <div
                         role="alert"
                         className="fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-yellow-100 border-l-4 border-yellow-500 shadow-lg rounded-md flex items-center justify-between z-50 transition-opacity duration-500 ease-in-out"
@@ -168,7 +161,7 @@ const HomePage = () => {
                             ✖
                         </button>
                     </div>
-                )} */}
+                )}
 
                 {/* Admin Blogs */}
                 <div className="hidden lg:block lg:w-1/4">
@@ -226,14 +219,6 @@ const HomePage = () => {
                             <NoDataMessage message="No blogs published" />
                         )}
 
-                        {/* <LoadMoreDataBtn
-                            state={blogs}
-                            fetchDataFun={
-                                pageState == "home"
-                                    ? fetchLatestBlogs
-                                    : fetchBlogsByCategory
-                            }
-                        /> */}
                         {blogs?.results?.length > 0 ? (
                             <>
                                 <LoadMoreDataBtn
@@ -245,7 +230,6 @@ const HomePage = () => {
                                 </p>
                             </>
                         ) : null}
-
                         </div>
                         <div>
                             {trendingBlogs == null ? (
