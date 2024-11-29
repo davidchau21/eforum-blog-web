@@ -8,7 +8,7 @@ const app = http.createServer(server);
 
 const io = new Server(app, {
   cors: {
-    origin: `${process.env.CLIENT_URL}`,
+    origin: "https://edu-blog-web-client.vercel.app/",
     methods: ["GET", "POST"],
     credentials: true,
   },
