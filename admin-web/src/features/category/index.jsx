@@ -20,9 +20,26 @@ const CategoryManagement = () => {
   const [searchKeyword, setSearchKeyword] = useState(""); // Từ khóa tìm kiếm
   const [isShowCreateModal, setShowCreateModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(undefined);
-  const [selectedDeleteCategory, setSelectedDeleteCategory] =
-    useState(undefined);
+  const [selectedDeleteCategory, setSelectedDeleteCategory] = useState(undefined);
 
+  const onSortChange = (pagination, filters, sorter) => {
+    if (sorter.order) {
+      const { order } = sorter;
+      // Sắp xếp theo tên thẻ danh mục
+      const sortedCategories = [...categoryList.items].sort((a, b) => {
+        if (order === 'ascend') {
+          return a.tag_name.localeCompare(b.tag_name); // Sắp xếp A-Z
+        } else if (order === 'descend') {
+          return b.tag_name.localeCompare(a.tag_name); // Sắp xếp Z-A
+        }
+        return 0;
+      });
+      setFilteredCategories(sortedCategories);
+    } else {
+      setFilteredCategories(categoryList.items); // Nếu không sắp xếp, hiển thị dữ liệu gốc
+    }
+  };
+    
   // Lấy danh sách danh mục
   const onGet = useCallback(async () => {
     const { ok, body } = await tagApi.getAllTags({
@@ -111,6 +128,7 @@ const CategoryManagement = () => {
         dataIndex: "tag_name",
         title: <TableHeaderColumn label="Tên thẻ danh mục" />,
         render: (name) => <TableDataColumn label={name} />,
+        sorter: (a, b) => a.tag_name.localeCompare(b.tag_name), // Sắp xếp theo tên thẻ
       },
       {
         title: <TableHeaderColumn label="Thao tác" />,
@@ -172,12 +190,11 @@ const CategoryManagement = () => {
         columns={columns}
         loading={pendingCategories}
         data={displayedCategories} // Hiển thị dữ liệu tùy theo chế độ tìm kiếm
-        total={searchKeyword.trim() ? filteredCategories.length : categoryList.total} // Tổng kết quả tìm kiếm hoặc phân trang
-        onPageChange={!searchKeyword.trim() ? onPageChange : undefined} // Tắt phân trang khi tìm kiếm
+        total={searchKeyword.trim() ? filteredCategories.length : categoryList.total}
+        onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
         page={pagination.page}
+        onChange={onSortChange} // Xử lý khi thay đổi thứ tự sắp xếp
       />
-
-
       <CreateCategoryModal isOpen={isShowCreateModal} onClose={onCloseModal} />
       <UpdateCategoryModal
         isOpen={!!selectedCategory}

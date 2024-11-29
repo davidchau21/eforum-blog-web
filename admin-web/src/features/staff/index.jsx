@@ -16,15 +16,12 @@ const StaffManagement = () => {
 
   const [pagination, setPagination] = useState({
     page: 1,
+    limit: 10,
   });
-  // const [ingredientList, setIngredientList] = useState([]);
-  // const [filteredUsers, setFilteredUsers] = useState([]); // Danh sách sau khi lọc
-  // const [total, setTotal] = useState(0);
-  const [selectedUser, setSelectedUser] = useState(undefined);
-  const [searchKeyword, setSearchKeyword] = useState(""); // Từ khóa tìm kiếm
   const [staffList, setStaffList] = useState({ total: 0, items: [] });
   const [filteredStaff, setFilteredStaff] = useState([]);
-
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedUser, setSelectedUser] = useState(undefined);
 
   const onGet = useCallback(async () => {
     const { ok, body } = await userApi.getAllUser({
@@ -37,41 +34,35 @@ const StaffManagement = () => {
     }
   }, [pagination.limit, pagination.page]);
 
-  // const [pendingIngredients, getAllIngredients] = useHandleAsyncRequest(onGet);
   const [pendingStaff, getAllStaff] = useHandleAsyncRequest(onGet);
-
-  const onPageChange = useCallback((page) => {
-    setPagination((prev) => ({ ...prev, page }));
-  }, []);
 
   const onSearchChange = useCallback(
     async (e) => {
       const keyword = e.target.value;
       setSearchKeyword(keyword);
-  
+
       if (keyword.trim()) {
-        // Call API to fetch the entire staff list if necessary
         const { ok, body } = await userApi.getAllUser({
-          limit: 1000, // Fetch enough data to search
+          limit: 1000,
           page: 0,
         });
-  
         if (ok && body) {
           const filtered = body.list.filter((user) =>
             user.personal_info.username.toLowerCase().includes(keyword.toLowerCase()) ||
             user.personal_info.email.toLowerCase().includes(keyword.toLowerCase())
           );
-          setFilteredStaff(filtered); // Display all results on one page
+          setFilteredStaff(filtered);
         }
       } else {
-        // Display the full list of users for the current page if no search keyword
         setFilteredStaff(staffList.items);
       }
     },
     [staffList.items]
   );
-  
-  
+
+  const onPageChange = useCallback((page) => {
+    setPagination((prev) => ({ ...prev, page }));
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -83,6 +74,8 @@ const StaffManagement = () => {
       {
         dataIndex: "email",
         title: <TableHeaderColumn label="Email" />,
+        sorter: (a, b) =>
+          a.personal_info.email.localeCompare(b.personal_info.email),
         render: (_, record) => (
           <TableDataColumn label={record.personal_info.email} />
         ),
@@ -90,6 +83,8 @@ const StaffManagement = () => {
       {
         dataIndex: "username",
         title: <TableHeaderColumn label="Username" />,
+        sorter: (a, b) =>
+          a.personal_info.username.localeCompare(b.personal_info.username),
         render: (_, record) => (
           <TableDataColumn label={record.personal_info.username} />
         ),
@@ -125,6 +120,8 @@ const StaffManagement = () => {
       },
       {
         title: <TableHeaderColumn label="Ngày tạo" />,
+        dataIndex: "joinedAt",
+        sorter: (a, b) => new Date(a.joinedAt) - new Date(b.joinedAt),
         render: (_, record) => (
           <TableDataColumn label={`${formatDate(record.joinedAt)}`} />
         ),
@@ -154,13 +151,7 @@ const StaffManagement = () => {
             <Button
               type="primary"
               htmlType="button"
-              icon={
-                record.blocked_comment ? (
-                  <UnlockIcon size={20} />
-                ) : (
-                  <LockIcon size={20} />
-                )
-              }
+              icon={record.blocked_comment ? <UnlockIcon size={20} /> : <LockIcon size={20} />}
               className="min-w-[44px] min-h-[44px]"
               danger={record.blocked_comment}
               onClick={() => setSelectedUser(record)}
@@ -169,7 +160,7 @@ const StaffManagement = () => {
         ),
       },
     ],
-    []
+    [navigate]
   );
 
   const displayedStaff = useMemo(() => {
@@ -179,40 +170,40 @@ const StaffManagement = () => {
     return staffList.items;
   }, [searchKeyword, filteredStaff, staffList.items]);
 
+  const onCloseModal = useCallback(
+    (type, isReload = false) => {
+      switch (type) {
+        case "block":
+          setSelectedUser(undefined);
+          break;
+        default:
+          break;
+      }
+      if (isReload) {
+        onGet();
+      }
+    },
+    [onGet]
+  );
 
   useEffect(() => {
     getAllStaff();
-  }, [pagination.page]);
-
-  const onCloseModal = useCallback((type, isReload = false) => {
-    switch (type) {
-      case "block":
-        setSelectedUser(undefined);
-        break;
-      default:
-        break;
-    }
-    if (isReload) {
-      onGet();
-    }
-  }, []);
+  }, [pagination.page, getAllStaff]);
 
   return (
     <div className="w-full p-5">
       <div className="flex items-center justify-between w-full mb-4">
-        
         <div className="items-left">
           <h3 className="text-xl font-semibold">Danh sách người dùng</h3>
           <Input
-              placeholder="Tìm kiếm"
-              value={searchKeyword}
-              onChange={onSearchChange}
-              allowClear
-              className="w-full mt-2"
-            />
+            placeholder="Tìm kiếm"
+            value={searchKeyword}
+            onChange={onSearchChange}
+            allowClear
+            className="w-full mt-2"
+          />
         </div>
         <div className="flex items-center gap-3">
-          
           <Button
             type="primary"
             icon={<Plus size={24} />}
@@ -227,10 +218,10 @@ const StaffManagement = () => {
       <Table
         columns={columns}
         loading={pendingStaff}
-        data={displayedStaff} // Sử dụng danh sách sau khi lọc
+        data={displayedStaff}
+        total={searchKeyword.trim() ? filteredStaff.length : staffList.total}
         onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
         page={pagination.page}
-        total={searchKeyword.trim() ? filteredStaff.length : staffList.total} // Tổng số kết quả tìm kiếm hoặc phân trang
       />
       <BlockCommentModal
         isOpen={!!selectedUser}
