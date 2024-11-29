@@ -10,6 +10,7 @@ const io = new Server(app, {
   cors: {
     origin: [process.env.CLIENT_URL],
     methods: ["GET", "POST"],
+    credentials: true,
   },
 })
 
