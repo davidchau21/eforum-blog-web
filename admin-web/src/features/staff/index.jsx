@@ -3,7 +3,7 @@ import TableDataColumn from "@/components/table/table-data-column";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
 import { StatusColorMapper } from "@/mappers/staff";
-import { Button, Tag } from "antd";
+import { Button, Tag, Input } from "antd";
 import { LockIcon, Pencil, Plus, UnlockIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -16,23 +16,49 @@ const StaffManagement = () => {
 
   const [pagination, setPagination] = useState({
     page: 1,
+    limit: 10,
   });
-  const [ingredientList, setIngredientList] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [staffList, setStaffList] = useState({ total: 0, items: [] });
+  const [filteredStaff, setFilteredStaff] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedUser, setSelectedUser] = useState(undefined);
 
   const onGet = useCallback(async () => {
     const { ok, body } = await userApi.getAllUser({
-      limit: 10,
+      limit: pagination.limit,
       page: pagination.page - 1,
     });
     if (ok && body) {
-      setIngredientList(body.list);
-      setTotal(body.total);
+      setStaffList({ items: body.list, total: body.total ?? 0 });
+      setFilteredStaff(body.list);
     }
-  }, [pagination.page]);
+  }, [pagination.limit, pagination.page]);
 
-  const [pendingIngredients, getAllIngredients] = useHandleAsyncRequest(onGet);
+  const [pendingStaff, getAllStaff] = useHandleAsyncRequest(onGet);
+
+  const onSearchChange = useCallback(
+    async (e) => {
+      const keyword = e.target.value;
+      setSearchKeyword(keyword);
+
+      if (keyword.trim()) {
+        const { ok, body } = await userApi.getAllUser({
+          limit: 1000,
+          page: 0,
+        });
+        if (ok && body) {
+          const filtered = body.list.filter((user) =>
+            user.personal_info.username.toLowerCase().includes(keyword.toLowerCase()) ||
+            user.personal_info.email.toLowerCase().includes(keyword.toLowerCase())
+          );
+          setFilteredStaff(filtered);
+        }
+      } else {
+        setFilteredStaff(staffList.items);
+      }
+    },
+    [staffList.items]
+  );
 
   const onPageChange = useCallback((page) => {
     setPagination((prev) => ({ ...prev, page }));
@@ -48,6 +74,8 @@ const StaffManagement = () => {
       {
         dataIndex: "email",
         title: <TableHeaderColumn label="Email" />,
+        sorter: (a, b) =>
+          a.personal_info.email.localeCompare(b.personal_info.email),
         render: (_, record) => (
           <TableDataColumn label={record.personal_info.email} />
         ),
@@ -55,6 +83,8 @@ const StaffManagement = () => {
       {
         dataIndex: "username",
         title: <TableHeaderColumn label="Username" />,
+        sorter: (a, b) =>
+          a.personal_info.username.localeCompare(b.personal_info.username),
         render: (_, record) => (
           <TableDataColumn label={record.personal_info.username} />
         ),
@@ -90,6 +120,8 @@ const StaffManagement = () => {
       },
       {
         title: <TableHeaderColumn label="Ngày tạo" />,
+        dataIndex: "joinedAt",
+        sorter: (a, b) => new Date(a.joinedAt) - new Date(b.joinedAt),
         render: (_, record) => (
           <TableDataColumn label={`${formatDate(record.joinedAt)}`} />
         ),
@@ -119,13 +151,7 @@ const StaffManagement = () => {
             <Button
               type="primary"
               htmlType="button"
-              icon={
-                record.blocked_comment ? (
-                  <UnlockIcon size={20} />
-                ) : (
-                  <LockIcon size={20} />
-                )
-              }
+              icon={record.blocked_comment ? <UnlockIcon size={20} /> : <LockIcon size={20} />}
               className="min-w-[44px] min-h-[44px]"
               danger={record.blocked_comment}
               onClick={() => setSelectedUser(record)}
@@ -134,32 +160,49 @@ const StaffManagement = () => {
         ),
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [navigate]
+  );
+
+  const displayedStaff = useMemo(() => {
+    if (searchKeyword.trim()) {
+      return filteredStaff;
+    }
+    return staffList.items;
+  }, [searchKeyword, filteredStaff, staffList.items]);
+
+  const onCloseModal = useCallback(
+    (type, isReload = false) => {
+      switch (type) {
+        case "block":
+          setSelectedUser(undefined);
+          break;
+        default:
+          break;
+      }
+      if (isReload) {
+        onGet();
+      }
+    },
+    [onGet]
   );
 
   useEffect(() => {
-    getAllIngredients();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pagination.page]);
-
-  const onCloseModal = useCallback((type, isReload = false) => {
-    switch (type) {
-      case "block":
-        setSelectedUser(undefined);
-        break;
-      default:
-        break;
-    }
-    if (isReload) {
-      onGet();
-    }
-  }, []);
+    getAllStaff();
+  }, [pagination.page, getAllStaff]);
 
   return (
     <div className="w-full p-5">
       <div className="flex items-center justify-between w-full mb-4">
-        <h3 className="text-xl font-semibold">Danh sách người dùng</h3>
+        <div className="items-left">
+          <h3 className="text-xl font-semibold">Danh sách người dùng</h3>
+          <Input
+            placeholder="Tìm kiếm"
+            value={searchKeyword}
+            onChange={onSearchChange}
+            allowClear
+            className="w-full mt-2"
+          />
+        </div>
         <div className="flex items-center gap-3">
           <Button
             type="primary"
@@ -174,11 +217,11 @@ const StaffManagement = () => {
 
       <Table
         columns={columns}
-        loading={pendingIngredients}
-        data={ingredientList}
-        onPageChange={onPageChange}
+        loading={pendingStaff}
+        data={displayedStaff}
+        total={searchKeyword.trim() ? filteredStaff.length : staffList.total}
+        onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
         page={pagination.page}
-        total={total}
       />
       <BlockCommentModal
         isOpen={!!selectedUser}
