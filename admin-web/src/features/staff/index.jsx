@@ -3,7 +3,7 @@ import TableDataColumn from "@/components/table/table-data-column";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
 import { StatusColorMapper } from "@/mappers/staff";
-import { Button, Tag } from "antd";
+import { Button, Tag, Input } from "antd";
 import { LockIcon, Pencil, Plus, UnlockIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,26 +17,61 @@ const StaffManagement = () => {
   const [pagination, setPagination] = useState({
     page: 1,
   });
-  const [ingredientList, setIngredientList] = useState([]);
-  const [total, setTotal] = useState(0);
+  // const [ingredientList, setIngredientList] = useState([]);
+  // const [filteredUsers, setFilteredUsers] = useState([]); // Danh sách sau khi lọc
+  // const [total, setTotal] = useState(0);
   const [selectedUser, setSelectedUser] = useState(undefined);
+  const [searchKeyword, setSearchKeyword] = useState(""); // Từ khóa tìm kiếm
+  const [staffList, setStaffList] = useState({ total: 0, items: [] });
+  const [filteredStaff, setFilteredStaff] = useState([]);
+
 
   const onGet = useCallback(async () => {
     const { ok, body } = await userApi.getAllUser({
-      limit: 10,
+      limit: pagination.limit,
       page: pagination.page - 1,
     });
     if (ok && body) {
-      setIngredientList(body.list);
-      setTotal(body.total);
+      setStaffList({ items: body.list, total: body.total ?? 0 });
+      setFilteredStaff(body.list);
     }
-  }, [pagination.page]);
+  }, [pagination.limit, pagination.page]);
 
-  const [pendingIngredients, getAllIngredients] = useHandleAsyncRequest(onGet);
+  // const [pendingIngredients, getAllIngredients] = useHandleAsyncRequest(onGet);
+  const [pendingStaff, getAllStaff] = useHandleAsyncRequest(onGet);
 
   const onPageChange = useCallback((page) => {
     setPagination((prev) => ({ ...prev, page }));
   }, []);
+
+  const onSearchChange = useCallback(
+    async (e) => {
+      const keyword = e.target.value;
+      setSearchKeyword(keyword);
+  
+      if (keyword.trim()) {
+        // Call API to fetch the entire staff list if necessary
+        const { ok, body } = await userApi.getAllUser({
+          limit: 1000, // Fetch enough data to search
+          page: 0,
+        });
+  
+        if (ok && body) {
+          const filtered = body.list.filter((user) =>
+            user.personal_info.username.toLowerCase().includes(keyword.toLowerCase()) ||
+            user.personal_info.email.toLowerCase().includes(keyword.toLowerCase())
+          );
+          setFilteredStaff(filtered); // Display all results on one page
+        }
+      } else {
+        // Display the full list of users for the current page if no search keyword
+        setFilteredStaff(staffList.items);
+      }
+    },
+    [staffList.items]
+  );
+  
+  
 
   const columns = useMemo(
     () => [
@@ -134,13 +169,19 @@ const StaffManagement = () => {
         ),
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
+  const displayedStaff = useMemo(() => {
+    if (searchKeyword.trim()) {
+      return filteredStaff;
+    }
+    return staffList.items;
+  }, [searchKeyword, filteredStaff, staffList.items]);
+
+
   useEffect(() => {
-    getAllIngredients();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    getAllStaff();
   }, [pagination.page]);
 
   const onCloseModal = useCallback((type, isReload = false) => {
@@ -159,8 +200,19 @@ const StaffManagement = () => {
   return (
     <div className="w-full p-5">
       <div className="flex items-center justify-between w-full mb-4">
-        <h3 className="text-xl font-semibold">Danh sách người dùng</h3>
+        
+        <div className="items-left">
+          <h3 className="text-xl font-semibold">Danh sách người dùng</h3>
+          <Input
+              placeholder="Tìm kiếm"
+              value={searchKeyword}
+              onChange={onSearchChange}
+              allowClear
+              className="w-full mt-2"
+            />
+        </div>
         <div className="flex items-center gap-3">
+          
           <Button
             type="primary"
             icon={<Plus size={24} />}
@@ -174,11 +226,11 @@ const StaffManagement = () => {
 
       <Table
         columns={columns}
-        loading={pendingIngredients}
-        data={ingredientList}
-        onPageChange={onPageChange}
+        loading={pendingStaff}
+        data={displayedStaff} // Sử dụng danh sách sau khi lọc
+        onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
         page={pagination.page}
-        total={total}
+        total={searchKeyword.trim() ? filteredStaff.length : staffList.total} // Tổng số kết quả tìm kiếm hoặc phân trang
       />
       <BlockCommentModal
         isOpen={!!selectedUser}
