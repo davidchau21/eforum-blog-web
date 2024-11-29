@@ -26,7 +26,7 @@ const HomePage = () => {
     const [adminAlert, setAdminAlert] = useState(null);
 
     useEffect(() => {
-        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags")
+        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags?limit=0")
             .then(response => {
                 const fetchedTags = response.data.list || [];
                 setTags(fetchedTags);
