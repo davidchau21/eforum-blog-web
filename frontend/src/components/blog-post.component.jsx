@@ -8,10 +8,14 @@ const BlogPostCard = ({ content, author }) => {
     let { publishedAt, tags, title, des, banner, activity: { total_likes }, blog_id: id } = content;
     let { fullname, profile_img, username } = author;
 
+    const handleBannerError = (e) => {
+        e.target.src = bannerDefault; 
+    }
+
     return ( 
         <Link to={`/blog/${id}`} className=" items-center border-b border-grey pb-5 mb-4">
             <div className="w-full aspect-video bg-grey">
-                <img src={banner || bannerDefault} className="w-full h-full aspect-video object-cover" />
+                <img src={banner || bannerDefault} className="w-full h-full aspect-video object-cover"  onError={handleBannerError} />
             </div>
             <div className="w-full mt-4">
                 <div className="flex gap-2 items-center mb-2">
