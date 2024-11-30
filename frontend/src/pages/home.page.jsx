@@ -27,11 +27,12 @@ const HomePage = () => {
 
     useEffect(() => {
         axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags?limit=0")
-            .then(response => {
-                const fetchedTags = response.data.list || [];
-                setTags(fetchedTags);
-            })
-            .catch(error => console.error("Failed to fetch tags:", error));
+        .then(response => {
+            const fetchedTags = response.data.list || [];
+            const sortedTags = fetchedTags.sort((a, b) => a.tag_name.localeCompare(b.tag_name));
+            setTags(sortedTags);
+        })
+        .catch(error => console.error("Failed to fetch tags:", error));
     }, []);
 
 
