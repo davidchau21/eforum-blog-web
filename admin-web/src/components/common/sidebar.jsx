@@ -20,7 +20,6 @@ import {
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
-import NotificationCard from "../../../../frontend/src/components/notification-card.component";
 
 const Sidebar = () => {
   const dispatch = useDispatch();
