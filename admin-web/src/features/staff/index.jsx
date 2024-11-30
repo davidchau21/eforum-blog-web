@@ -109,8 +109,8 @@ const StaffManagement = () => {
             bordered={false}
             color={
               record.verified
-                ? StatusColorMapper["ACTIVE"]
-                : StatusColorMapper["INACTIVE"]
+                ? "green" // Màu xanh lá cho "Kích hoạt"
+                : "yellow" // Màu vàng cho "Chưa kích hoạt"
             }
             className="text-sm font-exo-2"
           >
@@ -118,6 +118,7 @@ const StaffManagement = () => {
           </Tag>
         ),
       },
+      
       {
         title: <TableHeaderColumn label="Ngày tạo" />,
         dataIndex: "joinedAt",
