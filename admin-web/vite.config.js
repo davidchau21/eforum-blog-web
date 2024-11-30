@@ -16,7 +16,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['react/jsx-runtime', 'react-router-dom'],
+      external: ['react/jsx-runtime', 'react-router-dom', 'react'],
     },
   },
 });
