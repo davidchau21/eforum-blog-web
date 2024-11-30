@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/navbar.component";
 import UserAuthForm from "./pages/userAuthForm.page";
 import { createContext, useEffect, useState } from "react";
@@ -29,15 +29,20 @@ import SearchGooglePage from "./pages/search-google.page.jsx";
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
 
-const darkThemePreference = () => window.matchMedia("(prefers-color-scheme: dark)").matches;
+const darkThemePreference = () =>
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
 
 const App = () => {
     const [userAuth, setUserAuth] = useState(() => {
         const userInSession = lookInSession("user");
-        return userInSession ? JSON.parse(userInSession) : { access_token: null };
+        return userInSession
+            ? JSON.parse(userInSession)
+            : { access_token: null };
     });
 
-    const [theme, setTheme] = useState(() => darkThemePreference() ? "dark" : "light");
+    const [theme, setTheme] = useState(() =>
+        darkThemePreference() ? "dark" : "light"
+    );
 
     useEffect(() => {
         const themeInSession = lookInSession("theme");
@@ -54,6 +59,12 @@ const App = () => {
         return userAuth?.access_token ? children : <Navigate to="/signin" />;
     };
 
+    const location = useLocation();
+    const excludedPaths = ["/dashboard", "/settings", "/chat", "/editor"];
+    const shouldShowFooter = !excludedPaths.some((path) =>
+        location.pathname.startsWith(path)
+    );
+
     return (
         <ThemeContext.Provider value={{ theme, setTheme }}>
             <UserContext.Provider value={{ userAuth, setUserAuth }}>
@@ -61,8 +72,22 @@ const App = () => {
                     <div className="flex flex-col min-h-screen bg-white">
                         <div className="flex-grow">
                             <Routes>
-                                <Route path="/editor" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
-                                <Route path="/editor/:blog_id" element={<ProtectedRoute><Editor /></ProtectedRoute>} />
+                                <Route
+                                    path="/editor"
+                                    element={
+                                        <ProtectedRoute>
+                                            <Editor />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/editor/:blog_id"
+                                    element={
+                                        <ProtectedRoute>
+                                            <Editor />
+                                        </ProtectedRoute>
+                                    }
+                                />
                                 <Route path="/" element={<Navbar />}>
                                     <Route index element={<HomePage />} />
                                     <Route path="dashboard" element={<ProtectedRoute><SideNav /></ProtectedRoute>}>
@@ -91,10 +116,9 @@ const App = () => {
                                 </Route>
                             </Routes>
                         </div>
-                        <Footer />
+                        {shouldShowFooter && <Footer />}
                     </div>
                 </SocketContextProvider>
-
             </UserContext.Provider>
         </ThemeContext.Provider>
     );

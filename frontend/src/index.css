@@ -120,6 +120,13 @@
     .search-google{
         @apply bg-white;
     }
+    .scrollbar-hide {
+        -ms-overflow-style: none; /* Internet Explorer */
+        scrollbar-width: none; /* Firefox */
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none; /* Chrome, Safari */
+    }
 }
 
 .ce-block__content, .ce-toolbar__content{
