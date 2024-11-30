@@ -2,7 +2,7 @@ import Table from "@/components/table/table";
 import TableDataColumn from "@/components/table/table-data-column";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
-import { Button, Input } from "antd";
+import { Button, Tag, Input } from "antd";
 import { FlagIcon, LockIcon, Pencil, Plus, Trash2, UnlockIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -114,11 +114,28 @@ const BlogManagement = () => {
         render: (_, record) => <TableDataColumn label={record.title} />,
         sorter: (a, b) => a.title.localeCompare(b.title),
       },
+      // {
+      //   dataIndex: "status",
+      //   title: <TableHeaderColumn label="Trạng thái" />,
+      //   render: (_, record) => (
+      //     <TableDataColumn label={record.isActive ? "Kích hoạt" : "Chưa kích hoạt"} />
+      //   ),
+      // },
       {
         dataIndex: "status",
         title: <TableHeaderColumn label="Trạng thái" />,
         render: (_, record) => (
-          <TableDataColumn label={record.isActive ? "Kích hoạt" : "Chưa kích hoạt"} />
+          <Tag
+            bordered={false}
+            color={
+              record.isActive
+                ? "green" // Màu xanh lá cho "Kích hoạt"
+                : "yellow" // Màu vàng cho "Chưa kích hoạt"
+            }
+            className="text-sm font-exo-2"
+          >
+            {record.isActive ? "Kích hoạt" : "Chưa kích hoạt"}
+          </Tag>
         ),
       },
       {
