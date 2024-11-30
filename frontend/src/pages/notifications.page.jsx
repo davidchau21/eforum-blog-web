@@ -59,7 +59,8 @@ const Notifications = () => {
         <div>
             <h1 className="max-md:hidden">Recent Notifications</h1>
 
-            <div className="my-8 flex gap-6">
+            {/* <div className="my-8 flex gap-6 overflow-x-auto scrollbar-hide"> */}
+            <div className="my-8 flex gap-6 overflow-x-auto scrollbar-hide">
                 {
                     filters.map((filterName, i) => {
                         return <button 
