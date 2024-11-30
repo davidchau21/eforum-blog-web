@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import { getDay } from "../common/date";
+import bannerDefault from "../imgs/banner-default.png";
 import { Link } from "react-router-dom";
 
 const BlogPostCard = ({ content, author }) => {
@@ -10,7 +11,7 @@ const BlogPostCard = ({ content, author }) => {
     return ( 
         <Link to={`/blog/${id}`} className=" items-center border-b border-grey pb-5 mb-4">
             <div className="w-full aspect-video bg-grey">
-                <img src={banner} className="w-full h-full aspect-video object-cover" />
+                <img src={banner || bannerDefault} className="w-full h-full aspect-video object-cover" />
             </div>
             <div className="w-full mt-4">
                 <div className="flex gap-2 items-center mb-2">
