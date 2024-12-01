@@ -34,7 +34,7 @@ const SupportChat = () => {
       // Call Gemini API to get a response
       const result = await model.generateContent(userInput);
       const response = await result.response;
-      console.log(response);
+      // console.log(response);
       // Add Gemini's response to the chat history
       setChatHistory([
         ...chatHistory,
