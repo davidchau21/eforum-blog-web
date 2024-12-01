@@ -33,7 +33,7 @@ const Conversations = () => {
     return <div>No conversations found.</div>;
   }
 
-  console.log("conversations: ", conversations);
+  // console.log("conversations: ", conversations);
 
   const filteredConversations = conversations.filter((conversation) => conversation.conversation !== null);
 

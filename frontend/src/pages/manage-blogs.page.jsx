@@ -41,7 +41,7 @@ const ManageBlogs = () => {
                 data_to_send: { draft, query }
             })
 
-            console.log("draft -> " + draft , formatedData)
+            // console.log("draft -> " + draft , formatedData)
 
             if(draft){
                 setDrafts(formatedData)

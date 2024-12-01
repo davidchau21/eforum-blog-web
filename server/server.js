@@ -226,8 +226,8 @@ server.post("/signup", (req, res) => {
             attachments: [],
           });
 
-          console.log("OTP", new_otp);
-          console.log("user email", u.personal_info.email);
+        //   console.log("OTP", new_otp);
+        //   console.log("user email", u.personal_info.email);
   
           return res.status(200).json({
             status: "success",
@@ -458,7 +458,7 @@ server.post("/change-password", verifyJWT, (req, res) => {
 server.post("/forgot-password", async (req, res) => {
     try {
       // 1. Tìm người dùng dựa trên email
-      console.log("Email being searched:", req.body.email);
+    //   console.log("Email being searched:", req.body.email);
 
       const user = await User.findOne({ "personal_info.email": req.body.email });
       if (!user) {
@@ -479,7 +479,7 @@ server.post("/forgot-password", async (req, res) => {
   
       // 3. Tạo URL reset password
       const resetURL = `http://localhost:5173/new-password?token=${resetToken}`;
-      console.log("token", resetToken);
+    //   console.log("token", resetToken);
       // 4. Gửi email chứa URL cho người dùng
       mailService.sendEmail({
         from: {name: "Team Support Edu Blog", email: "davidduongxu1@gmail.com"},
@@ -1041,7 +1041,7 @@ server.post("/get-blog-comments", (req, res) => {
         'commentedAt': -1
     })
     .then(comment => {
-        console.log(comment, blog_id, skip)
+        // console.log(comment, blog_id, skip)
         return res.status(200).json(comment);
     })
     .catch(err => {
@@ -1073,7 +1073,7 @@ server.post("/get-replies", (req, res) => {
     })
     .select("children")
     .then(doc => {
-        console.log(doc);
+        // console.log(doc);
         return res.status(200).json({ replies: doc.children })
     })
     .catch(err => {
