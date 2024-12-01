@@ -43,7 +43,7 @@ const SideNav = () => {
 
                     <div className="md:hidden bg-white py-1 border-b border-grey flex flex-nowrap overflow-x-auto ">
                         <button ref={sideBarIconTab} className="p-5 capitalize" onClick={changePageState}>
-                            <i className="fi fi-rr-bars-staggered pointer-events-none"></i>
+                            <i className="fi fi-rr-menu-burger pointer-events-none"></i>
                         </button>
                         <button ref={pageStateTab} className="p-5 capitalize" onClick={changePageState}>
                             {pageState}

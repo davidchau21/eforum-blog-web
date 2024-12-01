@@ -45,7 +45,7 @@ const translations = {
         noPublishedBlogs: "Không có bài viết đã xuất bản",
         noDraftBlogs: "Không có bài viết nháp",
         pageEnd: "Không còn bài viết",
-        
+        chatSection: "Chat Section",
         aboutUsDes: "Chào mừng đến với EForum! Sứ mệnh của chúng tôi là tạo ra một nền tảng cung cấp nội dung giáo dục có giá trị đến người học và giáo viên trên toàn thế giới.",
         contactContent: {
             title: "Liên hệ với chúng tôi",
@@ -117,7 +117,7 @@ const translations = {
         noPublishedBlogs: "No published blogs",
         noDraftBlogs: "No draft blogs",
         pageEnd: "There're nothing else",
-        
+        chatSection: "Đoạn Chat",
         aboutUsDes: "Welcome to EForum! Our mission is to create a platform that provides valuable educational content to learners and educators around the world.",
         contactContent: {
             title: "Contact Us",
