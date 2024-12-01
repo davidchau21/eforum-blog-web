@@ -27,11 +27,12 @@ const HomePage = () => {
 
     useEffect(() => {
         axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags?limit=0")
-            .then(response => {
-                const fetchedTags = response.data.list || [];
-                setTags(fetchedTags);
-            })
-            .catch(error => console.error("Failed to fetch tags:", error));
+        .then(response => {
+            const fetchedTags = response.data.list || [];
+            const sortedTags = fetchedTags.sort((a, b) => a.tag_name.localeCompare(b.tag_name));
+            setTags(sortedTags);
+        })
+        .catch(error => console.error("Failed to fetch tags:", error));
     }, []);
 
 
@@ -108,22 +109,41 @@ const HomePage = () => {
 
     useEffect(() => {
         fetchAlert();
-    }, []);
+    }, [access_token]);
 
-    // fecthing data alert from admin
+    const [showAlert, setShowAlert] = useState(true);
+
+    useEffect(() => {
+        if (adminAlert) {
+            setShowAlert(true);
+            const timeout = setTimeout(() => {
+                setShowAlert(false); // Fade out after 5 seconds
+                setTimeout(() => setAdminAlert(null), 500); // Remove the alert after the fade
+            }, 5000);
+            return () => clearTimeout(timeout);
+        }
+    }, [adminAlert]);
+
+
     const fetchAlert = () => {
-        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/alert", {
-            headers: { 'Authorization': `Bearer ${access_token}` },
-        })
-            .then(({ data }) => {
-                if (data.list && data.list.length > 0) {
-                    setAdminAlert(data.list[0].message); // Cập nhật thông báo từ API
-                    setTimeout(() => {
-                        setAdminAlert(null); // Tự động tắt thông báo sau 5 giây
-                    }, 5000);
-                }
+        const alertKey = "adminAlertShown"; 
+        const hasShownAlert = sessionStorage.getItem(alertKey); // Check if the alert has been shown before
+    
+        if (!hasShownAlert) { // If the alert hasn't been shown
+            axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/alert", {
+                headers: { 'Authorization': `Bearer ${access_token}` },
             })
-            .catch(console.log);
+                .then(({ data }) => {
+                    if (data.list && data.list.length > 0) {
+                        setAdminAlert(data.list[0].message); // Show the alert message
+                        sessionStorage.setItem(alertKey, "true"); // Mark the alert as shown in sessionStorage
+                        setTimeout(() => {
+                            setAdminAlert(null); // Hide the alert after 5 seconds
+                        }, 5000);
+                    }
+                })
+                .catch(console.log);
+        }
     };
 
     return (
@@ -133,8 +153,7 @@ const HomePage = () => {
                 {adminAlert && (
                     <div
                         role="alert"
-                        className="fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-yellow-100 border-l-4 border-yellow-500 shadow-lg rounded-md flex items-center justify-between z-50 transition-opacity duration-500 ease-in-out"
-                        style={{ opacity: 1 }}
+                        className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-yellow-100 border-l-4 border-yellow-500 shadow-lg rounded-md flex items-center justify-between z-50 transition-opacity duration-500 ease-in-out ${showAlert ? 'opacity-100' : 'opacity-0'}`}
                         id="alert-box"
                     >
                         <div className="flex items-center">
@@ -155,7 +174,7 @@ const HomePage = () => {
                             <span className="text-yellow-700 font-medium">{adminAlert}</span>
                         </div>
                         <button
-                            className="text-yellow-700 hover:text-yellow-900 "
+                            className="text-yellow-700 hover:text-yellow-900"
                             onClick={() => setAdminAlert(null)}
                         >
                             ✖

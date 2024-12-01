@@ -42,7 +42,8 @@ server.use(express.json());
 server.use(cors(
   {
     origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"]
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   }
 ));
 
@@ -190,7 +191,94 @@ server.get("/get-upload-url", (req, res) => {
 
 // })
 
-server.post("/signup", (req, res) => {
+// server.post("/signup", (req, res) => {
+//   let { fullname, email, password } = req.body;
+
+//   // Validating the data from frontend
+//   if (fullname.length < 3) {
+//     return res
+//       .status(403)
+//       .json({ error: "Fullname must be at least 3 letters long" });
+//   }
+//   if (!email.length) {
+//     return res.status(403).json({ error: "Enter Email" });
+//   }
+//   if (!emailRegex.test(email)) {
+//     return res.status(403).json({ error: "Email is invalid" });
+//   }
+//   if (!passwordRegex.test(password)) {
+//     return res.status(403).json({
+//       error:
+//         "Password should be 6 to 20 characters long with a numeric, 1 lowercase and 1 uppercase letter",
+//     });
+//   }
+
+//   bcrypt.hash(password, 10, async (err, hashed_password) => {
+//     if (err) {
+//       return res.status(500).json({ error: "Error hashing password" });
+//     }
+
+//     let username = await generateUsername(email);
+
+//     // Generate OTP
+//     const new_otp = otpGenerator.generate(6, {
+//       lowerCaseAlphabets: false,
+//       upperCaseAlphabets: false,
+//       specialChars: false,
+//     });
+
+//     const otp_expiry_time = Date.now() + 10 * 60 * 1000; // 10 minutes expiry time
+
+//     let user = new User({
+//       personal_info: {
+//         fullname,
+//         email,
+//         password: hashed_password,
+//         username,
+//         role: "USER",
+//       },
+//       otp_expiry_time: otp_expiry_time, // Lưu thời gian hết hạn OTP
+//       verified: false, // Đánh dấu tài khoản chưa được xác minh
+//     });
+
+//     user.otp = new_otp.toString();
+
+//     user
+//       .save({ new: true, validateModifiedOnly: true })
+//       .then((u) => {
+//         // Gửi OTP qua email
+//         mailService.sendEmail({
+//           from: {
+//             name: "Team Support Edu Blog",
+//             email: "eforum@gmail.edu.vn.com",
+//           },
+//           to: u.personal_info.email,
+//           subject: "Your OTP for Account Verification",
+//           html: otp(u.personal_info.username, new_otp),
+//           attachments: [],
+//         });
+
+//         console.log("OTP", new_otp);
+//         console.log("user email", u.personal_info.email);
+
+//         return res.status(200).json({
+//           status: "success",
+//           message:
+//             "User registered successfully. OTP sent to email for verification.",
+//           user_id: u._id,
+//         });
+//       })
+//       .catch((err) => {
+//         if (err.code == 11000) {
+//           return res.status(500).json({ error: "Email already exists" });
+//         }
+
+//         return res.status(500).json({ error: err.message });
+//       });
+//   });
+// });
+
+server.post("/signup", async (req, res) => {
   let { fullname, email, password } = req.body;
 
   // Validating the data from frontend
@@ -212,12 +300,9 @@ server.post("/signup", (req, res) => {
     });
   }
 
-  bcrypt.hash(password, 10, async (err, hashed_password) => {
-    if (err) {
-      return res.status(500).json({ error: "Error hashing password" });
-    }
-
-    let username = await generateUsername(email);
+  try {
+    // Hash the password
+    const hashed_password = await bcrypt.hash(password, 10);
 
     // Generate OTP
     const new_otp = otpGenerator.generate(6, {
@@ -228,53 +313,64 @@ server.post("/signup", (req, res) => {
 
     const otp_expiry_time = Date.now() + 10 * 60 * 1000; // 10 minutes expiry time
 
-    let user = new User({
-      personal_info: {
-        fullname,
-        email,
-        password: hashed_password,
-        username,
-        role: "USER",
+    // Kiểm tra xem email đã tồn tại hay chưa
+    let user = await User.findOne({ "personal_info.email": email });
+
+    if (user && user.verified) {
+      // Nếu tài khoản đã xác thực
+      return res.status(403).json({ error: "Account already exists" });
+    } else if (user && !user.verified) {
+      // Nếu tài khoản chưa được xác thực -> Cập nhật lại OTP và thông tin mới
+      user.personal_info.fullname = fullname;
+      user.personal_info.password = hashed_password;
+      user.otp = new_otp.toString();
+      user.otp_expiry_time = otp_expiry_time;
+
+      await user.save({ new: true, validateModifiedOnly: true });
+    } else {
+      // Tạo tài khoản mới
+      const username = await generateUsername(email);
+
+      user = new User({
+        personal_info: {
+          fullname,
+          email,
+          password: hashed_password,
+          username,
+          role: "USER",
+        },
+        otp_expiry_time,
+        otp: new_otp.toString(),
+        verified: false,
+      });
+
+      await user.save({ new: true, validateModifiedOnly: true });
+    }
+
+    // Gửi OTP qua email
+    mailService.sendEmail({
+      from: {
+        name: "Team Support Edu Blog",
+        email: "eforum@gmail.edu.vn.com",
       },
-      otp_expiry_time: otp_expiry_time, // Lưu thời gian hết hạn OTP
-      verified: false, // Đánh dấu tài khoản chưa được xác minh
+      to: user.personal_info.email,
+      subject: "Your OTP for Account Verification",
+      html: otp(user.personal_info.username, new_otp),
     });
 
-    user.otp = new_otp.toString();
+    // console.log("OTP", new_otp);
+    // console.log("User email", user.personal_info.email);
 
-    user
-      .save({ new: true, validateModifiedOnly: true })
-      .then((u) => {
-        // Gửi OTP qua email
-        mailService.sendEmail({
-          from: {
-            name: "Team Support Edu Blog",
-            email: "davidduongxu1@gmail.com",
-          },
-          to: u.personal_info.email,
-          subject: "Your OTP for Account Verification",
-          html: otp(u.personal_info.username, new_otp),
-          attachments: [],
-        });
-
-        console.log("OTP", new_otp);
-        console.log("user email", u.personal_info.email);
-
-        return res.status(200).json({
-          status: "success",
-          message:
-            "User registered successfully. OTP sent to email for verification.",
-          user_id: u._id,
-        });
-      })
-      .catch((err) => {
-        if (err.code == 11000) {
-          return res.status(500).json({ error: "Email already exists" });
-        }
-
-        return res.status(500).json({ error: err.message });
-      });
-  });
+    return res.status(200).json({
+      status: "success",
+      message:
+        "User registered successfully. OTP sent to email for verification.",
+      user_id: user._id,
+    });
+  } catch (error) {
+    console.error("Error during signup: ", error.message);
+    return res.status(500).json({ error: "An error occurred during signup" });
+  }
 });
 
 server.post("/signin", (req, res) => {
@@ -286,12 +382,16 @@ server.post("/signin", (req, res) => {
         return res.status(403).json({ error: "Email not found" });
       }
 
+      if (!user.verified) {
+        return res.status(403).json({ error: "Account not verified. Please verify your account first." });
+      }
+
       if (!user.google_auth) {
         bcrypt.compare(password, user.personal_info.password, (err, result) => {
           if (err) {
             return res
               .status(403)
-              .json({ error: "Error occured while login please try again" });
+              .json({ error: "Error occurred while login please try again" });
           }
 
           if (!result) {

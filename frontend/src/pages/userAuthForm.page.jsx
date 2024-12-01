@@ -33,7 +33,7 @@ const UserAuthForm = ({ type }) => {
         // Điều hướng đến trang verify OTP với email
         if (serverRoute === "/signup") {
           toast.success("Sign up successful. Please verify your email.");
-          navigate("/verify", { state: { email: formData.email } });
+          navigate("/verify", { state: { email: formData.email, password: formData.password } });
         } else {
           storeInSession("user", JSON.stringify(data));
           setUserAuth(data);

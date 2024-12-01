@@ -11,6 +11,7 @@ const UserNavigationPanel = () => {
     const signOutUser = () => {
         removeFromSession("user");
         setUserAuth({ access_token: null })
+        removeFromSession("adminAlertShown");
     }
 
     return (

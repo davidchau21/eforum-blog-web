@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
 import InputBox from "../components/input.component";
 import AnimationWrapper from "../common/page-animation";
+import { UserContext } from "../App";
+import { storeInSession } from "../common/session";
 
 const VerifyOtp = () => {
   const [otp, setOtp] = useState("");
@@ -11,6 +13,11 @@ const VerifyOtp = () => {
   const location = useLocation();
 
   const email = location.state?.email; 
+  const password = location.state?.password;  
+
+  let {
+    setUserAuth,
+  } = useContext(UserContext);
 
   const handleVerifyOtp = (e) => {
     e.preventDefault();
@@ -21,8 +28,18 @@ const VerifyOtp = () => {
 
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + "/verify", { email, otp })
-      .then(({ data }) => {
-        navigate("/signin", { state: { message: 'OTP Verified Successfully. Please sign in' } }); 
+      .then(() => {
+        axios
+          .post(import.meta.env.VITE_SERVER_DOMAIN + "/signin", { email, password })
+          .then(({ data }) => {
+            storeInSession("user", JSON.stringify(data));
+            setUserAuth(data);
+            toast.success("Login successful! Welcome back.");
+            navigate("/", { state: { message: 'OTP Verified and Logged in Successfully' } });
+          })
+          .catch(({ response }) => {
+            toast.error(response.data.message || "Error logging in");
+          });
       })
       .catch(({ response }) => {
         toast.error(response.data.message || "Error verifying OTP");

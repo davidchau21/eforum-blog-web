@@ -6,8 +6,8 @@ const useListenMessages = () => {
   const { socket } = useSocketContext();
   const { messages, setMessages } = useConversation();
 
-  console.log("mess: ",messages);
-  console.log("socket: ", socket);
+  // console.log("mess: ",messages);
+  // console.log("socket: ", socket);
 
   useEffect(() => {
 
