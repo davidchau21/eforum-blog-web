@@ -25,6 +25,18 @@ const HomePage = () => {
     let { userAuth: { access_token } } = useContext(UserContext);
     const [adminAlert, setAdminAlert] = useState(null);
 
+    let categories = [
+        "toán",
+        "văn",
+        "ngoại ngữ",
+        "sử",
+        "địa",
+        "sinh",
+        "hóa",
+        "lý",
+        "môn học khác"
+    ];
+
     useEffect(() => {
         axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags?limit=0")
         .then(response => {
@@ -310,8 +322,6 @@ const HomePage = () => {
                                             setPageState("home");
                                         }
                                     }}
-
-
                                 >
                                     <option>
                                         All Subjects
@@ -322,7 +332,7 @@ const HomePage = () => {
                                         </option>
                                     ))}
                                 </select>
-                                {tags.slice(0, 10).map((tag, i) => (
+                                {/* {tags.slice(0, 10).map((tag, i) => (
                                     <button
                                         key={i}
                                         onClick={(e) => loadBlogByCategory(e, tag.tag_name)}
@@ -333,7 +343,14 @@ const HomePage = () => {
                                     >
                                         {tag.tag_name}
                                     </button>
-                                ))}
+                                ))} */}
+                                {
+                                    categories.map((category, i) => (
+                                        <button key={i} onClick={loadBlogByCategory} className={`px-4 py-2 rounded-full border ${pageState === category ? "bg-black text-white" : "bg-white text-black border-gray-300"}`}>
+                                            {category}
+                                        </button>
+                                    ))
+                                }
                             </div>
                         </div>
                         <div>
