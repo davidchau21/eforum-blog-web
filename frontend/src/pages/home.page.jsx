@@ -216,27 +216,28 @@ const HomePage = () => {
                     >
                         <div>
                         {blogs == null ? (
-                        <Loader />
-                        ) : blogs?.results?.length ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {blogs.results.map((blog, i) => (
-                                    <AnimationWrapper
-                                        transition={{
-                                            duration: 1,
-                                            delay: i * 0.1,
-                                        }}
-                                        key={i}
-                                    >
-                                        <BlogPostCard
-                                            content={blog}
-                                            author={blog.author.personal_info}
-                                        />
-                                    </AnimationWrapper>
-                                ))}
-                            </div>
-                        ) : (
-                            <NoDataMessage message="No blogs published" />
-                        )}
+    <Loader />
+) : blogs?.results?.length ? (
+    <div className="grid grid-cols-1 gap-6"> {/* Thay đổi từ grid-cols-1 md:grid-cols-2 */}
+        {blogs.results.map((blog, i) => (
+            <AnimationWrapper
+                transition={{
+                    duration: 1,
+                    delay: i * 0.1,
+                }}
+                key={i}
+            >
+                <BlogPostCard
+                    content={blog}
+                    author={blog.author.personal_info}
+                />
+            </AnimationWrapper>
+        ))}
+    </div>
+) : (
+    <NoDataMessage message="No blogs published" />
+)}
+
 
                         {blogs?.results?.length > 0 ? (
                             <>

@@ -9,35 +9,36 @@ import { useNavigate, useParams } from "react-router-dom";
 import bannerDefault from "../imgs/banner-default.png";
 
 const PublishForm = () => {
-
     let characterLimit = 200;
     let tagLimit = 10;
 
     let { blog_id } = useParams();
-
     let { blog, blog: { banner, title, tags, des, content }, setEditorState, setBlog } = useContext(EditorContext);
-
     let { userAuth: { access_token } } = useContext(UserContext);
 
     const [availableTags, setAvailableTags] = useState([]);
     const [filteredTags, setFilteredTags] = useState([]);
+    const [selectedDefaultTag, setSelectedDefaultTag] = useState("");  // Trạng thái để lưu tag mặc định đã chọn
 
     let navigate = useNavigate();
 
+    // Các tag mặc định bạn muốn thêm vào dropdown
+    const defaultTags = ["Toan10", "Van10", "Hoa10", "Sinh10", "Anh10", "Ly10", "Su10", "Dia10", 
+        "Toan11", "Van11", "Hoa11", "Sinh11", "Anh11", "Ly11", "Su11", "Dia11", 
+        "Toan12", "Van12", "Hoa12", "Sinh12", "Anh12", "Ly12", "Su12", "Dia12" ];
+
     const handleCloseEvent = () => {
-        setEditorState("editor")
+        setEditorState("editor");
     }
 
     const handleBlogTitleChange = (e) => {
         let input = e.target;
-
-        setBlog({ ...blog, title: input.value })
+        setBlog({ ...blog, title: input.value });
     }
 
     const handleBlogDesChange = (e) => {
         let input = e.target;
-
-        setBlog({ ...blog, des: input.value })
+        setBlog({ ...blog, des: input.value });
     }
 
     const handleTitleKeyDown = (e) => {
@@ -54,10 +55,10 @@ const PublishForm = () => {
 
             if (tags.length < tagLimit) {
                 if (!tags.includes(tag) && tag.length) {
-                    setBlog({ ...blog, tags: [...tags, tag] })
+                    setBlog({ ...blog, tags: [...tags, tag] });
                 }
             } else {
-                toast.error(`You can add max ${tagLimit} Tags`)
+                toast.error(`You can add max ${tagLimit} Tags`);
             }
 
             e.target.value = "";
@@ -81,8 +82,12 @@ const PublishForm = () => {
             return toast.error("Enter at least 1 tag to help us rank your blog");
         }
 
-        let loadingToast = toast.loading("Publishing....");
+        // Kiểm tra nếu người dùng chưa chọn tag mặc định
+        if (!selectedDefaultTag) {
+            return toast.error("Please choose a default subject before publishing");
+        }
 
+        let loadingToast = toast.loading("Publishing....");
         e.target.classList.add('disable');
 
         let blogObj = {
@@ -116,7 +121,6 @@ const PublishForm = () => {
             toast.dismiss(loadingToast);
             toast.success("Published 👍");
 
-
             setTimeout(() => {
                 navigate("/dashboard/blogs");
             }, 500);
@@ -140,7 +144,6 @@ const PublishForm = () => {
             })
             .catch(error => console.error("Failed to fetch tags:", error));
     }, []);
-
 
     return (
         <AnimationWrapper>
@@ -170,7 +173,6 @@ const PublishForm = () => {
                     <p className="font-gelasio line-clamp-2 text-xl leading-7 mt-4">{des}</p>
                 </div>
 
-
                 <div className="border-grey lg:border-1 lg:pl-8">
                     <p className="text-dark-grey mb-2 mt-9">Blog Title</p>
                     <input type="text" placeholder="Blog Title" defaultValue={title} className="input-box pl-4" onChange={handleBlogTitleChange} />
@@ -188,7 +190,7 @@ const PublishForm = () => {
 
                     <p className="mt-1 text-dark-grey text-sm text-right">{characterLimit - des.length} characters left</p>
 
-                    {/* <p className="text-dark-grey mb-2 mt-9">Topics - ( Helps is searching and ranking your blog post )</p> */}
+                    {/* Dropdown cho các tag đã chọn từ server */}
                     <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose from existing topics</p>
                     <select
                         className="select select-bordered w-full max-w-2xl mb-2"
@@ -208,6 +210,28 @@ const PublishForm = () => {
                         {availableTags.map((tag, index) => (
                             <option key={index} value={tag.tag_name}>
                                 {tag.tag_name}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Thanh dropdown riêng cho các tag mặc định */}
+                    <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose default subjects</p>
+                    <select
+                        className="select select-bordered w-full max-w-2xl mb-2"
+                        onChange={(e) => {
+                            const selectedTag = e.target.value;
+                            setSelectedDefaultTag(selectedTag); // Lưu tag mặc định đã chọn
+                            if (selectedTag && !tags.includes(selectedTag) && tags.length < tagLimit) {
+                                setBlog({ ...blog, tags: [...tags, selectedTag] });
+                            }
+                        }}
+                    >
+                        <option value="" disabled>
+                            Choose a default topic
+                        </option>
+                        {defaultTags.map((defaultTag, index) => (
+                            <option key={index} value={defaultTag}>
+                                {defaultTag}
                             </option>
                         ))}
                     </select>
@@ -235,7 +259,10 @@ const PublishForm = () => {
 
             </section>
         </AnimationWrapper>
-    )
+    );
 }
 
 export default PublishForm;
+
+
+
