@@ -1,5 +1,5 @@
 import axios from "axios";
-import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
@@ -11,7 +11,6 @@ import CommentsContainer, { fetchComments } from "../components/comments.compone
 import { UserContext } from "../App";
 import { toast } from "react-hot-toast";
 import bannerDefault from "../imgs/banner-default.png"; // Import ảnh banner mặc định
-
 
 export const blogStructure = {
     title: '',
@@ -34,10 +33,10 @@ const BlogPage = () => {
     const [islikedByUser, setLikedByUser] = useState(false);
     const [commentsWrapper, setCommentsWrapper] = useState(false);
     const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
+
     const handleBannerError = (e) => {
         e.target.src = bannerDefault; // Đổi sang ảnh mặc định nếu ảnh không tải được
     }
-    
 
     let { title, content, banner, author: { personal_info: { fullname, username: author_username, profile_img } }, publishedAt, isReport } = blog;
 
@@ -94,14 +93,15 @@ const BlogPage = () => {
 
                         <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
 
-                            {/* <img src={banner} className="aspect-video" /> */}
-                            <img
-                                src={banner || bannerDefault} // Dùng banner mặc định nếu không có banner từ blog
-                                className="aspect-video"
-                                onError={handleBannerError} // Thêm onError để xử lý lỗi tải ảnh
-                                alt="Blog Banner"
-                            />
-
+                            {/* Ẩn banner khi không có giá trị banner hoặc sử dụng banner mặc định */}
+                            <div className={`w-full aspect-video ${!banner || banner === bannerDefault ? 'hidden' : ''}`}>
+                                <img
+                                    src={banner || bannerDefault} // Dùng banner mặc định nếu không có banner từ blog
+                                    className="w-full h-full object-cover"
+                                    onError={handleBannerError} // Thêm onError để xử lý lỗi tải ảnh
+                                    alt="Blog Banner"
+                                />
+                            </div>
 
                             <div className="mt-12">
                                 <h2>{title}</h2>
