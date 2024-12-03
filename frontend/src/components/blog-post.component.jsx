@@ -15,7 +15,7 @@ const BlogPostCard = ({ content, author }) => {
     const isDefaultBanner = banner === bannerDefault;
 
     return ( 
-        <Link to={`/blog/${id}`} className="flex flex-col border border-grey p-4 rounded-lg mb-4">
+        <Link to={`/blog/${id}`} className="flex flex-col border border-grey shadow-lg p-4 rounded-lg mb-4">
             {/* Tác giả và ngày đăng */}
             <div className="flex gap-3 items-center mb-3">
                 <img src={profile_img} className="w-10 h-10 rounded-full object-cover" />
