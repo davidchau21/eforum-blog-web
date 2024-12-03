@@ -32,7 +32,7 @@ const BlogPostCard = ({ content, author }) => {
                 </p>
 
                 {/* Banner */}
-                {!isDefaultBanner ? (
+                {!isDefaultBanner && (
                     <div className="w-full h-full bg-grey mb-3">
                         <img
                             src={banner || bannerDefault}
@@ -40,7 +40,7 @@ const BlogPostCard = ({ content, author }) => {
                             onError={handleBannerError}
                         />
                     </div>
-                ) : null}
+                )}
 
                 {/* Tags và tương tác */}
                 <div className="border-t border-b border-gray-300 my-4">
