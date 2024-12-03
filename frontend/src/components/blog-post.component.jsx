@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import { getDay } from "../common/date";
-import bannerDefault from "../imgs/banner-default.png";
+// import bannerDefault from "../imgs/banner-default.png";
 import { Link } from "react-router-dom";
 
 const BlogPostCard = ({ content, author }) => {
@@ -11,7 +11,7 @@ const BlogPostCard = ({ content, author }) => {
         e.target.src = bannerDefault;
     };
 
-    const isDefaultBanner = banner === bannerDefault;
+    const isDefaultBanner = banner === "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
 
     return (
         <Link to={`/blog/${id}`} className="flex flex-col border border-grey shadow-lg p-4 rounded-lg mb-4">

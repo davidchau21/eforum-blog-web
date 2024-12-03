@@ -10,7 +10,7 @@ import BlogContent from "../components/blog-content.component";
 import CommentsContainer, { fetchComments } from "../components/comments.component";
 import { UserContext } from "../App";
 import { toast } from "react-hot-toast";
-import bannerDefault from "../imgs/banner-default.png"; // Import ảnh banner mặc định
+// import bannerDefault from "../imgs/banner-default.png"; // Import ảnh banner mặc định
 
 export const blogStructure = {
     title: '',
@@ -33,6 +33,8 @@ const BlogPage = () => {
     const [islikedByUser, setLikedByUser] = useState(false);
     const [commentsWrapper, setCommentsWrapper] = useState(false);
     const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
+
+    const bannerDefault = "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
 
     const handleBannerError = (e) => {
         e.target.src = bannerDefault; // Đổi sang ảnh mặc định nếu ảnh không tải được

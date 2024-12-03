@@ -6,11 +6,12 @@ import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
-import bannerDefault from "../imgs/banner-default.png";
+// import bannerDefault from "../imgs/banner-default.png";
 
 const PublishForm = () => {
     let characterLimit = 200;
     let tagLimit = 10;
+    const bannerDefault = "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
 
     let { blog_id } = useParams();
     let { blog, blog: { banner, title, tags, des, content }, setEditorState, setBlog } = useContext(EditorContext);
