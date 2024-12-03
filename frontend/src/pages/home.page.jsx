@@ -25,26 +25,18 @@ const HomePage = () => {
     let { userAuth: { access_token } } = useContext(UserContext);
     const [adminAlert, setAdminAlert] = useState(null);
 
-    let categories = [
-        "toán",
-        "văn",
-        "ngoại ngữ",
-        "sử",
-        "địa",
-        "sinh",
-        "hóa",
-        "lý",
-        "môn học khác"
-    ];
+    let categories = [ "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh", "Sử", "Địa", "GDCD", "Công Nghệ", "Tin Học", "Môn học khác"];
+
+    let tagClass = [ "Lớp 6", "Lớp 7", "Lớp 8", "Lớp 9", "Lớp 10", "Lớp 11", "Lớp 12"];
 
     useEffect(() => {
         axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags?limit=0")
-        .then(response => {
-            const fetchedTags = response.data.list || [];
-            const sortedTags = fetchedTags.sort((a, b) => a.tag_name.localeCompare(b.tag_name));
-            setTags(sortedTags);
-        })
-        .catch(error => console.error("Failed to fetch tags:", error));
+            .then(response => {
+                const fetchedTags = response.data.list || [];
+                const sortedTags = fetchedTags.sort((a, b) => a.tag_name.localeCompare(b.tag_name));
+                setTags(sortedTags);
+            })
+            .catch(error => console.error("Failed to fetch tags:", error));
     }, []);
 
 
@@ -138,9 +130,9 @@ const HomePage = () => {
 
 
     const fetchAlert = () => {
-        const alertKey = "adminAlertShown"; 
+        const alertKey = "adminAlertShown";
         const hasShownAlert = sessionStorage.getItem(alertKey); // Check if the alert has been shown before
-    
+
         if (!hasShownAlert) { // If the alert hasn't been shown
             axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/alert", {
                 headers: { 'Authorization': `Bearer ${access_token}` },
@@ -227,45 +219,45 @@ const HomePage = () => {
                         defaultHidden={["trendings", "news"]}
                     >
                         <div>
-                        {blogs == null ? (
-    <Loader />
-) : blogs?.results?.length ? (
-    <div className="grid grid-cols-1 gap-6"> {/* Thay đổi từ grid-cols-1 md:grid-cols-2 */}
-        {blogs.results.map((blog, i) => (
-            <AnimationWrapper
-                transition={{
-                    duration: 1,
-                    delay: i * 0.1,
-                }}
-                key={i}
-            >
-                <BlogPostCard
-                    content={blog}
-                    author={blog.author.personal_info}
-                />
-            </AnimationWrapper>
-        ))}
-    </div>
-) : (
-    <NoDataMessage message="No blogs published" />
-)}
+                            {blogs == null ? (
+                                <Loader />
+                            ) : blogs?.results?.length ? (
+                                <div className="grid grid-cols-1 gap-6"> {/* Thay đổi từ grid-cols-1 md:grid-cols-2 */}
+                                    {blogs.results.map((blog, i) => (
+                                        <AnimationWrapper
+                                            transition={{
+                                                duration: 1,
+                                                delay: i * 0.1,
+                                            }}
+                                            key={i}
+                                        >
+                                            <BlogPostCard
+                                                content={blog}
+                                                author={blog.author.personal_info}
+                                            />
+                                        </AnimationWrapper>
+                                    ))}
+                                </div>
+                            ) : (
+                                <NoDataMessage message="No blogs published" />
+                            )}
 
 
-                        {blogs?.results?.length > 0 ? (
-                            <>
-                                <LoadMoreDataBtn
-                                    state={blogs}
-                                    fetchDataFun={pageState == "home" ? fetchLatestBlogs : fetchBlogsByCategory}
-                                />
-                                <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">
-                                    {/* {translations.pageEnd} */}
-                                </p>
-                            </>
-                        ) : null}
+                            {blogs?.results?.length > 0 ? (
+                                <>
+                                    <LoadMoreDataBtn
+                                        state={blogs}
+                                        fetchDataFun={pageState == "home" ? fetchLatestBlogs : fetchBlogsByCategory}
+                                    />
+                                    <p className="text-dark-grey px-3 rounded-md flex justify-center items-center mt-8">
+                                        {/* {translations.pageEnd} */}
+                                    </p>
+                                </>
+                            ) : null}
                         </div>
                         <div>
                             {trendingBlogs == null ? (
-                        <Loader />
+                                <Loader />
                             ) : trendingBlogs.length ? (
                                 trendingBlogs.map((blog, i) => (
                                     <AnimationWrapper

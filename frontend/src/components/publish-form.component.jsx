@@ -18,14 +18,19 @@ const PublishForm = () => {
 
     const [availableTags, setAvailableTags] = useState([]);
     const [filteredTags, setFilteredTags] = useState([]);
-    const [selectedDefaultTag, setSelectedDefaultTag] = useState("");  // Trạng thái để lưu tag mặc định đã chọn
+    const [selectedClassTag, setSelectedClassTag] = useState("");  // Trạng thái để lưu tag mặc định đã chọn
+    const [selectedSubjectTag, setSelectedSubjectTag] = useState("");  // Trạng thái để lưu tag môn học đã chọn
 
     let navigate = useNavigate();
 
     // Các tag mặc định bạn muốn thêm vào dropdown
-    const defaultTags = ["Toan10", "Van10", "Hoa10", "Sinh10", "Anh10", "Ly10", "Su10", "Dia10", 
-        "Toan11", "Van11", "Hoa11", "Sinh11", "Anh11", "Ly11", "Su11", "Dia11", 
-        "Toan12", "Van12", "Hoa12", "Sinh12", "Anh12", "Ly12", "Su12", "Dia12" ];
+    const defaultTagsClass = [
+        "Lớp 6", "Lớp 7", "Lớp 8", "Lớp 9", "Lớp 10", "Lớp 11", "Lớp 12",
+    ];
+
+    const defaultTagsSubject = [
+        "Toán", "Văn", "Anh", "Lý", "Hóa", "Sinh", "Sử", "Địa", "GDCD", "Công Nghệ", "Tin Học", "Môn học khác",
+    ];
 
     const handleCloseEvent = () => {
         setEditorState("editor");
@@ -83,7 +88,11 @@ const PublishForm = () => {
         }
 
         // Kiểm tra nếu người dùng chưa chọn tag mặc định
-        if (!selectedDefaultTag) {
+        if (!selectedClassTag) {
+            return toast.error("Please choose a default class before publishing");
+        }
+
+        if (!selectedSubjectTag) {
             return toast.error("Please choose a default subject before publishing");
         }
 
@@ -134,7 +143,7 @@ const PublishForm = () => {
     };
 
     useEffect(() => {
-        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags",
+        axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/tags?limit=0",
             { headers: { 'Authorization': `Bearer ${access_token}` } }
         )
             .then(response => {
@@ -214,13 +223,13 @@ const PublishForm = () => {
                         ))}
                     </select>
 
-                    {/* Thanh dropdown riêng cho các tag mặc định */}
+                    {/* Thanh dropdown riêng cho các tag lớp mặc định */}
                     <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose default subjects</p>
                     <select
                         className="select select-bordered w-full max-w-2xl mb-2"
                         onChange={(e) => {
                             const selectedTag = e.target.value;
-                            setSelectedDefaultTag(selectedTag); // Lưu tag mặc định đã chọn
+                            setSelectedClassTag(selectedTag); // Lưu tag mặc định đã chọn
                             if (selectedTag && !tags.includes(selectedTag) && tags.length < tagLimit) {
                                 setBlog({ ...blog, tags: [...tags, selectedTag] });
                             }
@@ -229,7 +238,29 @@ const PublishForm = () => {
                         <option value="" disabled>
                             Choose a default topic
                         </option>
-                        {defaultTags.map((defaultTag, index) => (
+                        {defaultTagsClass.map((defaultTag, index) => (
+                            <option key={index} value={defaultTag}>
+                                {defaultTag}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Thanh dropdown riêng cho các tag môn mặc định */}
+                    <p className="text-dark-grey mb-2 mr-32 w-1/2"> Choose default subjects</p>
+                    <select
+                        className="select select-bordered w-full max-w-2xl mb-2"
+                        onChange={(e) => {
+                            const selectedTag = e.target.value;
+                            setSelectedSubjectTag(selectedTag); // Lưu tag mặc định đã chọn
+                            if (selectedTag && !tags.includes(selectedTag) && tags.length < tagLimit) {
+                                setBlog({ ...blog, tags: [...tags, selectedTag] });
+                            }
+                        }}
+                    >
+                        <option value="" disabled>
+                            Choose a default topic
+                        </option>
+                        {defaultTagsSubject.map((defaultTag, index) => (
                             <option key={index} value={defaultTag}>
                                 {defaultTag}
                             </option>
