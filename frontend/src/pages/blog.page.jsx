@@ -95,6 +95,25 @@ const BlogPage = () => {
 
                         <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
 
+                            <hr className="border-grey my-2" />
+                            <div className="flex max-sm:flex-col justify-between my-8">
+                                <div className="flex gap-5 items-start">
+                                    <img src={profile_img} className="w-12 h-12 rounded-full" />
+
+                                    <p className="capitalize">
+                                        {fullname}
+                                        <br />
+                                        @
+                                        <Link to={`/user/${author_username}`} className="underline">{author_username}</Link>
+                                    </p>
+
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Published on {new Date(publishedAt).toLocaleDateString('en-GB')}</p>
+                                </div>
+                            </div>
+                            <hr className="border-grey my-2" />
+
                             {/* Ẩn banner khi không có giá trị banner hoặc sử dụng banner mặc định */}
                             <div className={`w-full aspect-video ${!banner || banner === bannerDefault ? 'hidden' : ''}`}>
                                 <img
@@ -108,26 +127,9 @@ const BlogPage = () => {
                             <div className="mt-12">
                                 <h2>{title}</h2>
                                 <hr className="border-grey my-2" />
-                                <div className="flex max-sm:flex-col justify-between my-8">
-                                    <div className="flex gap-5 items-start">
-                                        <img src={profile_img} className="w-12 h-12 rounded-full" />
-
-                                        <p className="capitalize">
-                                            {fullname}
-                                            <br />
-                                            @
-                                            <Link to={`/user/${author_username}`} className="underline">{author_username}</Link>
-                                        </p>
-
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Published on {getDay(publishedAt)}</p>
-                                    </div>
-                                </div>
-                                <hr className="border-grey my-2" />
                             </div>
 
-                            <BlogInteraction />
+                            {/* <BlogInteraction /> */}
 
                             <div className="my-12 font-gelasio blog-page-content">
                                 {
