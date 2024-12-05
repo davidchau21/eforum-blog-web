@@ -1,4 +1,5 @@
 import { createThemes } from 'tw-colors';
+import daisyui from 'daisyui';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -46,6 +47,6 @@ export default {
                 'purple': '#582C8E'
             }
         }),
-        require('daisyui')
+        daisyui,
     ],
 };
