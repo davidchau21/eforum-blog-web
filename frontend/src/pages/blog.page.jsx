@@ -59,7 +59,7 @@ const BlogPage = () => {
                         setSimilrBlogs(data.blogs);
                     })
 
-                setLoading(false);
+                setLoading(false); 
             })
             .catch(err => {
                 console.log(err);
