@@ -187,7 +187,7 @@ const HomePage = () => {
                 )}
 
                 {/* Admin Blogs */}
-                <div className="hidden lg:block lg:w-1/4">
+                <div className="hidden lg:block lg:w-1/4 sticky-section">
                     <h1 className="font-semibold text-lg mb-4 text-black">
                         {translations.adminPosts}
                     </h1>
@@ -213,7 +213,7 @@ const HomePage = () => {
                 </div>
 
                 {/* Latest Blogs */}
-                <div className="w-full lg:w-1/2">
+                <div className="w-full lg:w-1/2 sticky-section scrollbar-hide">
                     <InPageNavigation
                         routes={[pageState, "trendings", "news"]}
                         defaultHidden={["trendings", "news"]}

@@ -49,7 +49,7 @@ const BlogPostCard = ({ content, author }) => {
                     </p>
                 </Link>
                 <Link to={`/blog/${id}`} className="block">
-                    <div className="border-t border-b border-gray-300 my-4">
+                    <div className="border-t border-b border-grey my-4">
                         <div className="flex items-center justify-between mt-3 mb-2">
 
                             <span className="bg-gray-200 text-gray-600 text-xs py-1 px-3 rounded-full">
@@ -58,7 +58,7 @@ const BlogPostCard = ({ content, author }) => {
                                 ))}
                             </span>
 
-                            <div className="flex items-center gap-4 text-gray-500">
+                            <div className="flex items-center gap-4 text-gray-500 ">
 
                                 <div className="flex items-center gap-1">
                                     <i className="fi fi-rr-heart text-xl text-rose-600"></i>

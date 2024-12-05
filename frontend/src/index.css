@@ -127,6 +127,13 @@
     .scrollbar-hide::-webkit-scrollbar {
         display: none; /* Chrome, Safari */
     }
+    .sticky-section {
+        position: sticky;
+        top: 0; /* Điều chỉnh khoảng cách từ trên xuống */
+        height: calc(100vh - 32px); /* Đảm bảo chiều cao không vượt quá màn hình */
+        overflow-y: auto; /* Thêm cuộn riêng nếu nội dung dài */
+    }
+    
 }
 
 .ce-block__content, .ce-toolbar__content{
