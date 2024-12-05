@@ -228,6 +228,7 @@ const PublishForm = () => {
                     <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose default subjects</p>
                     <select
                         className="select select-bordered w-full max-w-2xl mb-2"
+                        defaultValue=""
                         onChange={(e) => {
                             const selectedTag = e.target.value;
                             setSelectedClassTag(selectedTag); // Lưu tag mặc định đã chọn
@@ -250,6 +251,7 @@ const PublishForm = () => {
                     <p className="text-dark-grey mb-2 mr-32 w-1/2"> Choose default subjects</p>
                     <select
                         className="select select-bordered w-full max-w-2xl mb-2"
+                        defaultValue=""
                         onChange={(e) => {
                             const selectedTag = e.target.value;
                             setSelectedSubjectTag(selectedTag); // Lưu tag mặc định đã chọn

@@ -213,7 +213,7 @@ const HomePage = () => {
                 </div>
 
                 {/* Latest Blogs */}
-                <div className="w-full lg:w-1/2 sticky-section scrollbar-hide">
+                <div className="w-full lg:w-1/2 ">
                     <InPageNavigation
                         routes={[pageState, "trendings", "news"]}
                         defaultHidden={["trendings", "news"]}
@@ -299,7 +299,7 @@ const HomePage = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="hidden lg:block lg:w-1/4">
+                <div className="hidden lg:block lg:w-1/4 sticky-section scrollbar-hide">
                     <div className="space-y-8">
                         <div>
                             <h1 className="font-semibold text-black text-lg mb-4">

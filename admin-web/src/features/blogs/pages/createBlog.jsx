@@ -13,6 +13,8 @@ import tagApi from "../../../api/tag";
 import { Select } from "antd";
 import blogApi from "../../../api/blogApi";
 
+let defaultBanner = "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
+
 const LIMIT_TAGS = 10;
 
 const CreateBlog = () => {
@@ -34,7 +36,7 @@ const CreateBlog = () => {
   const [blog, setBlog] = useState({
     title: "",
     content: "",
-    banner: lightBanner, // Sử dụng ảnh mặc định ban đầu
+    banner: "", // Sử dụng ảnh mặc định ban đầu
     des: "",
     tags: [],
   });
@@ -84,7 +86,7 @@ const CreateBlog = () => {
 
   const handleError = (e) => {
     let img = e.target;
-    img.src = lightBanner; // Dùng ảnh mặc định nếu ảnh tải bị lỗi
+    img.src = defaultBanner; // Dùng ảnh mặc định nếu ảnh tải bị lỗi
   };
 
   const handleUploadBlog = async (isDraft) => {
@@ -95,7 +97,7 @@ const CreateBlog = () => {
           if (data.blocks.length) {
             const body = {
               title: blog.title,
-              banner: blog.banner || lightBanner, // Dùng ảnh mặc định nếu không có banner
+              banner: blog.banner || defaultBanner, // Dùng ảnh mặc định nếu không có banner
               des: blog.des,
               content: data,
               tags: blog.tags,
