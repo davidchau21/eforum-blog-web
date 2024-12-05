@@ -14,7 +14,7 @@ const SideNav = () => {
     let sideBarIconTab = useRef();
     let pageStateTab = useRef();
 
-    const translations = getTranslations(language); // Get translations based on the current language
+    const translations = getTranslations(language);
 
     const changePageState = (e) => {
         let { offsetWidth, offsetLeft } = e.target;
