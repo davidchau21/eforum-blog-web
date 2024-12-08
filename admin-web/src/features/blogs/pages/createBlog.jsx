@@ -46,7 +46,7 @@ const CreateBlog = () => {
     if (!textEditor.isReady) {
       setTextEditor(
         new EditorJS({
-          holderId: "textEditor",
+          holder: "textEditor",
           data: Array.isArray(blog.content) ? blog.content[0] : blog.content,
           tools: tools,
           placeholder: "Let's write an awesome story",

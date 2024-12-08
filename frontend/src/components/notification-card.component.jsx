@@ -126,7 +126,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
                             {!reply && <button className="underline hover:text-black" onClick={handleReplyClick}>Reply</button>}
                             <button className="underline hover:text-black" onClick={(e) => handleDelete(comment._id, "comment", e.target)}>Delete</button>
                         </>
-                    ) : type === 'share' ? (
+                    ) : type === 'share' && type === 'like' ? (
                         <button className="underline hover:text-black" onClick={(e) => handleDelete(notification_id, "share", e.target)}>Delete</button>
                     ) : ""
                 }
@@ -136,7 +136,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
                 isReplying && (
                     <div className="mt-8">
                         <NotificationCommentField
-                            _id={blog_id || notification_id}
+                            _id={blog._id}
                             blog_author={user}
                             index={index}
                             replyingTo={comment?._id}

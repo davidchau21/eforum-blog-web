@@ -9,7 +9,7 @@ import axios from "axios";
 
 const CommentCard = ({ index, leftVal, commentData }) => {
 
-    let { commented_by: { personal_info: { profile_img, fullname, username: commented_by_username } }, commentedAt, comment, _id, children, isReport } = commentData
+    let { commented_by: { personal_info: { profile_img, fullname, username: commented_by_username } }, commentedAt, comment, _id, children, isReport, image } = commentData
 
     let { blog, blog: { comments, activity, activity: { total_parent_comments }, comments: { results: commentsArr }, author: { personal_info: { username: blog_author } } }, setBlog, setTotalParentCommentsLoaded } = useContext(BlogContext)
 
@@ -249,7 +249,8 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
             </div>
 
-                <p className="font-gelasio text-xl ml-3">{comment}</p>
+                <p className="font-gelasio text-xl ml-3">{comment}</p>  
+                {image && <img src={image} alt="comment image" className="comment-image" />}
 
                 <div className="flex gap-5 items-center mt-5">
 

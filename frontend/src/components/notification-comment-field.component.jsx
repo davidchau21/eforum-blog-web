@@ -18,7 +18,7 @@ const NotificationCommentField = ({ _id, blog_author, index = undefined, replyin
         }
 
         axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/add-comment", {
-            _id, blog_author: user_id, comment, replying_to: replyingTo, notification_id
+            _id, blog_author: user_id, comment, replying_to: replyingTo, notification_id, image: null
         }, {
             headers: {
                 'Authorization': `Bearer ${access_token}`
@@ -28,7 +28,7 @@ const NotificationCommentField = ({ _id, blog_author, index = undefined, replyin
             
             setReplying(false);
 
-            results[index].reply = { comment, _id: data._id }
+            results[index].reply = { comment, _id: data._id, image: null }
             
             setNotifications({ ...notifications, results })
 
@@ -37,6 +37,8 @@ const NotificationCommentField = ({ _id, blog_author, index = undefined, replyin
             console.log(err);
         })
     }
+
+    console.log("NotificationCommentField", _id);
 
     return (
         <>

@@ -36,12 +36,15 @@ const CommentsContainer = () => {
     let { blog, blog: { _id, title, comments: { results : commentsArr }, activity: { total_parent_comments } }, commentsWrapper, setCommentsWrapper, totalParentCommentsLoaded, setTotalParentCommentsLoaded, setBlog } = useContext(BlogContext)
 
     const loadMoreComments = async () => {
-
-        let newCommentsArr = await fetchComments({ skip: totalParentCommentsLoaded, blog_id: _id, setParentCommentCountFun: setTotalParentCommentsLoaded, comment_array: commentsArr })
-
-        setBlog({ ...blog, comments: newCommentsArr })
-
+        try {
+            let newCommentsArr = await fetchComments({ skip: totalParentCommentsLoaded, blog_id: _id, setParentCommentCountFun: setTotalParentCommentsLoaded, comment_array: commentsArr });
+            setBlog({ ...blog, comments: newCommentsArr });
+        } catch (error) {
+            console.error("Error loading more comments:", error);
+        }
     }
+
+    console.log("total_parent_comments", total_parent_comments, "totalParentCommentsLoaded", totalParentCommentsLoaded)
 
     return (
         <div className={"max-sm:w-full fixed " + ( commentsWrapper ? "top-0 sm:right-0" : "top-[100%] sm:right-[-100%]" ) + " duration-700 max-sm:right-0 sm:top-0 w-[50%] min-w-screen h-full z-50 bg-white shadow-2xl p-8 px-16 overflow-y-auto overflow-x-hidden"}>
@@ -76,7 +79,7 @@ const CommentsContainer = () => {
                 className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2">
                     Load More
                 </button>
-                ) : ( "" )
+                ) : ( <></> )
             }
 
         </div>

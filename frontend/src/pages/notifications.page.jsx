@@ -9,36 +9,39 @@ import NotificationCard from "../components/notification-card.component";
 import LoadMoreDataBtn from "../components/load-more.component";
 
 const Notifications = () => {
-    let { userAuth, userAuth: { access_token, new_notification_available }, setUserAuth } = useContext(UserContext);
+    const { userAuth, userAuth: { access_token, new_notification_available }, setUserAuth } = useContext(UserContext);
 
     const [filter, setFilter] = useState('all');
     const [notifications, setNotifications] = useState(null);
+    const [isLoading, setIsLoading] = useState(false); // Trạng thái tải dữ liệu
 
-    let filters = ['all', 'like', 'comment', 'reply', 'share'];
+    const filters = ['all', 'like', 'comment', 'reply', 'share'];
 
     const fetchNotifications = ({ page, deletedDocCount = 0 }) => {
+        setIsLoading(true); 
         axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/notifications", { page, filter, deletedDocCount }, {
-            headers: {
-                'Authorization': `Bearer ${access_token}`
-            }
+            headers: { 'Authorization': `Bearer ${access_token}` }
         })
-        .then(async ({ data: { notifications: data } }) => {
+        .then(async ({ data: { notifications: data, totalDocs } }) => {
             if (new_notification_available) {
                 setUserAuth({ ...userAuth, new_notification_available: false });
             }
 
-            let formatedData = await filterPaginationData({
+            const formatedData = await filterPaginationData({
                 state: notifications,
-                data, page,
+                data,
+                page,
                 countRoute: "/all-notifications-count",
                 data_to_send: { filter },
-                user: access_token
+                user: access_token,
             });
 
-            setNotifications(formatedData);
+            setNotifications({ ...formatedData, totalDocs });
+            setIsLoading(false); 
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
+            setIsLoading(false);
         });
     };
 
@@ -48,9 +51,25 @@ const Notifications = () => {
         }
     }, [access_token, filter]);
 
-    const handleFilter = (e) => {
-        let btn = e.target;
+    useEffect(() => {
+        const handleScroll = () => {
+            if (
+                window.innerHeight + document.documentElement.scrollTop >=
+                document.documentElement.offsetHeight - 200 && // Gần cuối trang
+                notifications && notifications.totalDocs > notifications.results.length &&
+                !isLoading
+            ) {
+                fetchNotifications({ page: notifications.page + 1, deletedDocCount: notifications.deletedDocCount });
+            }
+        };
 
+        window.addEventListener('scroll', handleScroll);
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [notifications, isLoading]);
+
+    const handleFilter = (e) => {
+        const btn = e.target;
         setFilter(btn.innerHTML);
         setNotifications(null);
     };
@@ -59,37 +78,38 @@ const Notifications = () => {
         <div>
             <h1 className="max-md:hidden">Recent Notifications</h1>
 
-            {/* <div className="my-8 flex gap-6 overflow-x-auto scrollbar-hide"> */}
             <div className="my-8 flex gap-6 overflow-x-auto scrollbar-hide">
-                {
-                    filters.map((filterName, i) => {
-                        return <button 
-                            key={i} 
-                            className={"py-2 " + (filter == filterName ? "btn-dark" : "btn-light")}
-                            onClick={handleFilter}>
-                                {filterName}
-                        </button>;
-                    })
-                }
+                {filters.map((filterName, i) => (
+                    <button 
+                        key={i} 
+                        className={`py-2 ${filter === filterName ? "btn-dark" : "btn-light"}`}
+                        onClick={handleFilter}
+                    >
+                        {filterName}
+                    </button>
+                ))}
             </div>
 
-            {
-                notifications == null ? <Loader /> :
+            {notifications == null ? (
+                <Loader />
+            ) : (
                 <>
-                    {
-                        notifications.results.length ?
-                            notifications.results.map((notification, i) => {
-                                // console.log(notification);
-                                return <AnimationWrapper key={i} transition={{ delay: i * 0.08 }}>
-                                    <NotificationCard data={notification} index={i} notificationState={{ notifications, setNotifications }} />
-                                </AnimationWrapper>;
-                            })
-                        : <NoDataMessage message="Nothing available" />
-                    }
-
-                    <LoadMoreDataBtn state={notifications} fetchDataFun={fetchNotifications} additionalParam={{ deletedDocCount: notifications.deletedDocCount }} />
+                    {notifications.results.length ? (
+                        notifications.results.map((notification, i) => (
+                            <AnimationWrapper key={i} transition={{ delay: i * 0.08 }}>
+                                <NotificationCard
+                                    data={notification}
+                                    index={i}
+                                    notificationState={{ notifications, setNotifications }}
+                                />
+                            </AnimationWrapper>
+                        ))
+                    ) : (
+                        <NoDataMessage message="Nothing available" />
+                    )}
+                    {isLoading && <Loader />}
                 </>
-            }
+            )}
         </div>
     );
 };

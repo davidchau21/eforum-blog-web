@@ -85,7 +85,7 @@ const EditBlog = () => {
       if (!textEditor.isReady) {
         setTextEditor(
           new EditorJS({
-            holderId: "textEditor",
+            holder: "textEditor",
             data: Array.isArray(editblog.content)
               ? editblog.content[0]
               : editblog.content,

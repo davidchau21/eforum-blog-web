@@ -772,14 +772,14 @@ server.get("/trending-blogs", (req, res) => {
       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
     )
     .sort({
-      "activity.total_read": -1,
+      "activity.total_reads": -1,
       "activity.total_likes": -1,
       "activity.total_share": -1,
       "activity.total_comments": -1,
       publishedAt: -1,
     })
     .select("blog_id title publishedAt -_id")
-    .limit(5)
+    .limit(10)
     .then((blogs) => {
       return res.status(200).json({ blogs });
     })
@@ -1198,30 +1198,116 @@ server.post("/isliked-by-user", verifyJWT, (req, res) => {
     });
 });
 
+// server.post("/add-comment", verifyJWT, async (req, res) => {
+//   let user_id = req.user;
+
+//   const user = await User.findById(user_id);
+//   console.log(user_id);
+//   console.log(user);
+//   if (user && user.blocked_comment) {
+//     return res.status(403).json({ error: "You are blocked from commenting" });
+//   }
+
+//   let { _id, comment, blog_author, replying_to, notification_id } = req.body;
+
+//   if (!comment.length) {
+//     return res
+//       .status(403)
+//       .json({ error: "Write something to leave a comment" });
+//   }
+
+//   // creating a comment doc
+//   let commentObj = {
+//     blog_id: _id,
+//     blog_author,
+//     comment,
+//     commented_by: user_id,
+//   };
+
+//   if (replying_to) {
+//     commentObj.parent = replying_to;
+//     commentObj.isReply = true;
+//   }
+
+//   new Comment(commentObj).save().then(async (commentFile) => {
+//     let { comment, commentedAt, children } = commentFile;
+
+//     await Blog.findOneAndUpdate(
+//       { _id },
+//       {
+//         $push: { comments: commentFile._id },
+//         $inc: {
+//           "activity.total_comments": 1,
+//           "activity.total_parent_comments": replying_to ? 0 : 1,
+//         },
+//       }
+//     ).then((blog) => {
+//       console.log("New comment created");
+//     });
+
+//     let notificationObj = {
+//       type: replying_to ? "reply" : "comment",
+//       blog: _id,
+//       notification_for: blog_author,
+//       user: user_id,
+//       comment: commentFile._id,
+//     };
+
+//     if (replying_to) {
+//       notificationObj.replied_on_comment = replying_to;
+
+//       await Comment.findOneAndUpdate(
+//         { _id: replying_to },
+//         { $push: { children: commentFile._id } }
+//       ).then((replyingToCommentDoc) => {
+//         notificationObj.notification_for = replyingToCommentDoc.commented_by;
+//       });
+
+//       if (notification_id) {
+//         Notification.findOneAndUpdate(
+//           { _id: notification_id },
+//           { reply: commentFile._id }
+//         ).then((notificaiton) => console.log("notification updated"));
+//       }
+//     }
+
+//     new Notification(notificationObj)
+//       .save()
+//       .then((notification) => console.log("new notification created"));
+
+//     return res.status(200).json({
+//       comment,
+//       commentedAt,
+//       _id: commentFile._id,
+//       user_id,
+//       children,
+//     });
+//   });
+// });
+
 server.post("/add-comment", verifyJWT, async (req, res) => {
   let user_id = req.user;
 
+  // Check if the user is blocked from commenting
   const user = await User.findById(user_id);
-  console.log(user_id);
-  console.log(user);
   if (user && user.blocked_comment) {
     return res.status(403).json({ error: "You are blocked from commenting" });
   }
 
-  let { _id, comment, blog_author, replying_to, notification_id } = req.body;
+  let { _id, comment, blog_author, replying_to, notification_id, image } = req.body;
 
-  if (!comment.length) {
-    return res
-      .status(403)
-      .json({ error: "Write something to leave a comment" });
+  // Validate that there is either a comment or an image
+  if (!comment && !image) {
+    return res.status(403).json({ error: "Write something or upload an image to leave a comment" });
   }
 
-  // creating a comment doc
+  // Prepare the comment object
   let commentObj = {
     blog_id: _id,
     blog_author,
     comment,
     commented_by: user_id,
+    image, // If image exists, include the URL
   };
 
   if (replying_to) {
@@ -1229,9 +1315,14 @@ server.post("/add-comment", verifyJWT, async (req, res) => {
     commentObj.isReply = true;
   }
 
-  new Comment(commentObj).save().then(async (commentFile) => {
-    let { comment, commentedAt, children } = commentFile;
+  try {
+    // Save the comment to the database
+    const commentFile = await new Comment(commentObj).save();
 
+    // Destructure the comment file to extract relevant data
+    let { commentedAt, children } = commentFile;
+
+    // Update the blog with the new comment
     await Blog.findOneAndUpdate(
       { _id },
       {
@@ -1241,10 +1332,9 @@ server.post("/add-comment", verifyJWT, async (req, res) => {
           "activity.total_parent_comments": replying_to ? 0 : 1,
         },
       }
-    ).then((blog) => {
-      console.log("New comment created");
-    });
+    );
 
+    // Create notification for new comment or reply
     let notificationObj = {
       type: replying_to ? "reply" : "comment",
       blog: _id,
@@ -1256,6 +1346,7 @@ server.post("/add-comment", verifyJWT, async (req, res) => {
     if (replying_to) {
       notificationObj.replied_on_comment = replying_to;
 
+      // Update parent comment with the new reply
       await Comment.findOneAndUpdate(
         { _id: replying_to },
         { $push: { children: commentFile._id } }
@@ -1263,27 +1354,34 @@ server.post("/add-comment", verifyJWT, async (req, res) => {
         notificationObj.notification_for = replyingToCommentDoc.commented_by;
       });
 
+      // If there's an existing notification, update it with the reply ID
       if (notification_id) {
-        Notification.findOneAndUpdate(
+        await Notification.findOneAndUpdate(
           { _id: notification_id },
           { reply: commentFile._id }
-        ).then((notificaiton) => console.log("notification updated"));
+        );
       }
     }
 
-    new Notification(notificationObj)
-      .save()
-      .then((notification) => console.log("new notification created"));
+    // Save the notification
+    await new Notification(notificationObj).save();
 
+    // Return the comment data as the response
     return res.status(200).json({
       comment,
       commentedAt,
       _id: commentFile._id,
       user_id,
       children,
+      image, // Include image URL in the response if it exists
     });
-  });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "An error occurred while adding the comment" });
+  }
 });
+
+
 
 server.post("/get-blog-comments", (req, res) => {
   let { blog_id, skip } = req.body;
@@ -1301,7 +1399,7 @@ server.post("/get-blog-comments", (req, res) => {
       commentedAt: -1,
     })
     .then((comment) => {
-      console.log(comment, blog_id, skip);
+      // console.log(comment, blog_id, skip);
       return res.status(200).json(comment);
     })
     .catch((err) => {
@@ -1420,16 +1518,13 @@ server.get("/new-notification", verifyJWT, (req, res) => {
 
 server.post("/notifications", verifyJWT, (req, res) => {
   let user_id = req.user;
-
   let { page, filter, deletedDocCount } = req.body;
 
-  let maxLimit = 10;
-
+  const maxLimit = 10;
   let findQuery = { notification_for: user_id, user: { $ne: user_id } };
-
   let skipDocs = (page - 1) * maxLimit;
 
-  if (filter != "all") {
+  if (filter !== "all") {
     findQuery.type = filter;
   }
 
@@ -1450,17 +1545,26 @@ server.post("/notifications", verifyJWT, (req, res) => {
     .populate("reply", "comment")
     .sort({ createdAt: -1 })
     .select("createdAt type seen reply")
-    .then((notifications) => {
-      Notification.updateMany(findQuery, { seen: true })
-        .skip(skipDocs)
-        .limit(maxLimit)
-      // .then(() => console.log("notification seen"));
+    .then(async (notifications) => {
+      // Cập nhật trạng thái "seen" cho thông báo trong trang hiện tại
+      await Notification.updateMany(
+        { _id: { $in: notifications.map((n) => n._id) }, seen: false },
+        { $set: { seen: true } }
+      );
 
-      return res.status(200).json({ notifications });
+      // Trả về dữ liệu thông báo và tổng số thông báo
+      const totalDocs = await Notification.countDocuments(findQuery);
+      res.status(200).json({
+        notifications,
+        totalDocs,
+        page,
+        maxLimit,
+        deletedDocCount,
+      });
     })
     .catch((err) => {
-      console.log(err.message);
-      return res.status(500).json({ error: err.message });
+      console.error(err.message);
+      res.status(500).json({ error: err.message });
     });
 });
 

@@ -93,9 +93,9 @@ const BlogPage = () => {
 
                         <CommentsContainer />
 
-                        <div className="max-w-[900px] center py-10 max-lg:px-[5vw]">
+                        <div className="max-w-[900px] center max-lg:px-[5vw]">
 
-                            <hr className="border-grey my-2" />
+                            <hr className="border-grey" />
                             <div className="flex max-sm:flex-col justify-between my-8">
                                 <div className="flex gap-5 items-start">
                                     <img src={profile_img} className="w-12 h-12 rounded-full" />
@@ -112,7 +112,7 @@ const BlogPage = () => {
                                     <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Published on {new Date(publishedAt).toLocaleDateString('en-GB')}</p>
                                 </div>
                             </div>
-                            <hr className="border-grey my-2" />
+                            <hr className="border-grey my-1" />
 
                             {/* Ẩn banner khi không có giá trị banner hoặc sử dụng banner mặc định */}
                             <div className={`w-full aspect-video ${!banner || banner === bannerDefault ? 'hidden' : ''}`}>
