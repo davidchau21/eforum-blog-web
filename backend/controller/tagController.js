@@ -4,7 +4,7 @@ export const createTag = async (req, res, next) => {
     const { tag_name } = req.body;
     const existingTag = await Tag.findOne({ tag_name });
     if (existingTag) {
-      return res.status(400).json({ message: "Tag already exists" });
+      return res.status(201).json({ message: "Tag already exists" });
     }
     const tag = await Tag.create({ tag_name });
     return res.status(200).json(tag);

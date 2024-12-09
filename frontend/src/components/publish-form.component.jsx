@@ -26,7 +26,7 @@ const PublishForm = () => {
 
     // Các tag mặc định bạn muốn thêm vào dropdown
     const defaultTagsClass = [
-        "Lớp 6", "Lớp 7", "Lớp 8", "Lớp 9", "Lớp 10", "Lớp 11", "Lớp 12",
+        "Lớp 6", "Lớp 7", "Lớp 8", "Lớp 9", "Lớp 10", "Lớp 11", "Lớp 12", "Khác",
     ];
 
     const defaultTagsSubject = [
@@ -80,8 +80,8 @@ const PublishForm = () => {
             return toast.error("Write blog title before publishing");
         }
 
-        if (!des.length || des.length > characterLimit) {
-            return toast.error(`Write a description about your blog within ${characterLimit} characters to publish`);
+        if (des.length > characterLimit) {
+            return toast.error(`Description should be within ${characterLimit} characters to publish`);
         }
 
         if (!tags.length) {
@@ -129,7 +129,7 @@ const PublishForm = () => {
             });
 
             toast.dismiss(loadingToast);
-            toast.success("Published 👍");
+            toast.success("Published 👍 \nBài viết của bạn đang chờ duyệt");
 
             setTimeout(() => {
                 navigate("/dashboard/blogs");
@@ -200,32 +200,8 @@ const PublishForm = () => {
 
                     <p className="mt-1 text-dark-grey text-sm text-right">{characterLimit - des.length} characters left</p>
 
-                    {/* Dropdown cho các tag đã chọn từ server */}
-                    <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose from existing topics</p>
-                    <select
-                        className="select select-bordered w-full max-w-2xl mb-2"
-                        defaultValue=""
-                        onChange={(e) => {
-                            const selectedTag = e.target.value;
-                            if (selectedTag && !tags.includes(selectedTag) && tags.length < tagLimit) {
-                                setBlog({ ...blog, tags: [...tags, selectedTag] });
-                            } else if (tags.length >= tagLimit) {
-                                toast.error(`You can add max ${tagLimit} Tags`);
-                            }
-                        }}
-                    >
-                        <option value="" disabled>
-                            Choose a topic
-                        </option>
-                        {availableTags.map((tag, index) => (
-                            <option key={index} value={tag.tag_name}>
-                                {tag.tag_name}
-                            </option>
-                        ))}
-                    </select>
-
                     {/* Thanh dropdown riêng cho các tag lớp mặc định */}
-                    <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose default subjects</p>
+                    <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose default class</p>
                     <select
                         className="select select-bordered w-full max-w-2xl mb-2"
                         defaultValue=""
@@ -238,7 +214,7 @@ const PublishForm = () => {
                         }}
                     >
                         <option value="" disabled>
-                            Choose a default topic
+                            Choose a tag class
                         </option>
                         {defaultTagsClass.map((defaultTag, index) => (
                             <option key={index} value={defaultTag}>
@@ -261,11 +237,35 @@ const PublishForm = () => {
                         }}
                     >
                         <option value="" disabled>
-                            Choose a default topic
+                            Choose a tag subject
                         </option>
                         {defaultTagsSubject.map((defaultTag, index) => (
                             <option key={index} value={defaultTag}>
                                 {defaultTag}
+                            </option>
+                        ))}
+                    </select>
+
+                    {/* Dropdown cho các tag đã chọn từ server */}
+                    <p className="text-dark-grey mb-2 mr-32 w-1/2">Choose from existing topics</p>
+                    <select
+                        className="select select-bordered w-full max-w-2xl mb-2"
+                        defaultValue=""
+                        onChange={(e) => {
+                            const selectedTag = e.target.value;
+                            if (selectedTag && !tags.includes(selectedTag) && tags.length < tagLimit) {
+                                setBlog({ ...blog, tags: [...tags, selectedTag] });
+                            } else if (tags.length >= tagLimit) {
+                                toast.error(`You can add max ${tagLimit} Tags`);
+                            }
+                        }}
+                    >
+                        <option value="" disabled>
+                            Choose a topic
+                        </option>
+                        {availableTags.map((tag, index) => (
+                            <option key={index} value={tag.tag_name}>
+                                {tag.tag_name}
                             </option>
                         ))}
                     </select>
