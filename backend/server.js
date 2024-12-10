@@ -1093,6 +1093,7 @@ server.get("/admin-blogs", (req, res) => {
       select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
     })
     .select("title des content banner activity publishedAt blog_id tags")
+    .sort({ "publishedAt": -1 })
     .then((blogs) => {
       const adminBlogs = blogs.filter(blog => blog.author !== null);
       return res.status(200).json({ blogs: adminBlogs });
