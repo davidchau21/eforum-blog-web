@@ -190,6 +190,12 @@ const Dashboard = () => {
           },
         ],
       });
+
+      // Thêm % đằng sau dữ liệu
+      setPieData((prev) => ({
+        ...prev,
+        labels: prev.labels.map((label, index) => `${label} (${prev.datasets[0].data[index].toFixed(2)}%)`),
+      }));
     });
   }
 

@@ -262,7 +262,7 @@ export const blogStatisticsByDate = async (req, res) => {
 
     const timeDiff = end.getTime() - start.getTime();
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    const interval = daysDiff < 7 ? daysDiff : 6;
+    const interval = daysDiff < 7 ? daysDiff : 7;
 
     const dates = [];
     for (let i = 0; i <= interval; i++) {
@@ -273,7 +273,6 @@ export const blogStatisticsByDate = async (req, res) => {
       dates.map(date => Blog.aggregate([
         {
           $match: {
-            isDeleted: false,
             publishedAt: { $lte: date },
           },
         },
