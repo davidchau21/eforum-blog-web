@@ -25,18 +25,20 @@ const BlogManagement = () => {
   const [selectedActive, setSelectedActive] = useState(undefined);
   const [selectedDelete, setSelectedDelete] = useState(undefined);
   const [selectedRemoveReport, setSelectedRemoveReport] = useState(undefined);
+  const [isReport, setIsReport] = useState(false);
 
   // Lấy danh sách blog
   const onGet = useCallback(async () => {
     const { ok, body } = await blogApi.getAllBlogs({
       limit: pagination.limit,
       page: pagination.page - 1,
+      isReport: isReport ? isReport : null,
     });
     if (ok && body) {
       setBlogList({ items: body.list, total: body.total ?? 0 });
       setFilteredBlogs(body.list);
     }
-  }, [pagination.limit, pagination.page]);
+  }, [pagination.limit, pagination.page, isReport]);
 
   const [pendingBlogs, getAllBlogs] = useHandleAsyncRequest(onGet);
 
@@ -97,7 +99,7 @@ const BlogManagement = () => {
         onGet();
       }
     },
-    [onGet]
+    [onGet, isReport]
   );
 
   // Cột hiển thị trong bảng
@@ -156,6 +158,18 @@ const BlogManagement = () => {
         sorter: (a, b) => new Date(a.publishedAt) - new Date(b.publishedAt),
       },
       {
+        title: <TableHeaderColumn label="Người báo cáo" />,
+        render: (_, record) => (
+          <TableDataColumn
+            label={
+              record.reportUser
+                ? record.reportUser.personal_info.username
+                : "--"
+            }
+          />
+        ),
+      },
+      {
         title: <TableHeaderColumn label="Thao tác" />,
         render: (_, record) => (
           <div className="flex items-center gap-2">
@@ -200,7 +214,11 @@ const BlogManagement = () => {
 
   useEffect(() => {
     getAllBlogs();
-  }, [pagination.page, getAllBlogs]);
+  }, [pagination.page, getAllBlogs, isReport]);
+
+  const handleChangeIsReport = (e) => {
+    setIsReport(e.target.checked);
+  };
 
   return (
     <div className="w-full p-5">
@@ -216,6 +234,15 @@ const BlogManagement = () => {
           />
         </div>
         <div className="flex items-center gap-3">
+          <div className="flex gap-2 ">
+            <input
+              type="checkbox"
+              checked={isReport}
+              onChange={handleChangeIsReport}
+            />
+            <label className="font-bold">Bài đăng bị báo cáo</label>
+            <br></br>
+          </div>
           <Button
             type="primary"
             icon={<Plus size={24} />}
