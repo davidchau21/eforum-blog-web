@@ -42,7 +42,10 @@ Dự án diễn đàn học tập nhóm 75 là một nền tảng giúp học si
 - Duyệt bài đăng mới.
 - Quản lý danh mục bài viết.
 - Tạo thông báo.
-- Xử lý bài viết bị báo cáo.
+- Xử lý bài viết và bình luận bị báo cáo.
+- Thống kê chung.
+- Thống kê cho bài viết và người dùng theo ngày được chọn.
+- Thống kê tương tác trong tuần.
 
 ---
 
