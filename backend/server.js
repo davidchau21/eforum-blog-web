@@ -350,8 +350,8 @@ server.post("/signup", async (req, res) => {
     // Gửi OTP qua email
     mailService.sendEmail({
       from: {
-        name: "Team Support Edu Blog",
-        email: "eforum@gmail.edu.vn.com",
+        name: "Team Support EForum",
+        email: "eforum@gmail.vn.com",
       },
       to: user.personal_info.email,
       subject: "Your OTP for Account Verification",
@@ -635,11 +635,11 @@ server.post("/forgot-password", async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     // 3. Tạo URL reset password
-    const resetURL = `http://localhost:5173/new-password?token=${resetToken}`;
+    const resetURL = `${process.env.CLIENT_URL}/new-password?token=${resetToken}`;
     console.log("token", resetToken);
     // 4. Gửi email chứa URL cho người dùng
     mailService.sendEmail({
-      from: { name: "Team Support Edu Blog", email: "davidduongxu1@gmail.com" },
+      from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
       to: user.personal_info.email,
       subject: "Password Reset Request",
       html: resetPasswordTemplate(user.personal_info.fullname, resetURL),
