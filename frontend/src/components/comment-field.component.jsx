@@ -10,7 +10,7 @@ const CommentField = ({ action, index = undefined, replyingTo = undefined, setRe
     let { userAuth: { access_token, username, fullname, profile_img } } = useContext(UserContext);
 
     const [comment, setComment] = useState("");
-    const [image, setImage] = useState(null); 
+    const [image, setImage] = useState(null);
 
     // Handle image upload
     const handleImageChange = (e) => {
@@ -65,52 +65,53 @@ const CommentField = ({ action, index = undefined, replyingTo = undefined, setRe
         // Step 2: Submit the comment
         uploadImage()
             .then(imageUrl => {
-            // Proceed with comment submission
-            axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/add-comment", {
-                _id, blog_author, comment, replying_to: replyingTo, image: imageUrl
-            }, {
-                headers: {
-                'Authorization': `Bearer ${access_token}`
-                }
-            })
-                .then(({ data }) => {
-                setComment(""); // Clear comment input
-                setImage(null); // Clear selected image
-
-                data.commented_by = { personal_info: { username, profile_img, fullname } };
-                data.image = imageUrl; // Attach image URL to comment
-
-                let newCommentArr;
-
-                if (replyingTo) {
-                    if (!commentsArr[index].children) {
-                    commentsArr[index].children = [];
+                // Proceed with comment submission
+                axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/add-comment", {
+                    _id, blog_author, comment, replying_to: replyingTo, image: imageUrl
+                }, {
+                    headers: {
+                        'Authorization': `Bearer ${access_token}`
                     }
-                    commentsArr[index].children.push(data._id);
-                    data.childrenLevel = commentsArr[index].childrenLevel + 1;
-                    data.parentIndex = index;
-                    commentsArr[index].isReplyLoaded = true;
-                    commentsArr.splice(index + 1, 0, data);
-
-                    newCommentArr = commentsArr;
-                    setReplying(false);
-                } else {
-                    data.childrenLevel = 0;
-                    newCommentArr = [data, ...commentsArr];
-                }
-
-                let parentCommentIncrementval = replyingTo ? 0 : 1;
-                setBlog({ ...blog, comments: { ...comments, results: newCommentArr }, activity: { ...activity, total_comments: total_comments + 1, total_parent_comments: total_parent_comments + parentCommentIncrementval } });
-                setTotalParentCommentsLoaded(prevVal => prevVal + parentCommentIncrementval);
                 })
-                .catch(err => {
-                console.log(err);
-                toast.error("Your account has been locked from commenting.");
-                });
+                    .then(({ data }) => {
+                        setComment(""); // Clear comment input
+                        setImage(null); // Clear selected image
+
+                        data.commented_by = { personal_info: { username, profile_img, fullname } };
+                        data.image = imageUrl; // Attach image URL to comment
+
+                        let newCommentArr;
+
+                        if (replyingTo) {
+                            if (!commentsArr[index].children) {
+                                commentsArr[index].children = [];
+                            }
+                            commentsArr[index].children.push(data._id);
+                            data.childrenLevel = commentsArr[index].childrenLevel + 1;
+                            data.parentIndex = index;
+                            data.image = imageUrl; // Attach image URL to reply comment
+                            commentsArr[index].isReplyLoaded = true;
+                            commentsArr.splice(index + 1, 0, data);
+
+                            newCommentArr = commentsArr;
+                            setReplying(false);
+                        } else {
+                            data.childrenLevel = 0;
+                            newCommentArr = [data, ...commentsArr];
+                        }
+
+                        let parentCommentIncrementval = replyingTo ? 0 : 1;
+                        setBlog({ ...blog, comments: { ...comments, results: newCommentArr }, activity: { ...activity, total_comments: total_comments + 1, total_parent_comments: total_parent_comments + parentCommentIncrementval } });
+                        setTotalParentCommentsLoaded(prevVal => prevVal + parentCommentIncrementval);
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        toast.error("Your account has been locked from commenting.");
+                    });
             })
             .catch(err => {
-            console.log(err);
-            toast.error("Error uploading image. Please try again.");
+                console.log(err);
+                toast.error("Error uploading image. Please try again.");
             });
     };
 
@@ -124,13 +125,28 @@ const CommentField = ({ action, index = undefined, replyingTo = undefined, setRe
                 className="input-box pl-5 placeholder:text-dark-grey resize-none h-[200px] overflow-auto"
             />
             <div className="flex items-center justify-between mt-3">
-                <label htmlFor="ImageInput" className="btn btn-dark">
-                    <MdCameraAlt />
-                </label>
+                {replyingTo && (
+                    <label htmlFor="ReplyImageInput" className="btn btn-dark">
+                        <MdCameraAlt />
+                    </label>
+                )}
+                {!replyingTo && (
+                    <label htmlFor="ImageInput" className="btn btn-dark">
+                        <MdCameraAlt />
+                    </label>
+                )}
                 <button className="btn-dark px-10" onClick={handleComment}>
                     {action}
                 </button>
             </div>
+            { replyingTo && (
+                <input
+                id="ReplyImageInput"
+                onChange={handleImageChange}
+                className="hidden"
+                type="file"
+                />
+            )}
             <input
                 id="ImageInput"
                 onChange={handleImageChange}
