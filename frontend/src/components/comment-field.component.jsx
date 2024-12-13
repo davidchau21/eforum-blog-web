@@ -121,7 +121,7 @@ const CommentField = ({ action, index = undefined, replyingTo = undefined, setRe
             <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Leave a comment..."
+                placeholder="Nhập bình luận..."
                 className="input-box pl-5 placeholder:text-dark-grey resize-none h-[200px] overflow-auto"
             />
             <div className="flex items-center justify-between mt-3">
@@ -164,7 +164,7 @@ const CommentField = ({ action, index = undefined, replyingTo = undefined, setRe
                         className="btn btn-danger mt-2"
                         onClick={() => setImage(null)}
                     >
-                        Remove Image
+                        Xóa ảnh
                     </button>
                 </div>
             )}
