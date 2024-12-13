@@ -1,19 +1,21 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
-import { UserContext } from "../App"
+import { UserContext } from "../App";
 import { filterPaginationData } from "../common/filter-pagination-data";
 import Loader from "../components/loader.component";
 import AnimationWrapper from "../common/page-animation";
 import NoDataMessage from "../components/nodata.component";
 import NotificationCard from "../components/notification-card.component";
 import LoadMoreDataBtn from "../components/load-more.component";
+import { getTranslations } from '../../translations';
 
 const Notifications = () => {
     const { userAuth, userAuth: { access_token, new_notification_available }, setUserAuth } = useContext(UserContext);
-
     const [filter, setFilter] = useState('all');
     const [notifications, setNotifications] = useState(null);
     const [isLoading, setIsLoading] = useState(false); // Trạng thái tải dữ liệu
+    const { language } = userAuth;
+    const translations = getTranslations(language);
 
     const filters = ['all', 'like', 'comment', 'reply', 'share'];
 
@@ -76,7 +78,7 @@ const Notifications = () => {
 
     return (
         <div>
-            <h1 className="max-md:hidden">Recent Notifications</h1>
+            <h1 className="max-md:hidden">{translations.recentNotifications}</h1>
 
             <div className="my-8 flex gap-6 overflow-x-auto scrollbar-hide">
                 {filters.map((filterName, i) => (
@@ -85,7 +87,7 @@ const Notifications = () => {
                         className={`py-2 ${filter === filterName ? "btn-dark" : "btn-light"}`}
                         onClick={handleFilter}
                     >
-                        {filterName}
+                        {translations[filterName] || filterName} {/* Dịch tên các filter */}
                     </button>
                 ))}
             </div>
@@ -105,7 +107,7 @@ const Notifications = () => {
                             </AnimationWrapper>
                         ))
                     ) : (
-                        <NoDataMessage message="Nothing available" />
+                        <NoDataMessage message={translations.noDataMessage} /> 
                     )}
                     {isLoading && <Loader />}
                 </>

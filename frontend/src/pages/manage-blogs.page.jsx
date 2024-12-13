@@ -10,16 +10,18 @@ import AnimationWrapper from "../common/page-animation";
 import { ManageDraftBlogPost, ManagePublishedBlogCard } from "../components/manage-blogcard.component";
 import LoadMoreDataBtn from "../components/load-more.component";
 import { useSearchParams } from "react-router-dom";
+import { getTranslations } from '../../translations';
 
 const ManageBlogs = () => {
     
     const [ blogs, setBlogs ] = useState(null);
     const [ drafts, setDrafts ] = useState(null);
     const [ query, setQuery ] = useState("");
+    
+    const { userAuth: { access_token, language } } = useContext(UserContext);
+    const translations = getTranslations(language);
 
     let activeTab = useSearchParams()[0].get("tab");
-
-    let { userAuth: { access_token } } = useContext(UserContext);
 
     const getBlogs = ({ page, draft, deletedDocCount = 0 }) => {
 
@@ -40,8 +42,6 @@ const ManageBlogs = () => {
                 countRoute: "/user-written-blogs-count",
                 data_to_send: { draft, query }
             })
-
-            // console.log("draft -> " + draft , formatedData)
 
             if(draft){
                 setDrafts(formatedData)
@@ -87,10 +87,10 @@ const ManageBlogs = () => {
             setDrafts(null);
         }
     }
-    
+
     return (
         <>
-            <h1 className="max-md:hidden">Manage Blogs</h1>
+            <h1 className="max-md:hidden">{translations.manageBlogs}</h1>
 
             <Toaster />
 
@@ -98,7 +98,7 @@ const ManageBlogs = () => {
                 <input 
                     type="search"
                     className="w-full bg-grey p-4 pl-12 pr-6 rounded-full placeholder:text-dark-grey"
-                    placeholder="Search Blogs"
+                    placeholder={translations.searchBlogs}
                     onChange={handleChange}
                     onKeyDown={handleSearch}
                 />
@@ -106,14 +106,12 @@ const ManageBlogs = () => {
                 <i className="fi fi-rr-search absolute right-[10%] md:pointer-events-none md:left-5 top-1/2 -translate-y-1/2 text-xl text-dark-grey "></i>
             </div>
 
-            <InPageNavigation routes={["Published Blogs", "Drafts"]} defaultActiveIndex={ activeTab != 'draft' ? 0 : 1 }>
+            <InPageNavigation routes={[translations.publishedBlogs, translations.drafts]} defaultActiveIndex={ activeTab !== 'draft' ? 0 : 1 }>
 
-                { // published Blogs
-
-                    blogs == null ? <Loader /> :
-                    blogs.results.length ? 
-
-                       <>
+                {/* Published Blogs */}
+                {blogs == null ? <Loader /> :
+                blogs.results.length ? 
+                    <>
                         {
                             blogs.results.map((blog, i) => {
                                 return <AnimationWrapper key={i} transition={{ delay: i * 0.04 }}>
@@ -126,18 +124,13 @@ const ManageBlogs = () => {
 
                         <LoadMoreDataBtn state={blogs} fetchDataFun={getBlogs} additionalParam={{ draft: false, deletedDocCount: blogs.deletedDocCount }} />
 
-                       </>
-
-                    : <NoDataMessage message="No published blogs" />
-
+                    </>
+                    : <NoDataMessage message={translations.noPublishedBlogs} />
                 }
 
-
-                { // draft Blogs
-
-                    drafts == null ? <Loader /> :
-                    drafts.results.length ? 
-
+                {/* Draft Blogs */}
+                {drafts == null ? <Loader /> :
+                drafts.results.length ? 
                     <>
                         {
                             drafts.results.map((blog, i) => {
@@ -151,9 +144,7 @@ const ManageBlogs = () => {
 
                         <LoadMoreDataBtn state={drafts} fetchDataFun={getBlogs} additionalParam={{ draft: true, deletedDocCount: drafts.deletedDocCount }} />
                     </>
-
-                    : <NoDataMessage message="No draft blogs" />
-
+                    : <NoDataMessage message={translations.noDraftBlogs} />
                 }
 
             </InPageNavigation>
