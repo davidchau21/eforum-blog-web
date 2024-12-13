@@ -36,7 +36,7 @@ const BlogPostCard = ({ content, author }) => {
         if (diffDays <= 7) {
             return `${diffDays} ngày trước`;
         } else {
-            return publishedDate.toLocaleDateString();
+            return publishedDate.toLocaleDateString('en-GB');
         }
     };
 

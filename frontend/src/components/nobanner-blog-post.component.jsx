@@ -29,7 +29,7 @@ const MinimalBlogPost = ({ blog, index }) => {
         if (diffDays <= 7) {
             return `${diffDays} ngày trước`;
         } else {
-            return publishedDate.toLocaleDateString();
+            return publishedDate.toLocaleDateString('en-GB');
         }
     };
 
