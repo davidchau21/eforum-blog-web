@@ -1055,7 +1055,7 @@ server.post("/get-blog", (req, res) => {
   )
     .populate(
       "author",
-      "personal_info.fullname personal_info.username personal_info.profile_img"
+      "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role"
     )
     .select(
       "title des content banner activity publishedAt blog_id tags isReport"
@@ -1431,7 +1431,7 @@ server.post("/get-replies", (req, res) => {
     })
     .select("children")
     .then((doc) => {
-      console.log(doc);
+      // console.log(doc);
       return res.status(200).json({ replies: doc.children });
     })
     .catch((err) => {

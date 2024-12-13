@@ -187,7 +187,7 @@ const HomePage = () => {
                 )}
 
                 {/* Admin Blogs */}
-                <div className="hidden lg:block lg:w-1/4 sticky-section">
+                <div className="hidden lg:block lg:w-1/4 sticky-section scrollbar-hide">
                     <h1 className="font-semibold text-lg mb-4 text-black">
                         {translations.adminPosts}
                     </h1>

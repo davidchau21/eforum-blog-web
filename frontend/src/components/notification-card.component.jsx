@@ -56,6 +56,33 @@ const NotificationCard = ({ data, index, notificationState }) => {
         });
     };
 
+    const getDisplayDate = (date) => {
+        const now = new Date();
+        const publishedDate = new Date(date);
+    
+        const diffTime = Math.abs(now - publishedDate);
+        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+        const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    
+        if (now.toDateString() === publishedDate.toDateString()) {
+            if (diffMinutes === 0) {
+                return `vừa xong`;
+            } else if (diffHours < 1) {
+                return `${diffMinutes} phút trước`;
+            } else {
+                return `${diffHours} giờ trước`;
+            }
+        }
+    
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+        if (diffDays <= 7) {
+            return `${diffDays} ngày trước`;
+        } else {
+            return publishedDate.toLocaleDateString();
+        }
+    };
+
     return (
         <div className={"p-6 border-b border-grey border-l-black " + (!seen ? "border-l-2" : "")}>
             <div className="flex gap-5 mb-3">
@@ -75,9 +102,12 @@ const NotificationCard = ({ data, index, notificationState }) => {
                     </h1>
 
                     {
-                        type === "reply" && replied_on_comment ? 
+                        type === "reply" ? 
                         <div className="p-4 mt-4 rounded-md bg-grey">
                             <p>{replied_on_comment.comment}</p>
+                            <Link to={`/blog/${blog_id}`} className="font-medium text-dark-grey hover:underline line-clamp-1">
+                                {`"${blog_title}"`}
+                            </Link>
                         </div> :
                         blog_id ? (
                             <Link to={`/blog/${blog_id}`} className="font-medium text-dark-grey hover:underline line-clamp-1">
@@ -85,7 +115,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
                             </Link>
                         ) : (
                             <span className="font-medium text-red-500">{blog_title}</span>
-                        )
+                        ) 
                     }
 
                     {
@@ -119,7 +149,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
             }
 
             <div className="ml-14 pl-5 mt-3 text-dark-grey flex gap-8">
-                <p>{getDay(createdAt)}</p>
+                <p>{getDisplayDate(createdAt)}</p>
                 {
                     type !== 'like' && type !== 'share' ? (
                         <>

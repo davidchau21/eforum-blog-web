@@ -13,6 +13,33 @@ const BlogPostCard = ({ content, author }) => {
 
     const isDefaultBanner = banner === "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
 
+    const getDisplayDate = (date) => {
+        const now = new Date();
+        const publishedDate = new Date(date);
+    
+        const diffTime = Math.abs(now - publishedDate);
+        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+        const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    
+        if (now.toDateString() === publishedDate.toDateString()) {
+            if (diffMinutes === 0) {
+                return `vừa xong`;
+            } else if (diffHours < 1) {
+                return `${diffMinutes} phút trước`;
+            } else {
+                return `${diffHours} giờ trước`;
+            }
+        }
+    
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+        if (diffDays <= 7) {
+            return `${diffDays} ngày trước`;
+        } else {
+            return publishedDate.toLocaleDateString();
+        }
+    };
+
     return (
         <div className="flex flex-col border border-grey shadow-lg p-4 rounded-lg mb-4">
             {/* Tác giả và ngày đăng */}
@@ -23,13 +50,22 @@ const BlogPostCard = ({ content, author }) => {
                         <p className="text-sm font-medium line-clamp-1">
                             {fullname} <span>@{username}</span>
                         </p>
-                        <p className="text-xs">{new Date(publishedAt).toLocaleDateString('en-GB')}</p>
+                        <p className="text-xs">{getDisplayDate(publishedAt)}</p>
                     </div>
                 </Link>
             </div>
 
             {/* Nội dung bài viết */}
             <div className="flex-1">
+
+                {/* Title và mô tả */}
+                <Link to={`/blog/${id}`} className="block">
+                    <h1 className="blog-title text-lg font-bold">{title}</h1>
+                    <p className={`my-2 text-sm text-grey-dark ${isDefaultBanner ? "line-clamp-1" : "line-clamp-2"}`}>
+                        {des}
+                    </p>
+                </Link>
+
                 {/* Banner */}
                 {!isDefaultBanner && (
                     <Link to={`/blog/${id}`} className="block w-full h-full bg-grey mb-3">
@@ -41,13 +77,6 @@ const BlogPostCard = ({ content, author }) => {
                     </Link>
                 )}
 
-                {/* Title và mô tả */}
-                <Link to={`/blog/${id}`} className="block">
-                    <h1 className="blog-title text-lg font-bold">{title}</h1>
-                    <p className={`my-2 text-sm text-grey-dark ${isDefaultBanner ? "line-clamp-1" : "line-clamp-2"}`}>
-                        {des}
-                    </p>
-                </Link>
                 <Link to={`/blog/${id}`} className="block">
                     <div className="border-t border-b border-grey my-4">
                         <div className="flex items-center justify-between mt-3 mb-2">

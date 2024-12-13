@@ -109,10 +109,15 @@ const BlogPage = () => {
 
                                 </div>
                                 <div className="flex items-center gap-1">
-                                    <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Published on {new Date(publishedAt).toLocaleDateString('en-GB')}</p>
+                                    <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Đăng vào ngày {new Date(publishedAt).toLocaleDateString('vi-VN')}</p>
                                 </div>
                             </div>
                             <hr className="border-grey my-1" />
+
+                            <div className="mt-12">
+                                <h2>{title}</h2>
+                                <hr className="border-grey my-2" />
+                            </div>
 
                             {/* Ẩn banner khi không có giá trị banner hoặc sử dụng banner mặc định */}
                             <div className={`w-full aspect-video ${!banner || banner === bannerDefault ? 'hidden' : ''}`}>
@@ -122,11 +127,6 @@ const BlogPage = () => {
                                     onError={handleBannerError} // Thêm onError để xử lý lỗi tải ảnh
                                     alt="Blog Banner"
                                 />
-                            </div>
-
-                            <div className="mt-12">
-                                <h2>{title}</h2>
-                                <hr className="border-grey my-2" />
                             </div>
 
                             {/* <BlogInteraction /> */}
@@ -146,7 +146,7 @@ const BlogPage = () => {
                             {
                                 similarBlogs != null && similarBlogs.length ?
                                     <>
-                                        <h1 className="text-2xl mt-14 mb-10 font-medium">Similar Blogs</h1>
+                                        <h1 className="text-2xl mt-14 mb-10 font-medium">Bài viết tương tự</h1>
 
                                         {
                                             similarBlogs.map((blog, i) => {

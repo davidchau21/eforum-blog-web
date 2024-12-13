@@ -32,6 +32,31 @@ export const ManagePublishedBlogCard = ({ blog }) => {
         setShowConfirmModal(false); // Close the modal after calling delete
     };
 
+    const getDisplayDate = (date) => {
+        const now = new Date();
+        const publishedDate = new Date(date);
+    
+        const diffTime = Math.abs(now - publishedDate);
+        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+        const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    
+        if (now.toDateString() === publishedDate.toDateString()) {
+            if (diffHours < 1) {
+                return `${diffMinutes} phút trước`;
+            } else {
+                return `${diffHours} giờ trước`;
+            }
+        }
+    
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+        if (diffDays <= 7) {
+            return `${diffDays} ngày trước`;
+        } else {
+            return publishedDate.toLocaleDateString();
+        }
+    };
+
     return (
         <>
             <div className="flex gap-10 border-b mb-6 max-md:px-4 border-grey pb-6 items-center">
@@ -39,7 +64,7 @@ export const ManagePublishedBlogCard = ({ blog }) => {
                 <div className="flex flex-col justify-between py-2 w-full min-w-[300px]">
                     <div>
                         <Link to={`/blog/${blog_id}`} className="blog-title mb-4 hover:underline">{title}</Link>
-                        <p className="line-clamp-1">Published on {getDay(publishedAt)}</p>
+                        <p className="line-clamp-1">Đã đăng {getDisplayDate(publishedAt)}</p>
                     </div>
                     <div className="flex gap-6 mt-3">
                         <Link to={`/editor/${blog_id}`} className="pr-4 py-2 underline">Edit</Link>
