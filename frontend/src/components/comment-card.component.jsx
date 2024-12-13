@@ -178,6 +178,33 @@ const CommentCard = ({ index, leftVal, commentData }) => {
             });
     }, [access_token, _id]);
 
+    const getDisplayDate = (date) => {
+        const now = new Date();
+        const publishedDate = new Date(date);
+    
+        const diffTime = Math.abs(now - publishedDate);
+        const diffMinutes = Math.floor(diffTime / (1000 * 60));
+        const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    
+        if (now.toDateString() === publishedDate.toDateString()) {
+            if (diffMinutes === 0) {
+                return `vừa xong`;
+            } else if (diffHours < 1) {
+                return `${diffMinutes} phút trước`;
+            } else {
+                return `${diffHours} giờ trước`;
+            }
+        }
+    
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+        if (diffDays <= 7) {
+            return `${diffDays} ngày trước`;
+        } else {
+            return publishedDate.toLocaleDateString();
+        }
+    };
+
     return (
         <div className="w-full" style={{ paddingLeft: `${leftVal * 10}px` }}>
             <div className="my-5 p-6 rounded-md border border-grey">
@@ -196,7 +223,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                 >
                     {fullname} @{commented_by_username}
                 </p>
-                <p className="min-w-fit">{getDay(commentedAt)}</p>
+                <p className="min-w-fit">{getDisplayDate(commentedAt)}</p>
                 {username !== commented_by_username && !isReport && (
                     <div className="relative group">
                         <button
