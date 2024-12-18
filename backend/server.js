@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import admin from "firebase-admin";
 import fs from "fs";
+import rateLimit from "express-rate-limit";
 const serviceAccountKey = JSON.parse(
   fs.readFileSync("./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json", "utf8")
 );
@@ -39,13 +40,11 @@ let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for e
 let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
 
 server.use(express.json());
-server.use(cors(
-  {
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
-  }
-));
+server.use(cors({
+  origin: [process.env.CLIENT_URL, process.env.ADMIN_URL], // Restrict to specific origin
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
 
 mongoose.connect(process.env.DB_LOCATION, {
   autoIndex: true,
@@ -146,6 +145,14 @@ server.get("/get-upload-url", (req, res) => {
       return res.status(500).json({ error: err.message });
     });
 });
+
+// rate limit 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+
+server.use(limiter);
 
 // server.post("/signup", (req, res) => {
 
