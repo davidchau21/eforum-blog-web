@@ -157,7 +157,7 @@ const limiter = rateLimit({
   },
 });
 
-server.use(limiter);
+// server.use(limiter);
 
 // server.post("/signup", (req, res) => {
 
