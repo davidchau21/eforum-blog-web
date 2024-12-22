@@ -1,4 +1,4 @@
-# Nhóm 75 – Khóa Luận Tốt Nghiệp
+
 
 ## Tài Khoản Mẫu
 
@@ -16,7 +16,7 @@ Dưới đây là danh sách tài khoản dùng thử cho dự án:
 
 ## Giới Thiệu Dự Án
 
-Dự án diễn đàn học tập nhóm 75 là một nền tảng giúp học sinh cấp 2 và cấp 3 trao đổi kiến thức và thảo luận.
+Dự án diễn đàn học tập là một nền tảng giúp học sinh cấp 2 và cấp 3 trao đổi kiến thức và thảo luận.
 
 - **Link Demo User**: [eforum.vercel.app](https://eforum.vercel.app)
 - **Link Demo Admin**: [eforum-admin.vercel.app](https://eforum-admin.vercel.app)
