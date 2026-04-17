@@ -41,7 +41,7 @@ const Editor = () => {
             setLoading(false);
         })
         .catch(err => {
-            setBlog(null);
+            setBlog(blogStructure);
             setLoading(false);
         })
 

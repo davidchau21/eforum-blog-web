@@ -16,7 +16,10 @@ import { getTranslations } from "../../translations";
 
 const BlogEditor = () => {
 
-    let { blog, blog: { title, banner, content, tags, des }, setBlog, textEditor, setTextEditor, setEditorState } = useContext(EditorContext)
+    let { blog, setBlog, textEditor, setTextEditor, setEditorState } = useContext(EditorContext)
+
+    // Guard: wait until blog context is available
+    const { title = '', banner = '', content = [], tags = [], des = '' } = blog || {};
 
     let { userAuth: { access_token, language } } = useContext(UserContext)
     let { theme } = useContext(ThemeContext);
@@ -33,7 +36,7 @@ const BlogEditor = () => {
                 holder: "textEditor",
                 data: Array.isArray(content) ? content[0] : content,
                 tools: tools,
-                placeholder: "Let's write an awesome story"
+                placeholder: currentTranslations.blogStoryPlaceholder
             }))
         }
     }, [])
@@ -43,13 +46,13 @@ const BlogEditor = () => {
 
         if(img){
 
-            let loadingToast = toast.loading("Uploading...")
+            let loadingToast = toast.loading(currentTranslations.uploading)
 
             uploadImage(img).then((url) => {
                 if(url){
 
                     toast.dismiss(loadingToast);
-                    toast.success("Uploaded 👍");
+                    toast.success(currentTranslations.uploaded);
 
                     setBlog({ ...blog, banner: url })
 
@@ -90,7 +93,7 @@ const BlogEditor = () => {
         // }
 
         if(!title.length){
-            return toast.error("Write blog title to publish it")
+            return toast.error(currentTranslations.writeTitleToPublish)
         }
 
         if(textEditor.isReady){
@@ -116,10 +119,10 @@ const BlogEditor = () => {
         }
 
         if(!title.length){
-            return toast.error("Write blog title before saving it as a draft")
+            return toast.error(currentTranslations.saveDraftTitleError)
         }
 
-        let loadingToast = toast.loading("Saving Draft....");
+        let loadingToast = toast.loading(currentTranslations.savingDraft);
 
         e.target.classList.add('disable');
 
@@ -140,7 +143,7 @@ const BlogEditor = () => {
                     e.target.classList.remove('disable');
         
                     toast.dismiss(loadingToast);
-                    toast.success("Saved 👍");
+                    toast.success(currentTranslations.savedDraft);
         
                     setTimeout(() => {
                         navigate("/dashboard/blogs?tab=draft")
@@ -206,7 +209,7 @@ const BlogEditor = () => {
 
                         <textarea
                             defaultValue={title}
-                            placeholder="Blog Title"
+                            placeholder={currentTranslations.blogTitlePlaceholder}
                             className="text-4xl font-medium w-full h-20 outline-none resize-none mt-10 leading-tight placeholder:opacity-40 bg-white"
                             onKeyDown={handleTitleKeyDown}
                             onChange={handleTitleChange}

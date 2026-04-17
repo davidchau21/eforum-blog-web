@@ -11,6 +11,7 @@ import BlogContent from "../components/blog-content.component";
 import CommentsContainer, {
   fetchComments,
 } from "../components/comments.component";
+import { getTranslations } from "../../translations";
 
 export const blogStructure = {
   title: "",
@@ -34,7 +35,12 @@ const BlogPage = () => {
   const [islikedByUser, setLikedByUser] = useState(false);
   const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
   const [readingProgress, setReadingProgress] = useState(0);
-  const { fullScreenImage, setFullScreenImage } = useContext(UserContext);
+  const {
+    fullScreenImage,
+    setFullScreenImage,
+    userAuth: { language } = {},
+  } = useContext(UserContext);
+  const translations = getTranslations(language);
   const contentRef = useRef(null);
 
   const bannerDefault =
@@ -157,108 +163,110 @@ const BlogPage = () => {
 
           <div ref={contentRef} className="text-black min-h-screen">
             {/* ═══════════ UNIFIED CONTAINER ═══════════ */}
-            <div className="max-w-[98%] mx-auto px-2 lg:px-4">
-              {/* ── HERO (aligns with article column) ── */}
-              <div className="relative z-20 max-w-[96%] w-full mx-auto flex gap-12 items-start pt-10 pb-8 border-b border-grey/40">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.04] via-transparent to-emerald-500/[0.02] pointer-events-none" />
+            <div className="max-w-7xl mx-auto px-6 lg:px-10">
+              {/* ── HERO + SIDEBAR WRAPPER ── */}
+              <div className="flex gap-10 items-start">
+                {/* Hero content - article column */}
+                <div className="flex-1 min-w-0">
+                  <div className="pt-10 pb-8 border-b border-grey/40">
+                    <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-br from-purple/[0.04] via-transparent to-emerald-500/[0.02] pointer-events-none" />
 
-                {/* Hero content – same flex-1 as article below */}
-                <div className="flex-1 min-w-0 relative z-10">
-                  {/* Tags */}
-                  {tags && tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-5">
-                      {tags.slice(0, 5).map((tag, i) => (
-                        <span
-                          key={i}
-                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple/10 text-purple border border-purple/20 tracking-wide"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Title */}
-                  <p
-                    className="text-black mb-3"
-                    style={{
-                      fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
-                      lineHeight: 1.15,
-                      fontWeight: 800,
-                      fontFamily: "Inter, sans-serif",
-                    }}
-                  >
-                    {title}
-                  </p>
-
-                  {/* Description */}
-                  {des && (
-                    <p
-                      className="text-dark-grey leading-relaxed mb-6"
-                      style={{ fontSize: "1.05rem" }}
-                    >
-                      {des}
-                    </p>
-                  )}
-
-                  {/* Author + Meta Row */}
-                  <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-grey/60">
-                    <Link
-                      to={`/user/${author_username}`}
-                      className="flex items-center gap-3 group"
-                    >
-                      <img
-                        src={profile_img}
-                        className="w-10 h-10 rounded-full object-cover ring-2 ring-transparent group-hover:ring-purple/40 transition-all duration-300 flex-shrink-0"
-                        alt={fullname}
-                      />
-                      <div>
-                        <p className="font-semibold text-black text-sm group-hover:text-purple transition-colors capitalize leading-tight">
-                          {fullname}
-                        </p>
-                        <p className="text-xs text-dark-grey">
-                          @{author_username}
-                        </p>
+                    {/* Tags */}
+                    {tags && tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-5">
+                        {tags.slice(0, 5).map((tag, i) => (
+                          <span
+                            key={i}
+                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple/10 text-purple border border-purple/20 tracking-wide"
+                          >
+                            {tag}
+                          </span>
+                        ))}
                       </div>
-                    </Link>
-                    <div className="flex items-center gap-3 text-xs text-dark-grey">
-                      <span className="flex items-center gap-1.5">
-                        <i className="fi fi-rr-calendar text-purple/60 leading-none"></i>
-                        {new Date(publishedAt).toLocaleDateString("vi-VN", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </span>
-                      <span className="flex items-center gap-1.5 bg-grey/60 px-2.5 py-1 rounded-full font-medium">
-                        <i className="fi fi-rr-time-read leading-none"></i>
-                        {estimateReadTime(content)} phút đọc
-                      </span>
-                    </div>
-                  </div>
+                    )}
 
-                  {/* Banner (inside article column width) */}
-                  {hasRealBanner && (
-                    <div
-                      className="mt-6 w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-xl shadow-black/10 cursor-zoom-in"
-                      onClick={() => setFullScreenImage(banner)}
+                    {/* Title */}
+                    <p
+                      className="text-black mb-3"
+                      style={{
+                        fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
+                        lineHeight: 1.15,
+                        fontWeight: 800,
+                        fontFamily: "Inter, sans-serif",
+                      }}
                     >
-                      <img
-                        src={banner}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                        onError={handleBannerError}
-                        alt="Banner bài viết"
-                      />
+                      {title}
+                    </p>
+
+                    {/* Description */}
+                    {des && (
+                      <p
+                        className="text-dark-grey leading-relaxed mb-6"
+                        style={{ fontSize: "1.05rem" }}
+                      >
+                        {des}
+                      </p>
+                    )}
+
+                    {/* Author + Meta Row */}
+                    <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-grey/60">
+                      <Link
+                        to={`/user/${author_username}`}
+                        className="flex items-center gap-3 group"
+                      >
+                        <img
+                          src={profile_img}
+                          className="w-10 h-10 rounded-full object-cover ring-2 ring-transparent group-hover:ring-purple/40 transition-all duration-300 flex-shrink-0"
+                          alt={fullname}
+                        />
+                        <div>
+                          <p className="font-semibold text-black text-sm group-hover:text-purple transition-colors capitalize leading-tight">
+                            {fullname}
+                          </p>
+                          <p className="text-xs text-dark-grey">
+                            @{author_username}
+                          </p>
+                        </div>
+                      </Link>
+                      <div className="flex items-center gap-3 text-xs text-dark-grey">
+                        <span className="flex items-center gap-1.5">
+                          <i className="fi fi-rr-calendar text-purple/60 leading-none"></i>
+                          {new Date(publishedAt).toLocaleDateString("vi-VN", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </span>
+                        <span className="flex items-center gap-1.5 bg-grey/60 px-2.5 py-1 rounded-full font-medium">
+                          <i className="fi fi-rr-time-read leading-none"></i>
+                          {estimateReadTime(content)} phút đọc
+                        </span>
+                      </div>
                     </div>
-                  )}
+
+                    {/* Banner */}
+                    {hasRealBanner && (
+                      <div
+                        className="mt-6 w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-xl shadow-black/10 cursor-zoom-in"
+                        onClick={() => setFullScreenImage(banner)}
+                      >
+                        <img
+                          src={banner}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                          onError={handleBannerError}
+                          alt="Banner bài viết"
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Sidebar spacer in hero (keeps alignment) */}
-                <div className="hidden lg:block w-[260px] flex-shrink-0" />
+                {/* Sidebar spacer in hero */}
+                <div className="hidden lg:block w-72 flex-shrink-0" />
               </div>
 
               {/* ── CONTENT + SIDEBAR ── */}
-              <div className="flex gap-12 items-start py-8">
+              <div className="flex gap-10 items-start py-8">
                 {/* Article */}
                 <article className="flex-1 min-w-0">
                   <div className="mb-10 blog-page-content">
@@ -280,13 +288,13 @@ const BlogPage = () => {
                 </article>
 
                 {/* Sticky Sidebar */}
-                <aside className="hidden lg:block w-[260px] flex-shrink-0">
+                <aside className="hidden lg:block w-72 flex-shrink-0">
                   <div className="sticky top-20 space-y-4">
                     {/* Stats */}
                     {activity && (
                       <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
                         <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-4">
-                          Thống kê
+                          {translations.stats}
                         </p>
                         <div className="flex flex-col gap-3">
                           {[
@@ -295,21 +303,21 @@ const BlogPage = () => {
                               bg: "bg-rose-50",
                               color: "text-rose-400",
                               val: activity.total_likes || 0,
-                              label: "Lượt thích",
+                              label: translations.likesCount,
                             },
                             {
                               icon: "fi-rr-comment-dots",
                               bg: "bg-blue-50",
                               color: "text-blue-400",
                               val: activity.total_comments || 0,
-                              label: "Bình luận",
+                              label: translations.commentsCount,
                             },
                             {
                               icon: "fi-rr-share",
                               bg: "bg-emerald-50",
                               color: "text-emerald-500",
                               val: activity.total_share || 0,
-                              label: "Chia sẻ",
+                              label: translations.sharesCount,
                             },
                           ].map(({ icon, bg, color, val, label }) => (
                             <div
@@ -341,7 +349,7 @@ const BlogPage = () => {
                     {tags && tags.length > 0 && (
                       <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
                         <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-3">
-                          Chủ đề
+                          {translations.subjects}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {tags.map((tag, i) => (
@@ -360,7 +368,7 @@ const BlogPage = () => {
                     <div className="bg-grey border border-grey/50 rounded-2xl p-5 shadow-sm">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70">
-                          Tiến độ
+                          {translations.progress}
                         </p>
                         <span className="text-xs font-bold text-purple">
                           {readingProgress}%
@@ -374,7 +382,7 @@ const BlogPage = () => {
                       </div>
                       <p className="text-xs text-dark-grey mt-2 flex items-center gap-1">
                         <i className="fi fi-rr-time-read text-xs leading-none"></i>
-                        ~{estimateReadTime(content)} phút đọc
+                        ~{estimateReadTime(content)} {translations.minRead}
                       </p>
                     </div>
                   </div>
@@ -387,14 +395,14 @@ const BlogPage = () => {
             {/* ═══════════ SIMILAR BLOGS ═══════════ */}
             {similarBlogs != null && similarBlogs.length > 0 && (
               <div className="bg-grey/20 border-t border-grey/50">
-                <div className="max-w-[1100px] mx-auto px-4 lg:px-8 py-12">
+                <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12">
                   <div className="flex items-center gap-3 mb-8">
                     <div className="w-1 h-7 bg-gradient-to-b from-purple to-emerald-500 rounded-full flex-shrink-0"></div>
                     <p
                       className="font-bold text-black"
                       style={{ fontSize: "1.25rem" }}
                     >
-                      Bài viết tương tự
+                      {translations.similarPosts}
                     </p>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -19,7 +19,7 @@ const HomePage = () => {
   const [blogs, setBlogs] = useState(null);
   const [trendingBlogs, setTrendingBlogs] = useState(null);
   const [adminBlogs, setAdminBlogs] = useState(null);
-  const [pageState, setPageState] = useState("home");
+  const [pageState, setPageState] = useState("feed");
   const { userAuth } = useContext(UserContext);
   const { language } = userAuth;
   const translations = getTranslations(language);
@@ -108,18 +108,18 @@ const HomePage = () => {
   const loadBlogByCategory = (e) => {
     const category = e.target.innerText;
     setBlogs(null);
-    setPageState(pageState === category ? "home" : category);
+    setPageState(pageState === category ? "feed" : category);
   };
 
   const loadBlogByTag = (e) => {
     const tag = e.target.value;
     setBlogs(null);
-    setPageState(pageState === tag ? "home" : tag);
+    setPageState(pageState === tag ? "feed" : tag);
   };
 
   useEffect(() => {
     activeTabRef.current.click();
-    if (pageState === "home") {
+    if (pageState === "feed") {
       fetchLatestBlogs({ page: 1 });
     } else {
       fetchBlogsByCategory({ page: 1 });
@@ -382,15 +382,15 @@ const HomePage = () => {
                 ))}
               </div>
             ) : (
-              <NoDataMessage message="No admin posts available" />
+              <NoDataMessage message={translations.noDataMessage} />
             )}
           </div>
         </aside>
 
         <div className="w-full lg:w-1/2">
           <InPageNavigation
-            routes={[pageState, "trendings", "news"]}
-            defaultHidden={["trendings", "news"]}
+            routes={[pageState === "feed" ? translations.feed : pageState, translations.trending, translations.adminPosts]}
+            defaultHidden={[translations.trending, translations.adminPosts]}
           >
             <div>
               {blogs == null ? (
@@ -416,7 +416,7 @@ const HomePage = () => {
                 <LoadMoreDataBtn
                   state={blogs}
                   fetchDataFun={
-                    pageState == "home"
+                    pageState == "feed"
                       ? fetchLatestBlogs
                       : fetchBlogsByCategory
                   }
@@ -479,10 +479,10 @@ const HomePage = () => {
                 className="w-full appearance-none bg-grey/50 text-black border border-grey rounded-xl px-4 py-2.5 text-sm font-medium cursor-pointer hover:border-purple/40 focus:border-purple focus:outline-none focus:ring-2 focus:ring-purple/20 transition-all duration-200"
                 onChange={(e) => {
                   loadBlogByTag(e);
-                  if (e.target.value === "All Subjects") setPageState("home");
+                  if (e.target.value === translations.allSubjects) setPageState("feed");
                 }}
               >
-                <option>All Subjects</option>
+                <option>{translations.allSubjects}</option>
                 {tags.map((tag, index) => (
                   <option key={index} value={tag.tag_name}>
                     {tag.tag_name}

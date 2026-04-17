@@ -190,7 +190,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
           {type === "share" && metadata ? (
             <div className="p-4 mt-4 rounded-md bg-light-grey">
               <p>
-                {translations.sharedOn} {metadata.share_platform}
+                {translations.sharedOn} {metadata.share_type}
               </p>
               {metadata.share_img && (
                 <img

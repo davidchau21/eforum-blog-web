@@ -15,12 +15,15 @@ import {
   RedditShareButton,
   TelegramShareButton,
 } from "react-share";
+import { getTranslations } from "../../translations";
+
 
 const BlogPostCard = ({ content, author }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { onlineUsers } = useContext(SocketContext) || { onlineUsers: [] };
-  const { userAuth: { access_token } = {} } = useContext(UserContext) || {};
+  const { userAuth, userAuth: { access_token, language } = {} } = useContext(UserContext) || {};
+  const translations = getTranslations(language);
   let {
     publishedAt,
     tags,
@@ -78,7 +81,7 @@ const BlogPostCard = ({ content, author }) => {
         )
         .catch((err) => console.log(err));
     } else {
-      toast.error("Vui lòng đăng nhập để thích bài viết này");
+      toast.error(translations.loggedInToLike);
     }
   };
 
@@ -90,7 +93,7 @@ const BlogPostCard = ({ content, author }) => {
 
   const handleShare = (shareType) => {
     if (!access_token) {
-      toast.error("Vui lòng đăng nhập để chia sẻ bài viết");
+      toast.error(translations.loggedInToShare);
       return;
     }
     const payload = {
@@ -106,10 +109,10 @@ const BlogPostCard = ({ content, author }) => {
       .then(({ data }) => {
         if (data.shared_by_user) {
           setLocalShares((prev) => prev + 1);
-          toast.success("Đã chia sẻ thành công!");
+          toast.success(translations.sharedByToast);
         }
       })
-      .catch((err) => toast.error("Chia sẻ thất bại"));
+      .catch((err) => toast.error(translations.sharedFailedToast));
   };
 
   useEffect(() => {
@@ -140,18 +143,18 @@ const BlogPostCard = ({ content, author }) => {
 
     if (now.toDateString() === publishedDate.toDateString()) {
       if (diffMinutes === 0) {
-        return `vừa xong`;
+        return translations.justNow;
       } else if (diffHours < 1) {
-        return `${diffMinutes} phút trước`;
+        return `${diffMinutes} ${translations.minutesAgo}`;
       } else {
-        return `${diffHours} giờ trước`;
+        return `${diffHours} ${translations.hoursAgo}`;
       }
     }
 
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays <= 7) {
-      return `${diffDays} ngày trước`;
+      return `${diffDays} ${translations.daysAgo}`;
     } else {
       return publishedDate.toLocaleDateString("en-GB");
     }
@@ -258,6 +261,17 @@ const BlogPostCard = ({ content, author }) => {
                   className="absolute bottom-full mb-1 -left-10 bg-white border border-grey rounded-xl shadow-lg p-2 flex gap-2 share-options-feed z-30 min-w-max"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(urlShare);
+                      toast.success(translations.copyLink + " 👍");
+                      handleShare("link");
+                      setShowShareOptions(false);
+                    }}
+                    className="w-8 h-8 rounded-lg bg-grey flex items-center justify-center hover:bg-grey/80 transition-colors duration-200"
+                  >
+                    <i className="fi fi-rr-link text-sm leading-none"></i>
+                  </button>
                   <TwitterShareButton
                     url={urlShare}
                     title={title}
@@ -304,7 +318,7 @@ const BlogPostCard = ({ content, author }) => {
             to={`/blog/${id}`}
             className="text-xs font-semibold text-purple hover:text-purple/70 transition-colors duration-200 flex items-center gap-1"
           >
-            Đọc thêm{" "}
+            {translations.readMore}{" "}
             <i className="fi fi-rr-arrow-right text-xs leading-none"></i>
           </Link>
         </div>
