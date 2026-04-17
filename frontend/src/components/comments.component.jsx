@@ -45,41 +45,57 @@ const CommentsContainer = () => {
     }
 
     return (
-        <div className={"max-sm:w-full fixed " + ( commentsWrapper ? "top-0 sm:right-0" : "top-[100%] sm:right-[-100%]" ) + " duration-700 max-sm:right-0 sm:top-0 w-[50%] min-w-screen h-full z-50 bg-white shadow-2xl p-8 px-16 overflow-y-auto overflow-x-hidden"}>
-            <div className="relative">
-                <h1 className="text-xl font-medium">Bình luận</h1>
-                <p className="text-lg mt-2 w-[70%] text-dark-grey line-clamp-1">{title}</p>
-
-                <button 
-                    onClick={() => setCommentsWrapper(preVal => !preVal)}
-                    className="absolute top-0 right-0 flex justify-center items-center w-12 h-12 rounded-full bg-grey">
-                    <i className="fi fi-br-cross text-2xl mt-1"></i> 
-                </button>
+        <div id="comments-section" className="mt-12 bg-white border-t border-grey pt-8 px-0 sm:px-4">
+            <div className="flex items-center gap-3 mb-8">
+                <div className="w-1 h-7 bg-gradient-to-b from-purple to-emerald-500 rounded-full flex-shrink-0"></div>
+                <p className="font-bold text-black text-xl">
+                    Bình luận ({total_parent_comments})
+                </p>
             </div>
 
-            <hr className="border-grey my-8 w-[120%] -ml-10" />
+            {/* Comment Field */}
+            <div className="px-6 py-4 border-b border-grey bg-grey/20">
+                <CommentField action="Bình luận" />
+            </div>
 
-            <CommentField action="comment" />
+            {/* Comments List */}
+            <div className="px-4 py-4">
+                {commentsArr && commentsArr.length ? (
+                    <>
+                        <p className="text-xs font-semibold text-dark-grey mb-4 px-2">
+                            {total_parent_comments} bình luận
+                        </p>
+                        {commentsArr.map((comment, i) => (
+                            <AnimationWrapper key={i}>
+                                <CommentCard
+                                    index={i}
+                                    leftVal={comment.childrenLevel * 4}
+                                    commentData={comment}
+                                    fetchComments={fetchComments}
+                                />
+                            </AnimationWrapper>
+                        ))}
+                    </>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <div className="w-16 h-16 bg-grey/50 rounded-full flex items-center justify-center mb-4">
+                            <i className="fi fi-rr-comment-slash text-2xl text-dark-grey leading-none"></i>
+                        </div>
+                        <p className="text-dark-grey font-medium">Chưa có bình luận nào</p>
+                        <p className="text-xs text-dark-grey/60 mt-1">Hãy là người đầu tiên bình luận!</p>
+                    </div>
+                )}
 
-            {
-                commentsArr && commentsArr.length ? (
-                commentsArr.map((comment, i) => {
-                    return <AnimationWrapper key={i}>
-                        <CommentCard index={i} leftVal={comment.childrenLevel * 4} commentData={comment} fetchComments={fetchComments}/>
-                    </AnimationWrapper>
-                }) ): ( <NoDataMessage message="No Comments" /> )
-            }
-
-            {
-                total_parent_comments > totalParentCommentsLoaded ? (
-                <button 
-                onClick={loadMoreComments}
-                className="text-dark-grey p-2 px-3 hover:bg-grey/30 rounded-md flex items-center gap-2">
-                    Load More
-                </button>
-                ) : ( <></> )
-            }
-
+                {total_parent_comments > totalParentCommentsLoaded && (
+                    <button
+                        onClick={loadMoreComments}
+                        className="w-full mt-4 py-2.5 text-sm font-medium text-purple hover:text-purple/70 hover:bg-purple/5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                    >
+                        <i className="fi fi-rr-angle-down text-sm leading-none"></i>
+                        Tải thêm bình luận
+                    </button>
+                )}
+            </div>
         </div>
     )
 }

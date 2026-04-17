@@ -16,15 +16,18 @@ import { getAuth } from "firebase-admin/auth";
 import aws from "aws-sdk";
 import crypto from "crypto";
 import { server, app } from "./socket/socket.js";
+import EE from "./socket/eventManager.js";
 
 // schema below
 import User from "./Schema/User.js";
 import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
 import Comment from "./Schema/Comment.js";
+import Message from "./Schema/Message.js";
 
 // nodemailer
-import mailService from "./service/brevo.js";
+// import mailService from "./service/brevo.js";
+import mailService from "./service/nodemailer.js";
 import otpGenerator from "otp-generator";
 import otp from "./Mail/otp.js";
 import resetPasswordTemplate from "./Mail/resetPassword.js";
@@ -972,7 +975,7 @@ server.post("/create-blog", verifyJWT, (req, res) => {
   if (!draft) {
     if (des.length > 200) {
       return res.status(403).json({
-      error: "Blog description must be under 200 characters",
+        error: "Blog description must be under 200 characters",
       });
     }
 
@@ -1155,6 +1158,7 @@ server.post("/share-blog", verifyJWT, (req, res) => {
       });
 
       share.save().then(notification => {
+        EE.emit('new-notification', blog.author, notification);
         return res.status(200).json({ shared_by_user: true });
       });
     })
@@ -1183,6 +1187,7 @@ server.post("/like-blog", verifyJWT, (req, res) => {
       });
 
       like.save().then((notification) => {
+        EE.emit('new-notification', blog.author, notification);
         return res.status(200).json({ liked_by_user: true });
       });
     } else {
@@ -1377,7 +1382,8 @@ server.post("/add-comment", verifyJWT, async (req, res) => {
     }
 
     // Save the notification
-    await new Notification(notificationObj).save();
+    const notification = await new Notification(notificationObj).save();
+    EE.emit('new-notification', notificationObj.notification_for, notification);
 
     // Return the comment data as the response
     return res.status(200).json({
@@ -1508,20 +1514,45 @@ server.post("/delete-comment", verifyJWT, (req, res) => {
   });
 });
 
+server.post("/delete-notification", verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let { _id } = req.body;
+
+  Notification.findOneAndDelete({ _id, notification_for: user_id })
+    .then(() => {
+      return res.status(200).json({ status: "done" });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: err.message });
+    });
+});
+
 server.get("/new-notification", verifyJWT, (req, res) => {
   let user_id = req.user;
 
-  Notification.exists({
+  Notification.countDocuments({
     notification_for: user_id,
     seen: false,
     user: { $ne: user_id },
   })
-    .then((result) => {
-      if (result) {
-        return res.status(200).json({ new_notification_available: true });
-      } else {
-        return res.status(200).json({ new_notification_available: false });
-      }
+    .then((count) => {
+        return res.status(200).json({ new_notification_available: count });
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({ error: err.message });
+    });
+});
+
+server.get("/new-messages", verifyJWT, (req, res) => {
+  let user_id = req.user;
+
+  Message.countDocuments({
+    receiverId: user_id,
+    seen: false
+  })
+    .then((count) => {
+        return res.status(200).json({ unread_messages: count });
     })
     .catch((err) => {
       console.log(err.message);

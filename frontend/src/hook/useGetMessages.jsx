@@ -7,13 +7,12 @@ import { toast } from "react-hot-toast";
 const useGetMessages = () => {
   const [loading, setLoading] = useState(false);
   const { messages, setMessages, selectedConversation } = useConversation();
-  const { userAuth } = useContext(UserContext);
+  const { userAuth, setUserAuth } = useContext(UserContext);
 
   useEffect(() => {
     const getMessages = async () => {
       try {
         setLoading(true);
-        
         
         const res = await axios.get(
           import.meta.env.VITE_SERVER_DOMAIN + `/message/${selectedConversation._id}`,
@@ -22,7 +21,17 @@ const useGetMessages = () => {
           }
         );
         
-        setMessages(res.data);
+        const fetchedMessages = res.data;
+        const newlyReadCount = fetchedMessages.filter(m => m.receiverId === userAuth._id && !m.seen).length;
+
+        if (newlyReadCount > 0) {
+            setUserAuth(prev => ({ 
+                ...prev, 
+                unread_messages: Math.max(0, (prev.unread_messages || 0) - newlyReadCount) 
+            }));
+        }
+
+        setMessages(fetchedMessages);
       } catch (error) {
        
         toast.error(error.response?.data?.message || error.message);

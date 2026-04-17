@@ -1,173 +1,425 @@
+/* eslint-disable no-undef */
 import axios from "axios";
-import { createContext, useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { createContext, useEffect, useRef, useState } from "react";
+import { useParams, Link, useLocation } from "react-router-dom";
 import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
-import { getDay } from "../common/date";
 import BlogInteraction from "../components/blog-interaction.component";
 import BlogPostCard from "../components/blog-post.component";
 import BlogContent from "../components/blog-content.component";
-import CommentsContainer, { fetchComments } from "../components/comments.component";
-import { UserContext } from "../App";
-import { toast } from "react-hot-toast";
-// import bannerDefault from "../imgs/banner-default.png"; // Import ảnh banner mặc định
+import CommentsContainer, {
+  fetchComments,
+} from "../components/comments.component";
 
 export const blogStructure = {
-    title: '',
-    des: '',
-    conent: [],
-    author: { personal_info: {} },
-    banner: '',
-    publishedAt: '',
-}
+  title: "",
+  des: "",
+  content: [],
+  author: { personal_info: {} },
+  banner: "",
+  publishedAt: "",
+  tags: [],
+};
 
 export const BlogContext = createContext({});
 
 const BlogPage = () => {
+  const { blog_id } = useParams();
+  const location = useLocation();
 
-    let { blog_id } = useParams()
+  const [blog, setBlog] = useState(blogStructure);
+  const [similarBlogs, setSimilrBlogs] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [islikedByUser, setLikedByUser] = useState(false);
+  const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
+  const [readingProgress, setReadingProgress] = useState(0);
+  const { fullScreenImage, setFullScreenImage } = useContext(UserContext);
+  const contentRef = useRef(null);
 
-    const [blog, setBlog] = useState(blogStructure);
-    const [similarBlogs, setSimilrBlogs] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [islikedByUser, setLikedByUser] = useState(false);
-    const [commentsWrapper, setCommentsWrapper] = useState(false);
-    const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
+  const bannerDefault =
+    "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
+  const handleBannerError = (e) => {
+    e.target.src = bannerDefault;
+  };
 
-    const bannerDefault = "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
+  const {
+    title,
+    content,
+    banner,
+    des,
+    tags,
+    author: {
+      personal_info: { fullname, username: author_username, profile_img } = {},
+    } = {},
+    publishedAt,
+    activity,
+  } = blog;
 
-    const handleBannerError = (e) => {
-        e.target.src = bannerDefault; // Đổi sang ảnh mặc định nếu ảnh không tải được
+  // Reading progress bar
+  useEffect(() => {
+    const handleScroll = () => {
+      const docHeight = document.body.scrollHeight - window.innerHeight;
+      if (docHeight > 0) {
+        setReadingProgress(
+          Math.min(100, Math.round((window.scrollY / docHeight) * 100)),
+        );
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const fetchBlog = () => {
+    axios
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id })
+      .then(async ({ data: { blog } }) => {
+        blog.comments = await fetchComments({
+          blog_id: blog._id,
+          setParentCommentCountFun: setTotalParentCommentsLoaded,
+        });
+        setBlog(blog);
+        axios
+          .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
+            tag: blog.tags[0],
+            limit: 3,
+            eliminate_blog: blog_id,
+          })
+          .then(({ data }) => setSimilrBlogs(data.blogs));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    resetStates();
+    fetchBlog();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blog_id]);
+
+  // Auto-scroll to comments section if URL contains ?comment=1
+  useEffect(() => {
+    if (location.search.includes("comment=1") && !loading) {
+      setTimeout(() => {
+        const element = document.getElementById("comments-section");
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 500);
     }
+  }, [location.search, loading]);
 
-    let { title, content, banner, author: { personal_info: { fullname, username: author_username, profile_img } }, publishedAt, isReport } = blog;
+  const resetStates = () => {
+    setBlog(blogStructure);
+    setSimilrBlogs(null);
+    setLoading(true);
+    setLikedByUser(false);
+    setLikedByUser(false);
+    setTotalParentCommentsLoaded(0);
+    setReadingProgress(0);
+  };
 
-    let {
-        userAuth: { username, access_token },
-    } = useContext(UserContext);
+  const hasRealBanner = banner && banner !== bannerDefault;
 
-    const fetchBlog = () => {
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id })
-            .then(async ({ data: { blog } }) => {
+  const estimateReadTime = (content) => {
+    if (!content || !content[0]) return 1;
+    const text = content[0].blocks.map((b) => b.data?.text || "").join(" ");
+    return Math.max(1, Math.ceil(text.split(" ").length / 200));
+  };
 
-                blog.comments = await fetchComments({ blog_id: blog._id, setParentCommentCountFun: setTotalParentCommentsLoaded })
-                setBlog(blog)
+  return (
+    <AnimationWrapper>
+      {loading ? (
+        <Loader />
+      ) : (
+        <BlogContext.Provider
+          value={{
+            blog,
+            setBlog,
+            islikedByUser,
+            setLikedByUser,
+            totalParentCommentsLoaded,
+            setTotalParentCommentsLoaded,
+            fullScreenImage,
+            setFullScreenImage,
+          }}
+        >
+          {/* Reading Progress Bar */}
+          <div className="fixed top-0 left-0 w-full h-0.5 bg-grey/30 z-50 pointer-events-none">
+            <div
+              className="h-full bg-gradient-to-r from-purple to-emerald-500 transition-all duration-150 ease-out"
+              style={{ width: `${readingProgress}%` }}
+            />
+          </div>
 
-                axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", { tag: blog.tags[0], limit: 6, eliminate_blog: blog_id })
-                    .then(({ data }) => {
+          <div ref={contentRef} className="bg-white min-h-screen">
+            {/* ═══════════ UNIFIED CONTAINER ═══════════ */}
+            <div className="max-w-[1100px] mx-auto px-4 lg:px-8">
+              {/* ── HERO (aligns with article column) ── */}
+              <div className="relative flex gap-12 items-start pt-10 pb-8 border-b border-grey/40">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.04] via-transparent to-emerald-500/[0.02] pointer-events-none" />
 
-                        setSimilrBlogs(data.blogs);
-                    })
+                {/* Hero content – same flex-1 as article below */}
+                <div className="flex-1 min-w-0 relative z-10">
+                  {/* Tags */}
+                  {tags && tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-5">
+                      {tags.slice(0, 5).map((tag, i) => (
+                        <span
+                          key={i}
+                          className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple/10 text-purple border border-purple/20 tracking-wide"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
-                setLoading(false); 
-            })
-            .catch(err => {
-                console.log(err);
-                setLoading(false);
-            })
-    }
+                  {/* Title */}
+                  <p
+                    style={{
+                      fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
+                      lineHeight: 1.15,
+                      fontWeight: 800,
+                      fontFamily: "Inter, sans-serif",
+                      color: "#0d0d0d",
+                      marginBottom: "0.75rem",
+                    }}
+                  >
+                    {title}
+                  </p>
 
-    useEffect(() => {
+                  {/* Description */}
+                  {des && (
+                    <p
+                      className="text-dark-grey leading-relaxed mb-6"
+                      style={{ fontSize: "1.05rem" }}
+                    >
+                      {des}
+                    </p>
+                  )}
 
-        resetStates();
+                  {/* Author + Meta Row */}
+                  <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-grey/60">
+                    <Link
+                      to={`/user/${author_username}`}
+                      className="flex items-center gap-3 group"
+                    >
+                      <img
+                        src={profile_img}
+                        className="w-10 h-10 rounded-full object-cover ring-2 ring-transparent group-hover:ring-purple/40 transition-all duration-300 flex-shrink-0"
+                        alt={fullname}
+                      />
+                      <div>
+                        <p className="font-semibold text-black text-sm group-hover:text-purple transition-colors capitalize leading-tight">
+                          {fullname}
+                        </p>
+                        <p className="text-xs text-dark-grey">
+                          @{author_username}
+                        </p>
+                      </div>
+                    </Link>
+                    <div className="flex items-center gap-3 text-xs text-dark-grey">
+                      <span className="flex items-center gap-1.5">
+                        <i className="fi fi-rr-calendar text-purple/60 leading-none"></i>
+                        {new Date(publishedAt).toLocaleDateString("vi-VN", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <span className="flex items-center gap-1.5 bg-grey/60 px-2.5 py-1 rounded-full font-medium">
+                        <i className="fi fi-rr-time-read leading-none"></i>
+                        {estimateReadTime(content)} phút đọc
+                      </span>
+                    </div>
+                  </div>
 
-        fetchBlog();
+                  {/* Banner (inside article column width) */}
+                  {hasRealBanner && (
+                    <div
+                      className="mt-6 w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-xl shadow-black/10 cursor-zoom-in"
+                      onClick={() => setFullScreenImage(banner)}
+                    >
+                      <img
+                        src={banner}
+                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                        onError={handleBannerError}
+                        alt="Banner bài viết"
+                      />
+                    </div>
+                  )}
+                </div>
 
-    }, [blog_id])
+                {/* Sidebar spacer in hero (keeps alignment) */}
+                <div className="hidden lg:block w-[260px] flex-shrink-0" />
+              </div>
 
-    const resetStates = () => {
-        setBlog(blogStructure);
-        setSimilrBlogs(null);
-        setLoading(true);
-        setLikedByUser(false);
-        setCommentsWrapper(false);
-        setTotalParentCommentsLoaded(0);
-    }
-
-    return (
-        <AnimationWrapper>
-            {
-                loading ? <Loader />
-                    :
-                    <BlogContext.Provider value={{ blog, setBlog, islikedByUser, setLikedByUser, commentsWrapper, setCommentsWrapper, totalParentCommentsLoaded, setTotalParentCommentsLoaded }}>
-
-                        <CommentsContainer />
-
-                        <div className="max-w-[900px] center max-lg:px-[5vw]">
-
-                            <hr className="border-grey" />
-                            <div className="flex max-sm:flex-col justify-between my-8">
-                                <div className="flex gap-5 items-start">
-                                    <img src={profile_img} className="w-12 h-12 rounded-full" />
-
-                                    <p className="capitalize">
-                                        {fullname}
-                                        <br />
-                                        @
-                                        <Link to={`/user/${author_username}`} className="underline">{author_username}</Link>
-                                    </p>
-
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <p className="text-dark-grey opacity-75 max-sm:mt-6 max-sm:ml-12 max-sm:pl-5">Đăng vào ngày {new Date(publishedAt).toLocaleDateString('vi-VN')}</p>
-                                </div>
-                            </div>
-                            <hr className="border-grey my-1" />
-
-                            <div className="mt-12">
-                                <h2>{title}</h2>
-                                <hr className="border-grey my-2" />
-                            </div>
-
-                            {/* Ẩn banner khi không có giá trị banner hoặc sử dụng banner mặc định */}
-                            <div className={`w-full aspect-video ${!banner || banner === bannerDefault ? 'hidden' : ''}`}>
-                                <img
-                                    src={banner || bannerDefault} // Dùng banner mặc định nếu không có banner từ blog
-                                    className="w-full h-full object-cover"
-                                    onError={handleBannerError} // Thêm onError để xử lý lỗi tải ảnh
-                                    alt="Blog Banner"
-                                />
-                            </div>
-
-                            {/* <BlogInteraction /> */}
-
-                            <div className="my-12 font-gelasio blog-page-content">
-                                {
-                                    content[0].blocks.map((block, i) => {
-                                        return <div key={i} className="my-4 md:my-8">
-                                            <BlogContent block={block} />
-                                        </div>
-                                    })
-                                }
-                            </div>
-
-                            <BlogInteraction />
-
-                            {
-                                similarBlogs != null && similarBlogs.length ?
-                                    <>
-                                        <h1 className="text-2xl mt-14 mb-10 font-medium">Bài viết tương tự</h1>
-
-                                        {
-                                            similarBlogs.map((blog, i) => {
-
-                                                let { author: { personal_info } } = blog;
-
-                                                return <AnimationWrapper key={i} transition={{ duration: 1, delay: i * 0.08 }}>
-                                                    <BlogPostCard content={blog} author={personal_info} />
-                                                </AnimationWrapper>
-
-                                            })
-                                        }
-                                    </>
-                                    : " "
-                            }
-
+              {/* ── CONTENT + SIDEBAR ── */}
+              <div className="flex gap-12 items-start py-8">
+                {/* Article */}
+                <article className="flex-1 min-w-0">
+                  <div className="mb-10 blog-page-content">
+                    <div
+                      className="font-gelasio leading-relaxed"
+                      style={{ fontSize: "1.05rem" }}
+                    >
+                      {content[0].blocks.map((block, i) => (
+                        <div key={i} className="my-4 md:my-7">
+                          <BlogContent block={block} />
                         </div>
-                    </BlogContext.Provider>
-            }
-        </AnimationWrapper>
-    )
-}
+                      ))}
+                    </div>
+                  </div>
+
+                  <BlogInteraction />
+
+                  <CommentsContainer />
+                </article>
+
+                {/* Sticky Sidebar */}
+                <aside className="hidden lg:block w-[260px] flex-shrink-0">
+                  <div className="sticky top-20 space-y-4">
+                    {/* Stats */}
+                    {activity && (
+                      <div className="bg-white border border-grey rounded-2xl p-5">
+                        <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-4">
+                          Thống kê
+                        </p>
+                        <div className="flex flex-col gap-3">
+                          {[
+                            {
+                              icon: "fi-rr-heart",
+                              bg: "bg-rose-50",
+                              color: "text-rose-400",
+                              val: activity.total_likes || 0,
+                              label: "Lượt thích",
+                            },
+                            {
+                              icon: "fi-rr-comment-dots",
+                              bg: "bg-blue-50",
+                              color: "text-blue-400",
+                              val: activity.total_comments || 0,
+                              label: "Bình luận",
+                            },
+                            {
+                              icon: "fi-rr-share",
+                              bg: "bg-emerald-50",
+                              color: "text-emerald-500",
+                              val: activity.total_share || 0,
+                              label: "Chia sẻ",
+                            },
+                          ].map(({ icon, bg, color, val, label }) => (
+                            <div
+                              key={label}
+                              className="flex items-center gap-3"
+                            >
+                              <div
+                                className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}
+                              >
+                                <i
+                                  className={`fi ${icon} ${color} text-base leading-none`}
+                                ></i>
+                              </div>
+                              <div>
+                                <p className="font-bold text-black text-sm leading-none">
+                                  {val}
+                                </p>
+                                <p className="text-xs text-dark-grey mt-0.5">
+                                  {label}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Tags */}
+                    {tags && tags.length > 0 && (
+                      <div className="bg-white border border-grey rounded-2xl p-5">
+                        <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-3">
+                          Chủ đề
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {tags.map((tag, i) => (
+                            <span
+                              key={i}
+                              className="px-3 py-1.5 bg-grey/50 text-dark-grey text-xs rounded-full hover:bg-purple/10 hover:text-purple transition-all duration-200 cursor-pointer border border-transparent hover:border-purple/20"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Reading Progress */}
+                    <div className="bg-white border border-grey rounded-2xl p-5">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70">
+                          Tiến độ
+                        </p>
+                        <span className="text-xs font-bold text-purple">
+                          {readingProgress}%
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-grey/60 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-purple to-emerald-500 transition-all duration-300 rounded-full"
+                          style={{ width: `${readingProgress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-dark-grey mt-2 flex items-center gap-1">
+                        <i className="fi fi-rr-time-read text-xs leading-none"></i>
+                        ~{estimateReadTime(content)} phút đọc
+                      </p>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+              {/* end flex content+sidebar */}
+            </div>
+            {/* end unified container */}
+
+            {/* ═══════════ SIMILAR BLOGS ═══════════ */}
+            {similarBlogs != null && similarBlogs.length > 0 && (
+              <div className="bg-grey/20 border-t border-grey/50">
+                <div className="max-w-[1100px] mx-auto px-4 lg:px-8 py-12">
+                  <div className="flex items-center gap-3 mb-8">
+                    <div className="w-1 h-7 bg-gradient-to-b from-purple to-emerald-500 rounded-full flex-shrink-0"></div>
+                    <p
+                      className="font-bold text-black"
+                      style={{ fontSize: "1.25rem" }}
+                    >
+                      Bài viết tương tự
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {similarBlogs.map((blog, i) => {
+                      const {
+                        author: { personal_info },
+                      } = blog;
+                      return (
+                        <AnimationWrapper
+                          key={i}
+                          transition={{ duration: 1, delay: i * 0.08 }}
+                        >
+                          <BlogPostCard content={blog} author={personal_info} />
+                        </AnimationWrapper>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </BlogContext.Provider>
+      )}
+    </AnimationWrapper>
+  );
+};
 
 export default BlogPage;

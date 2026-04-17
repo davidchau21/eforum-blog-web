@@ -1,10 +1,9 @@
 /* eslint-disable react/prop-types */
 import { Link } from "react-router-dom";
-import { getDay } from "../common/date";
 
 const MinimalBlogPost = ({ blog, index }) => {
     
-    let { title, blog_id: id, author: { personal_info: { fullname, username, profile_img } }, publishedAt } = blog;
+    let { title, blog_id: id, author: { personal_info: { username, profile_img } }, publishedAt } = blog;
 
     const getDisplayDate = (date) => {
         const now = new Date();
@@ -34,18 +33,21 @@ const MinimalBlogPost = ({ blog, index }) => {
     };
 
     return (
-        <Link to={`/blog/${id}`} className="flex gap-5 mb-8">
-            {/* <h1 className="blog-index">{ index < 10 ? "0" + (index + 1) : index}</h1> */}
-
-            <div>
-                <div className="flex gap-2 items-center mb-2">
-                    <img src={profile_img} className="w-6 h-6 rounded-full" />
-                    {/* <p className="line-clamp-1">{fullname} @{username}</p> */}
-                    <p className="overflow-hidden text-ellipsis whitespace-nowrap"> @{username} </p>
-                    <p className="min-w-fit">{ getDisplayDate(publishedAt) }</p>
+        <Link to={`/blog/${id}`} className="group flex gap-3 p-3 rounded-xl hover:bg-grey/60 transition-all duration-200 mb-2">
+            {index !== undefined && (
+                <span className="text-2xl font-bold text-purple/30 group-hover:text-purple/60 transition-colors duration-200 min-w-[2rem] leading-tight pt-0.5">
+                    {index < 9 ? "0" + (index + 1) : index + 1}
+                </span>
+            )}
+            <div className="flex-1 min-w-0">
+                <div className="flex gap-2 items-center mb-1.5">
+                    <img src={profile_img} className="w-5 h-5 rounded-full object-cover ring-1 ring-grey" />
+                    <p className="text-xs text-dark-grey truncate">@{username}</p>
+                    <span className="text-xs text-dark-grey/60 ml-auto flex-shrink-0">· {getDisplayDate(publishedAt)}</span>
                 </div>
-
-                <h1 className="blog-title mb-4">{title}</h1>
+                <p className="text-sm font-semibold text-black group-hover:text-purple transition-colors duration-200 line-clamp-2 leading-snug">
+                    {title}
+                </p>
             </div>
         </Link>
     )

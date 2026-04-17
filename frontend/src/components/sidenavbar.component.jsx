@@ -65,8 +65,8 @@ const SideNav = () => {
                             <div className="relative">
                                 <i className="fi fi-rr-bell"></i>
                                 {
-                                    new_notification_available ?
-                                    <span className="bg-red w-2 h-2 rounded-full absolute z-10 top-0 right-0"></span> : ""
+                                    new_notification_available > 0 ?
+                                    <span className="bg-red w-4 h-4 rounded-full absolute z-10 -top-1 -right-2 flex items-center justify-center text-white text-[10px] font-bold">{new_notification_available > 99 ? '99+' : new_notification_available}</span> : ""
                                 }
                             </div>
                             {translations.notifications}

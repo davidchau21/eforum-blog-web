@@ -9,62 +9,34 @@ import { FacebookShareButton, LinkedinShareButton, RedditShareButton, TelegramSh
 
 const BlogInteraction = () => {
     const [showShareOptions, setShowShareOptions] = useState(false);
-
     const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     let { blog, blog: { _id, title, blog_id, activity, activity: { total_likes, total_comments, total_share }, author: { personal_info: { username: author_username, role } }, isReport }, setBlog, islikedByUser, setLikedByUser, setCommentsWrapper } = useContext(BlogContext);
-
     let { userAuth: { username, access_token } } = useContext(UserContext);
 
     let urlShare = window.location.href;
 
     useEffect(() => {
-
         if (access_token) {
-            // make request to server to get like information
             axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/isliked-by-user", { _id }, {
-                headers: {
-                    'Authorization': `Bearer ${access_token}`
-                }
+                headers: { 'Authorization': `Bearer ${access_token}` }
             })
-                .then(({ data: { result } }) => {
-                    setLikedByUser(Boolean(result))
-                })
-                .catch(err => {
-                    console.log(err);
-                })
+                .then(({ data: { result } }) => setLikedByUser(Boolean(result)))
+                .catch(err => console.log(err))
         }
-
     }, [])
 
     const handleLike = () => {
-
         if (access_token) {
-            // like the blog
             setLikedByUser(preVal => !preVal);
-
             !islikedByUser ? total_likes++ : total_likes--;
-
             setBlog({ ...blog, activity: { ...activity, total_likes } })
-
             axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/like-blog", { _id, islikedByUser }, {
-                headers: {
-                    'Authorization': `Bearer ${access_token}`
-                }
-            })
-                .then(({ data }) => {
-                    console.log(data);
-                })
-                .catch(err => {
-                    console.log(err);
-                })
-
-        }
-        else {
-            // not logged in
+                headers: { 'Authorization': `Bearer ${access_token}` }
+            }).catch(err => console.log(err))
+        } else {
             toast.error("Please log in to like this blog")
         }
-
     }
 
     const handleShare = (shareType) => {
@@ -72,27 +44,20 @@ const BlogInteraction = () => {
             toast.error("Please log in to share this blog");
             return;
         }
-
         const payload = {
             blog_id: _id,
             share_type: shareType,
             share_url: urlShare,
             share_img: blog.banner || "",
         };
-
         axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/share-blog", payload, {
-            headers: {
-                'Authorization': `Bearer ${access_token}`
-            }
+            headers: { 'Authorization': `Bearer ${access_token}` }
         })
             .then(({ data }) => {
                 if (data.shared_by_user) {
                     setBlog(prevBlog => ({
                         ...prevBlog,
-                        activity: {
-                            ...prevBlog.activity,
-                            total_share: prevBlog.activity.total_share + 1,
-                        }
+                        activity: { ...prevBlog.activity, total_share: prevBlog.activity.total_share + 1 }
                     }));
                     toast.success("Blog shared successfully!");
                 }
@@ -109,11 +74,8 @@ const BlogInteraction = () => {
                 setShowShareOptions(false);
             }
         };
-
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showShareOptions]);
 
     const report = useCallback(async () => {
@@ -121,16 +83,9 @@ const BlogInteraction = () => {
             await axios.post(
                 import.meta.env.VITE_SERVER_DOMAIN + `/blogs/report/${blog_id}`,
                 null,
-                {
-                    headers: {
-                        Authorization: `Bearer ${access_token}`,
-                    },
-                }
+                { headers: { Authorization: `Bearer ${access_token}` } }
             );
-            setBlog((prevBlog) => ({
-                ...prevBlog,
-                isReport: true,
-            }));
+            setBlog(prevBlog => ({ ...prevBlog, isReport: true }));
             toast.success("Report Blog successfully");
         } catch (error) {
             console.error(error);
@@ -142,150 +97,145 @@ const BlogInteraction = () => {
         <>
             <Toaster />
 
-            <hr className="border-grey my-2" />
-
-            <div className="flex gap-6 justify-between">
-                <div className="flex gap-3 items-center">
+            <div className="flex gap-2 items-center justify-between py-3 my-2 border-y border-grey">
+                {/* Left: Reactions */}
+                <div className="flex items-center gap-1">
+                    {/* Like */}
                     <button
                         onClick={handleLike}
-                        className={"w-10 h-10 rounded-full flex items-center justify-center " + (islikedByUser ? "bg-red/20 text-red" : "bg-grey/80")}
+                        className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${islikedByUser
+                            ? "bg-rose-50 text-rose-500 hover:bg-rose-100"
+                            : "text-dark-grey hover:bg-grey/60 hover:text-rose-500"}`}
                     >
-                        <i className={"fi " + (islikedByUser ? "fi-sr-heart" : "fi-rr-heart")}></i>
+                        <i className={`fi ${islikedByUser ? "fi-sr-heart" : "fi-rr-heart"} text-base leading-none`}></i>
+                        <span>{total_likes}</span>
                     </button>
-                    <p className="text-xl text-dark-grey">{total_likes}</p>
 
+                    {/* Comment */}
                     <button
-                        onClick={() => setCommentsWrapper(preVal => !preVal)}
-                        className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
+                        onClick={() => {
+                            const element = document.getElementById("comments-section");
+                            if (element) {
+                                element.scrollIntoView({ behavior: "smooth" });
+                            }
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-grey/60 hover:text-blue-500 transition-all duration-200"
                     >
-                        <i className="fi fi-rr-comment-dots"></i>
+                        <i className="fi fi-rr-comment-dots text-base leading-none"></i>
+                        <span>{total_comments}</span>
                     </button>
-                    <p className="text-xl text-dark-grey">{total_comments}</p>
 
+                    {/* Share */}
                     <div className="relative">
                         <button
                             onClick={() => setShowShareOptions(prev => !prev)}
-                            className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-grey/60 hover:text-emerald-500 transition-all duration-200"
                         >
-                            <i className="fi fi-rr-share"></i>
+                            <i className="fi fi-rr-share text-base leading-none"></i>
+                            <span>{total_share}</span>
                         </button>
+
                         {showShareOptions && (
-                            <div className="absolute right-0 bg-white border rounded shadow-lg p-4 flex flex-col gap-2 share-options">
-                                <TwitterShareButton
-                                    url={urlShare}
-                                    title={title}
-                                    hashtags={["blog", title, "efurum"]}
-                                    onClick={() => {
-                                        handleShare("twitter");
-                                        setShowShareOptions(false);
-                                    }}>
-                                    <i className="fi fi-brands-twitter text-xl hover:text-twitter"></i>
+                            <div className="absolute left-0 top-full mt-2 bg-white border border-grey rounded-2xl shadow-2xl p-3 flex gap-3 share-options z-30 min-w-max">
+                                <TwitterShareButton url={urlShare} title={title} hashtags={["blog", "eforum"]}
+                                    onClick={() => { handleShare("twitter"); setShowShareOptions(false); }}>
+                                    <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center hover:bg-sky-100 transition-colors duration-200">
+                                        <i className="fi fi-brands-twitter text-sky-500 text-base leading-none"></i>
+                                    </div>
                                 </TwitterShareButton>
-                                <FacebookShareButton
-                                    url={urlShare}
-                                    hashtag="#blog"
-                                    onClick={() => {
-                                        handleShare("facebook");
-                                        setShowShareOptions(false);
-                                    }}>
-                                    <i className="fi fi-brands-facebook text-xl hover:text-facebook"></i>
+                                <FacebookShareButton url={urlShare} hashtag="#blog"
+                                    onClick={() => { handleShare("facebook"); setShowShareOptions(false); }}>
+                                    <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                                        <i className="fi fi-brands-facebook text-blue-600 text-base leading-none"></i>
+                                    </div>
                                 </FacebookShareButton>
-                                <LinkedinShareButton
-                                    url={urlShare}
-                                    title={title}
-                                    summary="blog"
-                                    onClick={() => {
-                                        handleShare("linkedin");
-                                        setShowShareOptions(false);
-                                    }}>
-                                    <i className="fi fi-brands-linkedin text-xl hover:text-linkedin"></i>
+                                <LinkedinShareButton url={urlShare} title={title} summary="blog"
+                                    onClick={() => { handleShare("linkedin"); setShowShareOptions(false); }}>
+                                    <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                                        <i className="fi fi-brands-linkedin text-blue-700 text-base leading-none"></i>
+                                    </div>
                                 </LinkedinShareButton>
-                                <RedditShareButton
-                                    url={urlShare}
-                                    title={title}
-                                    onClick={() => {
-                                        handleShare("reddit");
-                                        setShowShareOptions(false);
-                                    }}>
-                                    <i className="fi fi-brands-reddit text-xl hover:text-reddit"></i>
+                                <RedditShareButton url={urlShare} title={title}
+                                    onClick={() => { handleShare("reddit"); setShowShareOptions(false); }}>
+                                    <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center hover:bg-orange-100 transition-colors duration-200">
+                                        <i className="fi fi-brands-reddit text-orange-500 text-base leading-none"></i>
+                                    </div>
                                 </RedditShareButton>
-                                <TelegramShareButton
-                                    url={urlShare}
-                                    title={title}
-                                    onClick={() => {
-                                        handleShare("telegram");
-                                        setShowShareOptions(false);
-                                    }}>
-                                    <i className="fi fi-brands-telegram text-xl hover:text-telegram"></i>
+                                <TelegramShareButton url={urlShare} title={title}
+                                    onClick={() => { handleShare("telegram"); setShowShareOptions(false); }}>
+                                    <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center hover:bg-sky-100 transition-colors duration-200">
+                                        <i className="fi fi-brands-telegram text-sky-500 text-base leading-none"></i>
+                                    </div>
                                 </TelegramShareButton>
                             </div>
                         )}
                     </div>
-                    <p className="text-xl text-dark-grey">{total_share}</p>
                 </div>
 
-                <div className="flex gap-6 items-center">
-                    {
-                        username == author_username ?
-                            <Link to={`/editor/${blog_id}`} className="underline hover:text-purple">Edit</Link> : ""
-                    }
+                {/* Right: Actions */}
+                <div className="flex items-center gap-2">
+                    {/* Edit if author */}
+                    {username == author_username && (
+                        <Link
+                            to={`/editor/${blog_id}`}
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-grey/60 hover:text-purple transition-all duration-200"
+                        >
+                            <i className="fi fi-rr-edit text-base leading-none"></i>
+                            <span>Chỉnh sửa</span>
+                        </Link>
+                    )}
+
+                    {/* Copy Link */}
                     <div className="relative group">
                         <button
                             onClick={() => {
                                 navigator.clipboard.writeText(urlShare);
-                                toast.success("Link copied to clipboard!");
+                                toast.success("Đã sao chép link!");
                             }}
-                            className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80 group-hover:bg-blue-500"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-blue-50 hover:text-blue-500 transition-all duration-200"
                         >
-                            <i className="fi fi-rr-link"></i>
+                            <i className="fi fi-rr-link text-base leading-none"></i>
                         </button>
-                        <span className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2">
-                            Copy link
+                        <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black/80 text-white text-xs rounded-lg py-1 px-2 whitespace-nowrap">
+                            Sao chép link
                         </span>
                     </div>
+
+                    {/* Report */}
                     {access_token && !isReport && username !== author_username && role == "USER" && (
                         <div className="relative group">
-                            {/* Report button */}
                             <button
                                 onClick={() => setShowConfirmModal(true)}
-                                className="w-10 h-10 rounded-full flex items-center justify-center bg-grey/80 hover:bg-green-300 transition-all"
+                                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-rose-50 hover:text-rose-500 transition-all duration-200"
                             >
-                                <i className="fi fi-rr-flag text-rose-400"></i>
+                                <i className="fi fi-rr-flag text-base leading-none"></i>
                             </button>
-
-                            {/* Tooltip */}
-                            <span className="absolute bottom-full mb-2 hidden group-hover:block bg-black text-white text-xs rounded py-1 px-2">
-                                Report this post
+                            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black/80 text-white text-xs rounded-lg py-1 px-2 whitespace-nowrap">
+                                Báo cáo bài viết
                             </span>
 
-                            {/* Confirmation Modal */}
                             {showConfirmModal && (
-                                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                                    <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-                                        {/* Modal title */}
-                                        <p className="text-lg font-semibold text-black">Confirm Report</p>
-
-                                        {/* Modal content */}
-                                        <p className="text-sm text-black mt-2">
-                                            Are you sure you want to report this post? This action cannot be undone.
+                                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+                                    <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 mx-4">
+                                        <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i className="fi fi-rr-flag text-rose-500 text-xl leading-none"></i>
+                                        </div>
+                                        <p className="text-base font-bold text-black text-center mb-1">Báo cáo bài viết</p>
+                                        <p className="text-sm text-dark-grey text-center mb-6">
+                                            Bạn có chắc chắn muốn báo cáo bài viết này? Hành động này không thể hoàn tác.
                                         </p>
-
-                                        {/* Cancel and Report buttons */}
-                                        <div className="mt-4 flex justify-center gap-8">
+                                        <div className="flex gap-3">
                                             <button
                                                 onClick={() => setShowConfirmModal(false)}
-                                                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                                                className="flex-1 py-2.5 px-4 bg-grey text-dark-grey rounded-xl text-sm font-medium hover:bg-grey/80 transition-colors duration-200"
                                             >
-                                                Cancel
+                                                Hủy
                                             </button>
                                             <button
-                                                onClick={() => {
-                                                    report(); // Call report function
-                                                    setShowConfirmModal(false);
-                                                }}
-                                                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                                                onClick={() => { report(); setShowConfirmModal(false); }}
+                                                className="flex-1 py-2.5 px-4 bg-rose-500 text-white rounded-xl text-sm font-medium hover:bg-rose-600 transition-colors duration-200"
                                             >
-                                                Report
+                                                Báo cáo
                                             </button>
                                         </div>
                                     </div>
@@ -295,8 +245,6 @@ const BlogInteraction = () => {
                     )}
                 </div>
             </div>
-
-            <hr className="border-grey my-2" />
         </>
     )
 }
