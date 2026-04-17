@@ -301,7 +301,7 @@ const HomePage = () => {
           </motion.div>
         </div>
 
-        <div className="relative z-20 max-w-4xl w-full">
+        <div className="relative z-20 max-w-[96%] w-full mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -358,11 +358,11 @@ const HomePage = () => {
       </div>
 
       <section className="w-full min-h-screen flex flex-col lg:flex-row gap-6 py-8">
-        <aside className="hidden lg:flex lg:w-1/4 sticky-section scrollbar-hide flex-col gap-2">
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-grey p-5 mb-4">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <i className="fi fi-rr-user-pen text-emerald-600 text-base leading-none"></i>
+        <aside className="hidden lg:flex lg:w-1/4 sticky-section scrollbar-hide flex-col gap-6">
+          <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] mb-2">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-purple/10 rounded-xl flex items-center justify-center">
+                <i className="fi fi-rr-user-pen text-purple text-lg leading-none"></i>
               </div>
               <p className="font-bold text-black text-base">
                 {translations.adminPosts}
@@ -464,11 +464,11 @@ const HomePage = () => {
           </InPageNavigation>
         </div>
 
-        <aside className="hidden lg:flex lg:w-1/4 sticky-section scrollbar-hide flex-col gap-4">
-          <div className="bg-white rounded-2xl border border-grey p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-purple/10 rounded-lg flex items-center justify-center">
-                <i className="fi fi-rr-filter text-purple text-base leading-none"></i>
+        <aside className="hidden lg:flex lg:w-1/4 sticky-section scrollbar-hide flex-col gap-6">
+          <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
+                <i className="fi fi-rr-filter text-emerald-500 text-lg leading-none"></i>
               </div>
               <p className="font-bold text-black text-base">
                 {translations.subjects}
@@ -503,10 +503,10 @@ const HomePage = () => {
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple/5 to-white rounded-2xl border border-grey p-5">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
-                <i className="fi fi-rr-arrow-trend-up text-rose-500 text-base leading-none"></i>
+          <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center">
+                <i className="fi fi-rr-arrow-trend-up text-rose-500 text-lg leading-none"></i>
               </div>
               <p className="font-bold text-black text-base">
                 {translations.trending}

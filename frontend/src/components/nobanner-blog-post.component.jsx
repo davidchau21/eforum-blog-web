@@ -35,7 +35,7 @@ const MinimalBlogPost = ({ blog, index }) => {
     return (
         <Link to={`/blog/${id}`} className="group flex gap-3 p-3 rounded-xl hover:bg-grey/60 transition-all duration-200 mb-2">
             {index !== undefined && (
-                <span className="text-2xl font-bold text-purple/30 group-hover:text-purple/60 transition-colors duration-200 min-w-[2rem] leading-tight pt-0.5">
+                <span className="text-2xl font-bold text-purple/50 group-hover:text-purple transition-colors duration-200 min-w-[2.5rem] leading-tight pt-0.5">
                     {index < 9 ? "0" + (index + 1) : index + 1}
                 </span>
             )}

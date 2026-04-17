@@ -1,7 +1,8 @@
 /* eslint-disable no-undef */
 import axios from "axios";
-import { createContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
+import { UserContext } from "../App";
 import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
 import BlogInteraction from "../components/blog-interaction.component";
@@ -154,11 +155,11 @@ const BlogPage = () => {
             />
           </div>
 
-          <div ref={contentRef} className="bg-white min-h-screen">
+          <div ref={contentRef} className="text-black min-h-screen">
             {/* ═══════════ UNIFIED CONTAINER ═══════════ */}
-            <div className="max-w-[1100px] mx-auto px-4 lg:px-8">
+            <div className="max-w-[98%] mx-auto px-2 lg:px-4">
               {/* ── HERO (aligns with article column) ── */}
-              <div className="relative flex gap-12 items-start pt-10 pb-8 border-b border-grey/40">
+              <div className="relative z-20 max-w-[96%] w-full mx-auto flex gap-12 items-start pt-10 pb-8 border-b border-grey/40">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple/[0.04] via-transparent to-emerald-500/[0.02] pointer-events-none" />
 
                 {/* Hero content – same flex-1 as article below */}
@@ -179,13 +180,12 @@ const BlogPage = () => {
 
                   {/* Title */}
                   <p
+                    className="text-black mb-3"
                     style={{
                       fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
                       lineHeight: 1.15,
                       fontWeight: 800,
                       fontFamily: "Inter, sans-serif",
-                      color: "#0d0d0d",
-                      marginBottom: "0.75rem",
                     }}
                   >
                     {title}
@@ -263,7 +263,7 @@ const BlogPage = () => {
                 <article className="flex-1 min-w-0">
                   <div className="mb-10 blog-page-content">
                     <div
-                      className="font-gelasio leading-relaxed"
+                      className="font-gelasio leading-relaxed text-black/90"
                       style={{ fontSize: "1.05rem" }}
                     >
                       {content[0].blocks.map((block, i) => (
@@ -284,7 +284,7 @@ const BlogPage = () => {
                   <div className="sticky top-20 space-y-4">
                     {/* Stats */}
                     {activity && (
-                      <div className="bg-white border border-grey rounded-2xl p-5">
+                      <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
                         <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-4">
                           Thống kê
                         </p>
@@ -339,7 +339,7 @@ const BlogPage = () => {
 
                     {/* Tags */}
                     {tags && tags.length > 0 && (
-                      <div className="bg-white border border-grey rounded-2xl p-5">
+                      <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
                         <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-3">
                           Chủ đề
                         </p>
@@ -357,7 +357,7 @@ const BlogPage = () => {
                     )}
 
                     {/* Reading Progress */}
-                    <div className="bg-white border border-grey rounded-2xl p-5">
+                    <div className="bg-grey border border-grey/50 rounded-2xl p-5 shadow-sm">
                       <div className="flex items-center justify-between mb-2">
                         <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70">
                           Tiến độ

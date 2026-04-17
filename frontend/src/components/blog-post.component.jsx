@@ -158,7 +158,7 @@ const BlogPostCard = ({ content, author }) => {
   };
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-grey overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 mb-5">
+    <div className="group relative bg-white rounded-3xl border border-grey/50 overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.06)] hover:border-purple/20 transition-all duration-300 hover:-translate-y-1 mb-6">
       {/* Banner Image */}
       {!isDefaultBanner && (
         <Link to={`/blog/${id}`} className="block w-full h-48 overflow-hidden">
