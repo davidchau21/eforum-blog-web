@@ -7,16 +7,7 @@ import { createContext } from 'react';
 import Loader from "../components/loader.component";
 import axios from "axios";
 
-const blogStructure = {
-    title: '',
-    banner: '',
-    conent: [],
-    tags: [],
-    des: '',
-    author: { personal_info: { } }
-}
-
-export const EditorContext = createContext({ }); 
+import { EditorContext, blogStructure } from "../contexts/EditorContext"; 
 
 const Editor = () => {
 

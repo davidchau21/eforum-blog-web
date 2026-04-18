@@ -726,7 +726,7 @@ server.post("/reset-password", async (req, res) => {
 //       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
 //     )
 //     .sort({ publishedAt: -1 })
-//     .select("blog_id title des banner activity tags publishedAt -_id")
+//     .select("blog_id title des banner activity tags publishedAt")
 //     .skip((page - 1) * maxLimit)
 //     .limit(maxLimit)
 //     .then((blogs) => {
@@ -749,7 +749,7 @@ server.post("/latest-blogs", (req, res) => {
       select: "personal_info.profile_img personal_info.username personal_info.fullname -_id"
     })
     .sort({ publishedAt: -1 })
-    .select("blog_id title des banner activity tags publishedAt -_id")
+    .select("blog_id title des banner activity tags publishedAt")
     // .skip((page - 1) * maxLimit)
     // .limit(maxLimit)
     .then((blogs) => {
@@ -793,7 +793,7 @@ server.get("/trending-blogs", (req, res) => {
       "activity.total_comments": -1,
       publishedAt: -1,
     })
-    .select("blog_id title publishedAt -_id")
+    .select("blog_id title publishedAt")
     .limit(10)
     .then((blogs) => {
       return res.status(200).json({ blogs });
@@ -824,7 +824,7 @@ server.post("/search-blogs", (req, res) => {
       "personal_info.profile_img personal_info.username personal_info.fullname -_id"
     )
     .sort({ publishedAt: -1 })
-    .select("blog_id title des banner activity tags publishedAt -_id")
+    .select("blog_id title des banner activity tags publishedAt")
     .skip((page - 1) * maxLimit)
     .limit(maxLimit)
     .then((blogs) => {
@@ -1129,7 +1129,7 @@ server.get("/get-user-blogs", (req, res) => {
       select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
     })
     .sort({ "publishedAt": -1 })
-    .select("blog_id title des banner activity tags publishedAt -_id")
+    .select("blog_id title des banner activity tags publishedAt")
     .then((blogs) => {
       const adminBlogs = blogs.filter(blog => blog.author !== null);
       return res.status(200).json({ blogs: adminBlogs });
@@ -1178,6 +1178,10 @@ server.post("/like-blog", verifyJWT, (req, res) => {
     { _id },
     { $inc: { "activity.total_likes": incrementVal } }
   ).then((blog) => {
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
     if (!islikedByUser) {
       let like = new Notification({
         type: "like",
@@ -1187,7 +1191,7 @@ server.post("/like-blog", verifyJWT, (req, res) => {
       });
 
       like.save().then((notification) => {
-        EE.emit('new-notification', blog.author, notification);
+        EE.emit("new-notification", blog.author, notification);
         return res.status(200).json({ liked_by_user: true });
       });
     } else {
@@ -1536,7 +1540,7 @@ server.get("/new-notification", verifyJWT, (req, res) => {
     user: { $ne: user_id },
   })
     .then((count) => {
-        return res.status(200).json({ new_notification_available: count });
+      return res.status(200).json({ new_notification_available: count });
     })
     .catch((err) => {
       console.log(err.message);
@@ -1552,7 +1556,7 @@ server.get("/new-messages", verifyJWT, (req, res) => {
     seen: false
   })
     .then((count) => {
-        return res.status(200).json({ unread_messages: count });
+      return res.status(200).json({ unread_messages: count });
     })
     .catch((err) => {
       console.log(err.message);

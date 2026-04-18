@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 export let activeTabLineRef;
 export let activeTabRef;
 
-const InPageNavigation = ({ routes, defaultHidden = [ ], defaultActiveIndex = 0, children }) => {
+const InPageNavigation = ({ routes, defaultHidden = [ ], hiddenAll = [ ], defaultActiveIndex = 0, children }) => {
 
     activeTabLineRef = useRef();
     activeTabRef = useRef();
@@ -53,9 +53,14 @@ const InPageNavigation = ({ routes, defaultHidden = [ ], defaultActiveIndex = 0,
 
     }, [width])
 
+    const isAllHidden = routes.every(route => 
+        (typeof hiddenAll !== 'undefined' && hiddenAll.includes(route)) || 
+        (width > 768 && defaultHidden.includes(route))
+    );
+
     return (
         <>
-            <div className="relative mb-6 flex flex-nowrap overflow-x-auto gap-1 bg-grey/50 p-1 rounded-xl">
+            <div className={`relative mb-6 flex flex-nowrap overflow-x-auto gap-1 bg-grey/50 p-1 rounded-xl ${isAllHidden ? 'hidden' : ''}`}>
                 
                 {
                     routes.map((route, i) => {
@@ -69,7 +74,8 @@ const InPageNavigation = ({ routes, defaultHidden = [ ], defaultActiveIndex = 0,
                                     ? "bg-white text-black shadow-sm shadow-black/10 " 
                                     : "text-dark-grey hover:text-black hover:bg-white/60 " 
                                 ) + 
-                                ( defaultHidden.includes(route) ? " md:hidden " : " " )
+                                ( defaultHidden.includes(route) ? " md:hidden " : " " ) +
+                                ( (typeof hiddenAll !== 'undefined' && hiddenAll.includes(route)) ? " hidden " : " " )
                             } 
                             onClick={(e) => { changePageState(e.target, i) }}
                             >

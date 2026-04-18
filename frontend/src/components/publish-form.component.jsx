@@ -1,14 +1,17 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import { Toaster, toast } from "react-hot-toast";
 import AnimationWrapper from "../common/page-animation";
-import { useContext, useEffect, useState } from "react";
-import { EditorContext } from "../pages/editor.pages";
+import { useContext, useEffect, useState, useCallback } from "react";
+import { EditorContext } from "../contexts/EditorContext";
 import Tag from "./tags.component";
 import axios from "axios";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
+import confetti from "canvas-confetti";
 // import bannerDefault from "../imgs/banner-default.png";
 
-const PublishForm = () => {
+const PublishForm = ({ isModal = false }) => {
   let characterLimit = 200;
   let tagLimit = 10;
   const bannerDefault =
@@ -20,6 +23,7 @@ const PublishForm = () => {
     blog: { banner, title, tags, des, content },
     setEditorState,
     setBlog,
+    setActions,
   } = useContext(EditorContext);
   let {
     userAuth: { access_token },
@@ -98,90 +102,122 @@ const PublishForm = () => {
     }
   };
 
-  const publishBlog = async (e) => {
-    if (e.target.className.includes("disable")) {
-      return;
-    }
+  const publishBlog = useCallback(
+    async (e) => {
+      if (e && e.target && e.target.className.includes("disable")) {
+        return;
+      }
 
-    if (!title.length) {
-      return toast.error("Write blog title before publishing");
-    }
+      if (!title.length) {
+        return toast.error("Write blog title before publishing");
+      }
 
-    if (des.length > characterLimit) {
-      return toast.error(
-        `Description should be within ${characterLimit} characters to publish`,
-      );
-    }
+      if (des.length > characterLimit) {
+        return toast.error(
+          `Description should be within ${characterLimit} characters to publish`,
+        );
+      }
 
-    if (!tags.length) {
-      return toast.error("Enter at least 1 tag to help us rank your blog");
-    }
+      if (!tags.length) {
+        return toast.error("Enter at least 1 tag to help us rank your blog");
+      }
 
-    // Kiểm tra nếu người dùng chưa chọn tag mặc định
-    if (!selectedClassTag) {
-      return toast.error("Please choose a default class before publishing");
-    }
+      // Kiểm tra nếu người dùng chưa chọn tag mặc định
+      if (!selectedClassTag) {
+        return toast.error("Please choose a default class before publishing");
+      }
 
-    if (!selectedSubjectTag) {
-      return toast.error("Please choose a default subject before publishing");
-    }
+      if (!selectedSubjectTag) {
+        return toast.error("Please choose a default subject before publishing");
+      }
 
-    let loadingToast = toast.loading("Publishing....");
-    e.target.classList.add("disable");
+      let loadingToast = toast.loading("Publishing....");
+      if (e && e.target) e.target.classList.add("disable");
 
-    let blogObj = {
-      title,
-      banner: banner.length === 0 ? bannerDefault : banner,
-      des,
-      content,
-      tags,
-      draft: false,
-    };
+      let blogObj = {
+        title,
+        banner: banner.length === 0 ? bannerDefault : banner,
+        des,
+        content,
+        tags,
+        draft: false,
+      };
 
-    try {
-      await Promise.all(
-        tags.map(async (tag) => {
-          try {
-            await axios.post(
-              import.meta.env.VITE_SERVER_DOMAIN + "/tags",
-              { tag_name: tag },
-              {
-                headers: { Authorization: `Bearer ${access_token}` },
-              },
-            );
-          } catch (error) {
-            console.error(`Failed to save tag: ${tag}`, error);
-          }
-        }),
-      );
+      try {
+        await Promise.all(
+          tags.map(async (tag) => {
+            try {
+              await axios.post(
+                import.meta.env.VITE_SERVER_DOMAIN + "/tags",
+                { tag_name: tag },
+                {
+                  headers: { Authorization: `Bearer ${access_token}` },
+                },
+              );
+            } catch (error) {
+              console.error(`Failed to save tag: ${tag}`, error);
+            }
+          }),
+        );
 
-      await axios.post(
-        import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",
-        { ...blogObj, id: blog_id },
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
+        await axios.post(
+          import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",
+          { ...blogObj, id: blog_id },
+          {
+            headers: {
+              Authorization: `Bearer ${access_token}`,
+            },
           },
-        },
-      );
+        );
 
-      toast.dismiss(loadingToast);
-      toast.success("Published 👍 \nBài viết của bạn đang chờ duyệt");
+        toast.dismiss(loadingToast);
+        toast.success("Published 👍 \nBài viết của bạn đang chờ duyệt");
 
-      setTimeout(() => {
-        navigate("/dashboard/blogs");
-      }, 500);
-    } catch (error) {
-      e.target.classList.remove("disable");
-      toast.dismiss(loadingToast);
-      toast.error(
-        error.response?.data?.error ||
-          "An error occurred while publishing the blog",
-      );
-    } finally {
-      e.target.classList.remove("disable");
+        // Celebration confetti!
+        confetti({
+          particleCount: 150,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#10b981", "#3b82f6", "#8b5cf6"],
+        });
+
+        setTimeout(() => {
+          navigate("/dashboard/blogs");
+        }, 500);
+      } catch (error) {
+        if (e && e.target) e.target.classList.remove("disable");
+        toast.dismiss(loadingToast);
+        toast.error(
+          error.response?.data?.error ||
+            "An error occurred while publishing the blog",
+        );
+      } finally {
+        if (e && e.target) e.target.classList.remove("disable");
+      }
+    },
+    [
+      access_token,
+      banner,
+      bannerDefault,
+      blog_id,
+      content,
+      des,
+      navigate,
+      selectedClassTag,
+      selectedSubjectTag,
+      tags,
+      title,
+    ],
+  );
+
+  useEffect(() => {
+    if (isModal && setActions) {
+      setActions((prev) => ({
+        ...prev,
+        publishBlog,
+      }));
     }
-  };
+  }, [isModal, setActions, publishBlog]);
 
   useEffect(() => {
     axios
@@ -207,17 +243,23 @@ const PublishForm = () => {
 
   return (
     <AnimationWrapper>
-      <section className="w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4">
+      <section
+        className={`${isModal ? "p-0" : "w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4"}`}
+      >
         <Toaster />
 
-        <button
-          className="w-12 h-12 absolute right-[5vw] z-10 top-[5%] lg:top-[10%]"
-          onClick={handleCloseEvent}
-        >
-          <i className="fi fi-br-cross"></i>
-        </button>
+        {!isModal && (
+          <button
+            className="w-12 h-12 absolute right-[5vw] z-10 top-[5%] lg:top-[10%]"
+            onClick={handleCloseEvent}
+          >
+            <i className="fi fi-br-cross"></i>
+          </button>
+        )}
 
-        <div className="max-w-[550px] center">
+        <div
+          className={`${isModal ? "w-full space-y-4" : "max-w-[550px] center"}`}
+        >
           <p className="text-dark-grey mb-1">Preview</p>
 
           <div className="w-full aspect-video rounded-lg overflow-hidden bg-grey mt-4">
@@ -237,7 +279,9 @@ const PublishForm = () => {
           </p>
         </div>
 
-        <div className="border-grey lg:border-1 lg:pl-8">
+        <div
+          className={`${isModal ? "w-full border-t border-subtle mt-10 pt-10" : "border-grey lg:border-1 lg:pl-8"}`}
+        >
           <p className="text-dark-grey mb-2 mt-9">Blog Title</p>
           <input
             type="text"

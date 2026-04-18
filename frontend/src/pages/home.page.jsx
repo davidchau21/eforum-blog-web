@@ -3,6 +3,7 @@ import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
 import { useContext, useEffect, useState } from "react";
 import Loader from "../components/loader.component";
+import { BlogCardSkeleton, MinimalBlogSkeleton } from "../components/skeleton.component";
 import BlogPostCard from "../components/blog-post.component";
 import MinimalBlogPost from "../components/nobanner-blog-post.component";
 import { activeTabRef } from "../components/inpage-navigation.component";
@@ -14,6 +15,8 @@ import { getTranslations } from "../../translations";
 import { UserContext } from "../App";
 import { motion } from "framer-motion";
 import eduIcons from "../imgs/edu-icons.png";
+import WritePostCard from "../components/write-post-card.component";
+import WriteModal from "../components/write-modal.component";
 
 const HomePage = () => {
   const [blogs, setBlogs] = useState(null);
@@ -28,6 +31,7 @@ const HomePage = () => {
     userAuth: { access_token },
   } = useContext(UserContext);
   const [adminAlert, setAdminAlert] = useState(null);
+  const [showWriteModal, setShowWriteModal] = useState(false);
 
   let categories = [
     "Toán",
@@ -231,7 +235,11 @@ const HomePage = () => {
               </p>
             </div>
             {adminBlogs == null ? (
-              <Loader />
+              <>
+                <MinimalBlogSkeleton />
+                <MinimalBlogSkeleton />
+                <MinimalBlogSkeleton />
+              </>
             ) : adminBlogs.length ? (
               <div className="space-y-1">
                 {adminBlogs.map((blog, i) => (
@@ -253,10 +261,17 @@ const HomePage = () => {
           <InPageNavigation
             routes={[pageState === "feed" ? translations.feed : pageState, translations.trending, translations.adminPosts]}
             defaultHidden={[translations.trending, translations.adminPosts]}
+            hiddenAll={pageState === "feed" ? [translations.feed] : []}
           >
             <div>
+              <WritePostCard openModal={() => setShowWriteModal(true)} />
+              <WriteModal isOpen={showWriteModal} onClose={() => setShowWriteModal(false)} />
               {blogs == null ? (
-                <Loader />
+                <>
+                  <BlogCardSkeleton key={1} />
+                  <BlogCardSkeleton key={2} />
+                  <BlogCardSkeleton key={3} />
+                </>
               ) : blogs?.results?.length ? (
                 <div className="flex flex-col gap-0">
                   {blogs.results.map((blog, i) => (
@@ -288,7 +303,11 @@ const HomePage = () => {
 
             <div>
               {trendingBlogs == null ? (
-                <Loader />
+                <>
+                  <MinimalBlogSkeleton />
+                  <MinimalBlogSkeleton />
+                  <MinimalBlogSkeleton />
+                </>
               ) : trendingBlogs.length ? (
                 <div className="bg-white rounded-2xl border border-grey p-4">
                   {trendingBlogs.map((blog, i) => (
@@ -307,7 +326,11 @@ const HomePage = () => {
 
             <div>
               {adminBlogs == null ? (
-                <Loader />
+                <>
+                  <MinimalBlogSkeleton />
+                  <MinimalBlogSkeleton />
+                  <MinimalBlogSkeleton />
+                </>
               ) : adminBlogs.length ? (
                 <div className="bg-white rounded-2xl border border-grey p-4">
                   {adminBlogs.map((blog, i) => (
@@ -375,7 +398,11 @@ const HomePage = () => {
               </p>
             </div>
             {trendingBlogs == null ? (
-              <Loader />
+              <>
+                <MinimalBlogSkeleton />
+                <MinimalBlogSkeleton />
+                <MinimalBlogSkeleton />
+              </>
             ) : trendingBlogs.length ? (
               <div className="space-y-1">
                 {trendingBlogs.map((blog, i) => (

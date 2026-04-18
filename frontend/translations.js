@@ -143,6 +143,7 @@ const translations = {
         noUserFound: "Không tìm thấy người dùng",
         noBlogsFound: "Không tìm thấy bài viết nào",
         usersSearchResult: "Người dùng liên quan",
+        whatsOnYourMind: "Bạn đang nghĩ gì?",
     },
     en: {
         searchPlaceholder: "Search",
@@ -288,6 +289,7 @@ const translations = {
         noUserFound: "No user found",
         noBlogsFound: "No blogs published",
         usersSearchResult: "User related to search",
+        whatsOnYourMind: "What's on your mind?",
     },
 };
 

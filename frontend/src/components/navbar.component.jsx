@@ -10,11 +10,18 @@ import { storeInSession } from "../common/session";
 import { getTranslations } from "../../translations"; // Import file translations.js
 import vietnamFlag from "../imgs/vietnam-flag.png"; // Nhập hình cờ Việt
 import usFlag from "../imgs/us-flag.png"; // Nhập hình cờ Mỹ
+import { AnimatePresence } from "framer-motion";
+import NotificationPanel from "./notification-panel.component";
+import { useRef } from "react";
 
 const Navbar = () => {
   const [searchBoxVisibility, setSearchBoxVisibility] = useState(false);
   const [userNavPanel, setUserNavPanel] = useState(false);
+  const [notifPanel, setNotifPanel] = useState(false);
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false); // state for mobile menu visibility
+  
+  const notifRef = useRef(null);
+  const userNavRef = useRef(null);
   const handleMenuClose = () => {
     setMobileMenuVisible(false);
   };
@@ -77,6 +84,23 @@ const Navbar = () => {
     }
   }, [access_token]);
 
+  // Click Outside logic
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // User Nav Panel
+      if (userNavRef.current && !userNavRef.current.contains(event.target)) {
+        setUserNavPanel(false);
+      }
+      // Notification Panel
+      if (notifRef.current && !notifRef.current.contains(event.target)) {
+        setNotifPanel(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleUserNavPanel = () => {
     setUserNavPanel((currentVal) => !currentVal);
   };
@@ -90,9 +114,7 @@ const Navbar = () => {
   };
 
   const handleBlur = () => {
-    setTimeout(() => {
-      setUserNavPanel(false);
-    }, 200);
+    // Replaced by Click Outside logic for more reliability
   };
 
   const changeTheme = () => {
@@ -223,12 +245,12 @@ const Navbar = () => {
                 </>
               )}
               <Link
-                to="/editor"
+                to="/search-google"
                 className="flex items-center gap-2 text-black hover:text-emerald-500"
                 onClick={handleMenuClose}
               >
-                <i className="fi fi-rr-file-edit"></i>
-                <p>{currentTranslations.write}</p>
+                <i className="fi fi-rr-book text-xl"></i>
+                <span>{currentTranslations.searchGoogle}</span>
               </Link>
               <Link
                 to="/search-google"
@@ -294,13 +316,7 @@ const Navbar = () => {
 
           {/* Desktop-Only Items */}
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/editor"
-              className="hidden md:flex gap-2 hover:text-emerald-500"
-            >
-              <i className="fi fi-rr-file-edit"></i>
-              <p>{currentTranslations.write}</p>
-            </Link>
+            {/* Write button moved to feed */}
 
             <button
               className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500"
@@ -349,25 +365,32 @@ const Navbar = () => {
                   )}
                 </Link>
 
-                <Link to="/dashboard/notifications">
-                  <button className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500">
+                <div className="relative" ref={notifRef}>
+                  <button
+                    className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500"
+                    onClick={() => setNotifPanel((prev) => !prev)}
+                  >
                     <i className="fi fi-rr-bell text-2xl block mt-1"></i>
-                    {new_notification_available > 0 ? (
+                    {new_notification_available > 0 && (
                       <span className="bg-red w-5 h-5 rounded-full absolute z-10 top-0 right-0 flex items-center justify-center text-white text-[10px] font-bold">
                         {new_notification_available > 99
                           ? "99+"
                           : new_notification_available}
                       </span>
-                    ) : (
-                      ""
                     )}
                   </button>
-                </Link>
+
+                  <AnimatePresence>
+                    {notifPanel && (
+                      <NotificationPanel closePanel={() => setNotifPanel(false)} />
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 <div
                   className="relative"
                   onClick={handleUserNavPanel}
-                  onBlur={handleBlur}
+                  ref={userNavRef}
                 >
                   <button className="w-12 h-12 mt-1">
                     <img
