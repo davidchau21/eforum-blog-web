@@ -26,6 +26,7 @@ import PolicyPage from "./pages/policy.page";
 import ContactPage from "./pages/contact.page";
 import TermsOfServicePage from "./pages/terms-of-service.page";
 import SearchGooglePage from "./pages/search-google.page.jsx";
+import LandingPage from "./pages/landing.page.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -34,6 +35,7 @@ const darkThemePreference = () =>
   window.matchMedia("(prefers-color-scheme: dark)").matches;
 
 const App = () => {
+  const location = useLocation();
   const [userAuth, setUserAuth] = useState(() => {
     const userInSession = lookInSession("user");
     return userInSession ? JSON.parse(userInSession) : { access_token: null };
@@ -60,10 +62,17 @@ const App = () => {
     return userAuth?.access_token ? children : <Navigate to="/signin" />;
   };
 
-  const location = useLocation();
-  const excludedPaths = ["/dashboard", "/settings", "/chat", "/editor"];
+  const excludedPaths = [
+    "/dashboard",
+    "/settings",
+    "/chat",
+    "/editor",
+    "/landing",
+  ];
   const shouldShowFooter = !excludedPaths.some((path) =>
-    location.pathname.startsWith(path),
+    path === "/"
+      ? location.pathname === "/"
+      : location.pathname.startsWith(path),
   );
 
   return (
@@ -75,6 +84,7 @@ const App = () => {
           <div className="flex flex-col min-h-screen text-black transition-colors duration-300">
             <div className="flex-grow">
               <Routes>
+                <Route path="/" element={<LandingPage />} />
                 <Route
                   path="/editor"
                   element={
@@ -92,7 +102,7 @@ const App = () => {
                   }
                 />
                 <Route path="/" element={<Navbar />}>
-                  <Route index element={<HomePage />} />
+                  <Route path="feed" element={<HomePage />} />
                   <Route
                     path="dashboard"
                     element={
