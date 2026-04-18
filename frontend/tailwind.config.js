@@ -28,23 +28,23 @@ export default {
         createThemes({
             light: {
                 'white': '#FFFFFF',
-                'black': '#242424',
-                'grey': '#F3F3F3',
-                'dark-grey': '#6B6B6B',
-                'red': '#FF4E4E',
+                'black': '#09090b',    /* zinc-950 */
+                'grey': '#f4f4f5',     /* zinc-100 */
+                'dark-grey': '#71717a', /* zinc-500 */
+                'red': '#ef4444',
                 'transparent': 'transparent',
-                'twitter': '#1DA1F2',
-                'purple': '#8B46FF'
+                'twitter': '#0ea5e9',
+                'purple': '#8b5cf6'    /* violet-500 */
             },
             dark: {
-                'white': '#242424',
-                'black': '#F3F3F3',
-                'grey': '#2A2A2A',
-                'dark-grey': '#E7E7E7',
-                'red': '#991F1F',
+                'white': '#09090b',    /* zinc-950 background */
+                'black': '#fafafa',    /* zinc-50 text */
+                'grey': '#27272a',     /* zinc-800 borders/surfaces */
+                'dark-grey': '#a1a1aa', /* zinc-400 */
+                'red': '#f87171',
                 'transparent': 'transparent',
-                'twitter': '#0E71A8',
-                'purple': '#582C8E'
+                'twitter': '#0ea5e9',
+                'purple': '#a78bfa'    /* violet-400 */
             }
         }),
         daisyui,

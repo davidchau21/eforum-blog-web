@@ -28,8 +28,8 @@ const Notifications = () => {
             }
         )
             .then(async ({ data: { notifications: data, totalDocs } }) => {
-                if (new_notification_available) {
-                    setUserAuth({ ...userAuth, new_notification_available: false });
+                if (new_notification_available > 0) {
+                    setUserAuth({ ...userAuth, new_notification_available: 0 });
                 }
 
                 const formatedData = await filterPaginationData({

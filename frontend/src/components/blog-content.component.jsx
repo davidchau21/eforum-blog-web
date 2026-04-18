@@ -1,8 +1,14 @@
 /* eslint-disable react/prop-types */
+import { useContext } from "react";
+import { BlogContext } from "../pages/blog.page";
+
 const Img = ({ url, caption }) => {
+
+    let { setFullScreenImage } = useContext(BlogContext);
+
     return (
-        <div>
-            <img src={url} />
+        <div className="cursor-zoom-in" onClick={() => setFullScreenImage(url)}>
+            <img src={url} className="rounded-xl w-full" />
             { caption.length ? <p className="w-full text-center my-3 md:mb-12 text-base text-dark-grey">{caption}</p> : "" }
         </div>
     )

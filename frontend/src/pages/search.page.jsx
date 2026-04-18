@@ -9,6 +9,9 @@ import LoadMoreDataBtn from "../components/load-more.component";
 import axios from "axios";
 import { filterPaginationData } from "../common/filter-pagination-data";
 import UserCard from "../components/usercard.component";
+import { UserContext } from "../App";
+import { useContext } from "react";
+import { getTranslations } from "../../translations";
 
 const SearchPage = () => {
 
@@ -16,6 +19,8 @@ const SearchPage = () => {
 
     let [ blogs, setBlog ] = useState(null);
     let [ users, setUsers ] = useState(null);
+    const { userAuth: { language } } = useContext(UserContext);
+    const translations = getTranslations(language);
 
     const searchBlogs = ({ page = 1, create_new_arr = false }) => {
 
@@ -70,7 +75,7 @@ const SearchPage = () => {
                                     <UserCard user={user} />
                                 </AnimationWrapper>
                             })
-                        : <NoDataMessage message="No user found" />
+                        : <NoDataMessage message={translations.noUserFound} />
                 }
             </>
         )
@@ -80,7 +85,7 @@ const SearchPage = () => {
         <section className="h-cover flex justify-center gap-10">
 
             <div className="w-full">
-                <InPageNavigation routes={[`Search Results from "${query}"`, "Accounts Matched"]} defaultHidden={["Accounts Matched"]} >
+                <InPageNavigation routes={[`${translations.searchResultsFor} "${query}"`, translations.accountsMatched]} defaultHidden={[translations.accountsMatched]} >
 
                     <>
                         {blogs == null ? (
@@ -105,7 +110,7 @@ const SearchPage = () => {
                                             </AnimationWrapper>
                                         );
                                     })
-                                : <NoDataMessage message="No blogs published" />
+                                : <NoDataMessage message={translations.noBlogsFound} />
                             )}
                             <LoadMoreDataBtn state={blogs} fetchDataFun={searchBlogs} />
                     </>
@@ -117,7 +122,7 @@ const SearchPage = () => {
 
             <div className="min-w-[40%] lg:min-w-[350px] max-w-min border-l border-grey pl-8 pt-3 max-md:hidden">
 
-                <h1 className="font-medium text-xl mb-8">User related to search <i className="fi fi-rr-user mt-1"></i></h1>  
+                <h1 className="font-medium text-xl mb-8">{translations.usersSearchResult} <i className="fi fi-rr-user mt-1"></i></h1>  
 
                 <UserCardWrapper />            
 

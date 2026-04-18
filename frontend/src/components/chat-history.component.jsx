@@ -1,37 +1,53 @@
-import React from "react";
 import ReactMarkdown from "react-markdown";
+import PropTypes from 'prop-types';
+import chatBot from "../imgs/chatbot.png"; // We can reuse the chatbot image for bot avatar
 
 const ChatHistory = ({ chatHistory }) => {
   return (
-    <>
-      {chatHistory.length === 0 ? (
-        <div className="flex justify-items-center justify-center py-4 text-gray-500">
-          Ready to chat with someone
-        </div>
-      ) : (
-        chatHistory.map((message, index) => (
+    <div className="flex flex-col space-y-4 font-sans">
+      {chatHistory.map((message, index) => {
+        const isUser = message.type === "user";
+        
+        return (
           <div
             key={index}
-            className={`flex items-start py-2 px-4 rounded-lg my-2 ${
-              message.type === "user"
-                ? "bg-gray-100 text-gray-800"
-                : "bg-blue-100 text-blue-800"
-            }`}
+            className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}
           >
-            {message.type === "user" ? (
-              <span className="mr-2 font-bold text-gray-600">You:</span>
-            ) : (
-              <span className="mr-2 font-bold text-blue-600">Bot:</span>
+            {/* Bot Avatar (only show for bot messages) */}
+            {!isUser && (
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-blue-500 p-1 flex-shrink-0 mr-2 mt-auto shadow-sm">
+                <img src={chatBot} alt="Bot" className="w-full h-full object-contain filter brightness-0 invert" />
+              </div>
             )}
 
-            <div>
-              <ReactMarkdown>{message.message}</ReactMarkdown>
+            {/* Chat Bubble */}
+            <div
+              className={`relative max-w-[85%] px-4 py-3 text-sm shadow-sm ${
+                isUser
+                  ? "bg-purple text-white rounded-2xl rounded-br-sm"
+                  : "bg-white text-black border border-grey/40 rounded-2xl rounded-bl-sm"
+              }`}
+            >
+              <div className={`prose prose-sm max-w-none break-words ${isUser ? "prose-invert" : ""}`}>
+                <ReactMarkdown>{message.message}</ReactMarkdown>
+              </div>
             </div>
+
+            {/* Optional User Avatar placeholder if you wanted them to match (currently hidden for clean look) */}
           </div>
-        ))
-      )}
-    </>
+        );
+      })}
+    </div>
   );
+};
+
+ChatHistory.propTypes = {
+  chatHistory: PropTypes.arrayOf(
+    PropTypes.shape({
+      type: PropTypes.string.isRequired,
+      message: PropTypes.string.isRequired,
+    })
+  ).isRequired,
 };
 
 export default ChatHistory;

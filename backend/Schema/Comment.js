@@ -17,7 +17,7 @@ const commentSchema = mongoose.Schema(
       required: false,
     },
     image: {
-      type: String, 
+      type: String,
       required: false,
     },
     children: {
@@ -42,6 +42,10 @@ const commentSchema = mongoose.Schema(
       default: false,
     },
     reportUser: { type: Schema.Types.ObjectId, required: false, ref: "users" },
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: {

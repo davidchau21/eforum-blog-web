@@ -111,7 +111,11 @@ const EditProfile = () => {
             formData[key] = value;
         }
 
-        let { username, bio, youtube, facebook, twitter, github, instagram, website } = formData;
+        let { fullname, username, bio, youtube, facebook, twitter, github, instagram, website } = formData;
+
+        if(fullname.length < 3){
+            return toast.error("Full name should be at least 3 letters long")
+        }
 
         if(username.length < 3){
             return toast.error("Username should be al least 3 letters long")
@@ -123,8 +127,8 @@ const EditProfile = () => {
         let loadingToast = toast.loading("Updating.....");
         e.target.setAttribute("disabled", true);
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/update-profile", {
-            username, bio, 
+        axios.patch(import.meta.env.VITE_SERVER_DOMAIN + "/update-profile", {
+            username, bio, fullname,
             social_links: { youtube, facebook, twitter, github, instagram, website }
         }, {
             headers: {
@@ -133,9 +137,9 @@ const EditProfile = () => {
         })
         .then(({ data }) => {
 
-            if(userAuth.username != data.username){
+            if(userAuth.username != data.username || userAuth.fullname != data.fullname){
 
-                let newUserAuth = { ...userAuth, username: data.username };
+                let newUserAuth = { ...userAuth, username: data.username, fullname: data.fullname };
                 
                 storeInSession("user", JSON.stringify(newUserAuth));
                 setUserAuth(newUserAuth);
@@ -184,7 +188,7 @@ const EditProfile = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 md:gap-5">
                                 <div>
-                                    <InputBox name="fullname" type="text" value={fullname} placeholder="Full Name" disable={true} icon="fi-rr-user" />
+                                    <InputBox name="fullname" type="text" value={fullname} placeholder="Full Name" icon="fi-rr-user" />
                                 </div>
                                 <div>
                                     <InputBox name="email" type="email" value={email} placeholder="Email" disable={true} icon="fi-rr-envelope" />

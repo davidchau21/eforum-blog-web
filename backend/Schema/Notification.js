@@ -3,12 +3,11 @@ import mongoose, { Schema } from "mongoose";
 const notificationSchema = mongoose.Schema({
     type: {
         type: String,
-        enum: ["like", "comment", "reply", "share"],
+        enum: ["like", "comment", "reply", "share", "message"],
         required: true
     },
     blog: {
         type: Schema.Types.ObjectId,
-        required: true,
         ref: 'blogs'
     },
     notification_for: {

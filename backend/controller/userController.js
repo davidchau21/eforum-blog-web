@@ -4,7 +4,8 @@ import EventEmitter from "eventemitter3";
 import bcrypt from "bcrypt";
 import { nanoid } from "nanoid";
 import Conversation from "../Schema/Conversation.js";
-import EE from "../socket/eventManager.js"
+import EE from "../socket/eventManager.js";
+import Message from "../Schema/Message.js";
 const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
 const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
 
@@ -19,9 +20,47 @@ export const getUserForSidebar = async (req, res, next) => {
     const conversations = await Conversation.find({
       participants: { $in: [loggedInUserId] },
     });
-    const userWithConversation = allUserExceptLoggedIn.map(user => {
+
+    const userWithConversation = await Promise.all(allUserExceptLoggedIn.map(async (user) => {
       const conversation = conversations.find(conversation => conversation.participants.includes(user._id));
-      return { ...user.toObject(), conversation: conversation ? conversation._id : null };
+      
+      let unread_count = 0;
+      let last_message = null;
+      let last_message_time = null;
+
+      if (conversation && conversation.messages && conversation.messages.length > 0) {
+          // Get unread count
+          unread_count = await Message.countDocuments({
+              _id: { $in: conversation.messages },
+              receiverId: loggedInUserId,
+              seen: false
+          });
+
+          // Get the very last message
+          const lastMsgDoc = await Message.findOne({
+              _id: { $in: conversation.messages }
+          }).sort({ createdAt: -1 });
+
+          if (lastMsgDoc) {
+              last_message = lastMsgDoc.message;
+              last_message_time = lastMsgDoc.createdAt;
+          }
+      }
+
+      return { 
+          ...user.toObject(), 
+          conversation: conversation ? conversation._id : null, 
+          unread_count,
+          last_message,
+          last_message_time
+      };
+    }));
+
+    // Sort by last_message_time descending so most recent chats are at the top
+    userWithConversation.sort((a, b) => {
+        const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
+        const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
+        return timeB - timeA;
     });
 
     res.status(200).json(userWithConversation);
