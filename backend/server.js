@@ -903,61 +903,80 @@ server.post("/update-profile-img", verifyJWT, (req, res) => {
     });
 });
 
-server.post("/update-profile", verifyJWT, (req, res) => {
-  let { username, bio, social_links } = req.body;
-
+server.patch("/update-profile", verifyJWT, (req, res) => {
+  let { username, bio, social_links, fullname } = req.body;
   let bioLimit = 150;
+  let updateObj = {};
 
-  if (username.length < 3) {
-    return res
-      .status(403)
-      .json({ error: "Username should be at least 3 letters long" });
+  if (fullname) {
+    if (fullname.length < 3) {
+      return res
+        .status(403)
+        .json({ error: "Full name should be at least 3 letters long" });
+    }
+    updateObj["personal_info.fullname"] = fullname;
   }
 
-  if (bio.length > bioLimit) {
-    return res
-      .status(403)
-      .json({ error: `Bio should not be more than ${bioLimit} characters` });
+  if (username) {
+    if (username.length < 3) {
+      return res
+        .status(403)
+        .json({ error: "Username should be at least 3 letters long" });
+    }
+    updateObj["personal_info.username"] = username;
   }
 
-  let socialLinksArr = Object.keys(social_links);
+  if (bio !== undefined) {
+    if (bio.length > bioLimit) {
+      return res
+        .status(403)
+        .json({ error: `Bio should not be more than ${bioLimit} characters` });
+    }
+    updateObj["personal_info.bio"] = bio;
+  }
 
-  try {
-    for (let i = 0; i < socialLinksArr.length; i++) {
-      if (social_links[socialLinksArr[i]].length) {
-        let hostname = new URL(social_links[socialLinksArr[i]]).hostname;
+  if (social_links) {
+    let socialLinksArr = Object.keys(social_links);
+    try {
+      for (let i = 0; i < socialLinksArr.length; i++) {
+        if (social_links[socialLinksArr[i]].length) {
+          let hostname = new URL(social_links[socialLinksArr[i]]).hostname;
 
-        if (
-          !hostname.includes(`${socialLinksArr[i]}.com`) &&
-          socialLinksArr[i] != "website"
-        ) {
-          return res.status(403).json({
-            error: `${socialLinksArr[i]} link is invalid. You must enter a full link`,
-          });
+          if (
+            !hostname.includes(`${socialLinksArr[i]}.com`) &&
+            socialLinksArr[i] != "website"
+          ) {
+            return res.status(403).json({
+              error: `${socialLinksArr[i]} link is invalid. You must enter a full link`,
+            });
+          }
         }
       }
+    } catch (err) {
+      return res.status(500).json({
+        error: "You must provide full social links with http(s) included",
+      });
     }
-  } catch (err) {
-    return res.status(500).json({
-      error: "You must provide full social links with http(s) included",
-    });
+    updateObj.social_links = social_links;
   }
 
-  let updateObj = {
-    "personal_info.username": username,
-    "personal_info.bio": bio,
-    social_links,
-  };
+  if (Object.keys(updateObj).length === 0) {
+    return res.status(400).json({ error: "No fields provided to update" });
+  }
 
   User.findOneAndUpdate({ _id: req.user }, updateObj, {
     runValidators: true,
+    new: true,
   })
-    .then(() => {
-      return res.status(200).json({ username });
+    .then((user) => {
+      return res.status(200).json({
+        username: user.personal_info.username,
+        fullname: user.personal_info.fullname,
+      });
     })
     .catch((err) => {
       if (err.code == 11000) {
-        return res.status(409).json({ error: "username is already taken" });
+        return res.status(409).json({ error: "Username already exists" });
       }
       return res.status(500).json({ error: err.message });
     });
@@ -973,11 +992,19 @@ server.post("/create-blog", verifyJWT, (req, res) => {
   }
 
   if (!draft) {
+    if (des && des.length > 200) {
+      return res.status(403).json({
+        error: "Blog description must be under 200 characters",
+      });
+    }
+
+    /*
     if (des.length > 200) {
       return res.status(403).json({
         error: "Blog description must be under 200 characters",
       });
     }
+    */
 
     if (!banner.length) {
       return res
@@ -991,11 +1018,19 @@ server.post("/create-blog", verifyJWT, (req, res) => {
         .json({ error: "There must be some blog content to publish it" });
     }
 
+    if (tags && tags.length > 10) {
+      return res.status(403).json({
+        error: "Maximum 10 tags allowed",
+      });
+    }
+
+    /*
     if (!tags.length || tags.length > 10) {
       return res.status(403).json({
         error: "Provide tags in order to publish the blog, Maximum 10",
       });
     }
+    */
   }
 
   tags = tags.map((tag) => tag);
@@ -1385,9 +1420,15 @@ server.post("/add-comment", verifyJWT, async (req, res) => {
       }
     }
 
-    // Save the notification
-    const notification = await new Notification(notificationObj).save();
-    EE.emit('new-notification', notificationObj.notification_for, notification);
+    // Save the notification only if the commenter is not the one being notified
+    if (user_id != notificationObj.notification_for) {
+      const notification = await new Notification(notificationObj).save();
+      EE.emit(
+        "new-notification",
+        notificationObj.notification_for,
+        notification,
+      );
+    }
 
     // Return the comment data as the response
     return res.status(200).json({
@@ -1515,6 +1556,36 @@ server.post("/delete-comment", verifyJWT, (req, res) => {
     } else {
       return res.status(403).json({ error: "You can not delete this commet" });
     }
+  });
+});
+
+server.post("/hide-comment", verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let { _id } = req.body;
+
+  Comment.findOne({ _id }).then((comment) => {
+    if (!comment) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+
+    if (user_id != comment.blog_author) {
+      return res.status(403).json({
+        error: "Only the blog author can hide comments",
+      });
+    }
+
+    comment.isHidden = !comment.isHidden;
+
+    comment
+      .save()
+      .then((updatedComment) => {
+        return res
+          .status(200)
+          .json({ status: "done", isHidden: updatedComment.isHidden });
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err.message });
+      });
   });
 });
 

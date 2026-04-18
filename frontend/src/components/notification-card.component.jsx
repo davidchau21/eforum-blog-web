@@ -133,9 +133,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
         <img src={profile_img} className="w-14 h-14 flex-none rounded-full" />
         <div className="w-full">
           <h1 className="font-medium text-xl text-dark-grey">
-            <span className="lg:inline-block hidden capitalize">
-              {fullname}
-            </span>
+            <span className="lg:inline-block hidden">{fullname}</span>
             <Link
               to={`/user/${username}`}
               className="mx-1 text-black underline"

@@ -1,9 +1,11 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import { UserContext } from "../App";
 import { SocketContext } from "../socket/SocketContext";
 import axios from "axios";
 import NotificationCardCompact from "./notification-card-compact.component";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { getTranslations } from "../../translations";
 import Loader from "./loader.component";

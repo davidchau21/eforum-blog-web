@@ -23,7 +23,7 @@ const useGetConversations = () => {
       .catch(({ response }) => {
         toast.error(response.data.error);
       });
-  }, [userAuth.access_token, userAuth.unread_messages]);
+  }, [userAuth.access_token]);
 
   return { loading, conversations };
 };

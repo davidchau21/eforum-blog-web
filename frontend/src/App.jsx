@@ -1,8 +1,7 @@
-/* eslint-disable react/prop-types */
+import { useMemo, createContext, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/navbar.component";
 import UserAuthForm from "./pages/userAuthForm.page";
-import { createContext, useEffect, useState } from "react";
 import { lookInSession } from "./common/session";
 import Editor from "./pages/editor.pages";
 import HomePage from "./pages/home.page";
@@ -34,6 +33,10 @@ export const ThemeContext = createContext({});
 const darkThemePreference = () =>
   window.matchMedia("(prefers-color-scheme: dark)").matches;
 
+const ProtectedRoute = ({ children, access_token }) => {
+    return access_token ? children : <Navigate to="/signin" />;
+};
+
 const App = () => {
   const location = useLocation();
   const [userAuth, setUserAuth] = useState(() => {
@@ -58,9 +61,10 @@ const App = () => {
     }
   }, [theme]);
 
-  const ProtectedRoute = ({ children }) => {
-    return userAuth?.access_token ? children : <Navigate to="/signin" />;
-  };
+  const themeContextValue = useMemo(() => ({ theme, setTheme }), [theme]);
+  const userContextValue = useMemo(() => ({ 
+    userAuth, setUserAuth, fullScreenImage, setFullScreenImage 
+  }), [userAuth, fullScreenImage]);
 
   const excludedPaths = [
     "/dashboard",
@@ -76,10 +80,8 @@ const App = () => {
   );
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
-      <UserContext.Provider
-        value={{ userAuth, setUserAuth, fullScreenImage, setFullScreenImage }}
-      >
+    <ThemeContext.Provider value={themeContextValue}>
+      <UserContext.Provider value={userContextValue}>
         <SocketContextProvider>
           <div className="flex flex-col min-h-screen text-black transition-colors duration-300">
             <div className="flex-grow">
@@ -88,7 +90,7 @@ const App = () => {
                 <Route
                   path="/editor"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute access_token={userAuth.access_token}>
                       <Editor />
                     </ProtectedRoute>
                   }
@@ -96,7 +98,7 @@ const App = () => {
                 <Route
                   path="/editor/:blog_id"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute access_token={userAuth.access_token}>
                       <Editor />
                     </ProtectedRoute>
                   }
@@ -106,7 +108,7 @@ const App = () => {
                   <Route
                     path="dashboard"
                     element={
-                      <ProtectedRoute>
+                      <ProtectedRoute access_token={userAuth.access_token}>
                         <SideNav />
                       </ProtectedRoute>
                     }
@@ -117,7 +119,7 @@ const App = () => {
                   <Route
                     path="settings"
                     element={
-                      <ProtectedRoute>
+                      <ProtectedRoute access_token={userAuth.access_token}>
                         <SideNav />
                       </ProtectedRoute>
                     }
@@ -145,7 +147,7 @@ const App = () => {
                   <Route
                     path="chat"
                     element={
-                      <ProtectedRoute>
+                      <ProtectedRoute access_token={userAuth.access_token}>
                         <ChatUI />
                       </ProtectedRoute>
                     }
@@ -163,7 +165,7 @@ const App = () => {
                   <Route
                     path="search-google"
                     element={
-                      <ProtectedRoute>
+                      <ProtectedRoute access_token={userAuth.access_token}>
                         <SearchGooglePage />
                       </ProtectedRoute>
                     }

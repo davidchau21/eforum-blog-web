@@ -19,6 +19,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     children,
     isReport,
     image,
+    isHidden,
   } = commentData;
 
   let {
@@ -42,6 +43,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
   } = useContext(UserContext);
 
   let [showConfirmModal, setShowConfirmModal] = useState(false);
+  let [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isReplying, setReplying] = useState(false);
 
   const getParentIndex = () => {
@@ -82,7 +84,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     }
 
     if (commentData.childrenLevel == 0 && isDelete) {
-      setTotalParentCommentsLoaded((preVal) => preVal - 1);
+      setTotalParentCommentsLoaded((preVal) => Math.max(0, preVal - 1));
     }
 
     setBlog({
@@ -90,9 +92,11 @@ const CommentCard = ({ index, leftVal, commentData }) => {
       comments: { results: commentsArr },
       activity: {
         ...activity,
-        total_parent_comments:
+        total_parent_comments: Math.max(
+          0,
           total_parent_comments -
-          (commentData.childrenLevel == 0 && isDelete ? 1 : 0),
+            (commentData.childrenLevel == 0 && isDelete ? 1 : 0),
+        ),
       },
     });
   };
@@ -118,8 +122,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     }
   };
 
-  const deleteComment = (e) => {
-    e.target.setAttribute("disabled", true);
+  const deleteComment = () => {
     axios
       .post(
         import.meta.env.VITE_SERVER_DOMAIN + "/delete-comment",
@@ -129,10 +132,29 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         },
       )
       .then(() => {
-        e.target.removeAttribute("disabled");
         removeCommentsCards(index + 1, true);
+        toast.success("Đã xóa bình luận");
       })
       .catch((err) => console.log(err));
+  };
+
+  const toggleHideComment = () => {
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/hide-comment",
+        { _id },
+        {
+          headers: { Authorization: `Bearer ${access_token}` },
+        },
+      )
+      .then(({ data: { isHidden: newIsHidden } }) => {
+        toast.success(newIsHidden ? "Đã ẩn bình luận" : "Đã hiện bình luận");
+        commentsArr[index].isHidden = newIsHidden;
+        setBlog({ ...blog, comments: { ...comments, results: commentsArr } });
+      })
+      .catch((err) => {
+        toast.error(err.response?.data?.error || "Có lỗi xảy ra");
+      });
   };
 
   const hideReplies = () => {
@@ -229,9 +251,16 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                 alt={fullname}
               />
               <div>
-                <p className="text-sm font-semibold text-black group-hover:text-purple transition-colors duration-200 line-clamp-1">
-                  {fullname}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-semibold text-black group-hover:text-purple transition-colors duration-200 line-clamp-1">
+                    {fullname}
+                  </p>
+                  {isHidden && (
+                    <span className="bg-grey text-dark-grey text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                      Đã ẩn
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-dark-grey">
                   @{commented_by_username} · {getDisplayDate(commentedAt)}
                 </p>
@@ -288,14 +317,30 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           </div>
 
           {/* Comment text */}
-          <p className="text-sm text-black leading-relaxed mb-3 font-gelasio">
-            {comment}
-          </p>
+          {isHidden && username !== blog_author ? (
+            <div className="relative group/hidden mb-3">
+              <div className="blur-md select-none opacity-40 pointer-events-none font-gelasio text-sm">
+                {comment}
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-xs font-medium text-dark-grey bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full border border-subtle shadow-sm flex items-center gap-2">
+                  <i className="fi fi-rr-eye-crossed"></i>
+                  Bình luận này đã bị chủ bài viết ẩn
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p
+              className={`text-sm text-black leading-relaxed mb-3 font-gelasio transition-all duration-300 ${isHidden ? "opacity-50 grayscale" : ""}`}
+            >
+              {comment}
+            </p>
+          )}
 
           {/* Comment image */}
-          {image && (
+          {image && (!isHidden || username === blog_author) && (
             <div
-              className="mb-3 rounded-xl overflow-hidden cursor-zoom-in"
+              className={`mb-3 rounded-xl overflow-hidden cursor-zoom-in transition-all duration-300 ${isHidden && username !== blog_author ? "blur-xl grayscale opacity-20 pointer-events-none" : isHidden ? "opacity-50 grayscale" : ""}`}
               onClick={() => setFullScreenImage(image)}
             >
               <img
@@ -337,15 +382,65 @@ const CommentCard = ({ index, leftVal, commentData }) => {
             </button>
 
             {(username == commented_by_username || username == blog_author) && (
-              <button
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-dark-grey hover:bg-rose-50 hover:text-rose-500 transition-all duration-200 ml-auto"
-                onClick={deleteComment}
-              >
-                <i className="fi fi-rr-trash text-xs leading-none"></i>
-                Xóa
-              </button>
+              <div className="flex items-center gap-1 ml-auto">
+                {username == blog_author && (
+                  <button
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${isHidden ? "text-emerald-500 hover:bg-emerald-50" : "text-dark-grey hover:bg-grey"}`}
+                    onClick={toggleHideComment}
+                    title={isHidden ? "Hiện bình luận" : "Ẩn bình luận"}
+                  >
+                    <i
+                      className={`fi ${isHidden ? "fi-rr-eye" : "fi-rr-eye-crossed"} text-xs leading-none`}
+                    ></i>
+                    {isHidden ? "Hiện" : "Ẩn"}
+                  </button>
+                )}
+                <button
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium text-dark-grey hover:bg-rose-50 hover:text-rose-500 transition-all duration-200"
+                  onClick={() => setShowDeleteModal(true)}
+                  title="Xóa bình luận"
+                >
+                  <i className="fi fi-rr-trash text-xs leading-none"></i>
+                  Xóa
+                </button>
+              </div>
             )}
           </div>
+
+          {/* Delete Confirmation Modal */}
+          {showDeleteModal && (
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[1001]">
+              <div className="bg-white dark:bg-zinc-900 rounded-[2rem] shadow-2xl p-8 w-80 mx-4 border border-subtle">
+                <div className="w-12 h-12 bg-rose-100 dark:bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="fi fi-rr-trash text-rose-500 text-lg"></i>
+                </div>
+                <h3 className="text-lg font-bold text-title text-center mb-2">
+                  Xóa bình luận?
+                </h3>
+                <p className="text-sm text-body text-center mb-8">
+                  Hành động này không thể hoàn tác. Bình luận sẽ bị xóa vĩnh
+                  viễn.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="flex-1 py-3 px-4 rounded-full bg-grey hover:bg-grey/80 text-dark-grey text-sm font-bold transition-all"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={() => {
+                      deleteComment();
+                      setShowDeleteModal(false);
+                    }}
+                    className="flex-1 py-3 px-4 rounded-full bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Reply field */}
           {isReplying && (

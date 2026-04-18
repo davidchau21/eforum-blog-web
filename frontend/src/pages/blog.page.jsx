@@ -220,7 +220,7 @@ const BlogPage = () => {
                           alt={fullname}
                         />
                         <div>
-                          <p className="font-semibold text-black text-sm group-hover:text-purple transition-colors capitalize leading-tight">
+                          <p className="font-semibold text-black text-sm group-hover:text-purple transition-colors leading-tight">
                             {fullname}
                           </p>
                           <p className="text-xs text-dark-grey">

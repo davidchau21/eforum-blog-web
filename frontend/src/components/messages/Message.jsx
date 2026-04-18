@@ -46,12 +46,14 @@ const Message = ({ message }) => {
 
         <div className={bubbleClasses}>
           {isImage ? (
-            <div className="group relative overflow-hidden rounded-2xl border-2 border-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95 cursor-zoom-in">
+            <div 
+              className="group relative overflow-hidden rounded-2xl border-2 border-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95 cursor-zoom-in"
+              onClick={() => setFullScreenImage(message.message)}
+            >
               <img
                 src={message.message}
                 alt="Message Content"
                 className="max-w-[300px] max-h-[300px] object-cover"
-                onClick={() => setFullScreenImage(message.message)}
               />
               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <i className="fi fi-rr-zoom-in text-white text-2xl"></i>

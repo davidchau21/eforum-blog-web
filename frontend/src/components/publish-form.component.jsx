@@ -88,17 +88,17 @@ const PublishForm = ({ isModal = false }) => {
     if (e.keyCode == 13 || e.keyCode == 188) {
       e.preventDefault();
 
-      let tag = e.target.value.trim();
+      // let tag = e.target.value.trim();
 
-      if (tags.length < tagLimit) {
-        if (!tags.includes(tag) && tag.length) {
-          setBlog({ ...blog, tags: [...tags, tag] });
-        }
-      } else {
-        toast.error(`You can add max ${tagLimit} Tags`);
-      }
+      // if (tags.length < tagLimit) {
+      //   if (!tags.includes(tag) && tag.length) {
+      //     setBlog({ ...blog, tags: [...tags, tag] });
+      //   }
+      // } else {
+      //   toast.error(`You can add max ${tagLimit} Tags`);
+      // }
 
-      e.target.value = "";
+      // e.target.value = "";
     }
   };
 
@@ -112,24 +112,24 @@ const PublishForm = ({ isModal = false }) => {
         return toast.error("Write blog title before publishing");
       }
 
-      if (des.length > characterLimit) {
+      if (des && des.length > characterLimit) {
         return toast.error(
           `Description should be within ${characterLimit} characters to publish`,
         );
       }
 
-      if (!tags.length) {
-        return toast.error("Enter at least 1 tag to help us rank your blog");
-      }
+      // if (!tags.length) {
+      //   return toast.error("Enter at least 1 tag to help us rank your blog");
+      // }
 
-      // Kiểm tra nếu người dùng chưa chọn tag mặc định
-      if (!selectedClassTag) {
-        return toast.error("Please choose a default class before publishing");
-      }
+      // // Kiểm tra nếu người dùng chưa chọn tag mặc định
+      // if (!selectedClassTag) {
+      //   return toast.error("Please choose a default class before publishing");
+      // }
 
-      if (!selectedSubjectTag) {
-        return toast.error("Please choose a default subject before publishing");
-      }
+      // if (!selectedSubjectTag) {
+      //   return toast.error("Please choose a default subject before publishing");
+      // }
 
       let loadingToast = toast.loading("Publishing....");
       if (e && e.target) e.target.classList.add("disable");
@@ -262,13 +262,15 @@ const PublishForm = ({ isModal = false }) => {
         >
           <p className="text-dark-grey mb-1">Preview</p>
 
-          <div className="w-full aspect-video rounded-lg overflow-hidden bg-grey mt-4">
-            <img
-              src={banner || bannerDefault} // Nếu không có banner, dùng bannerDefault
-              alt="Preview Banner"
-              onError={(e) => (e.target.src = bannerDefault)} // Thay ảnh khi không tải được
-            />
-          </div>
+          {banner && banner.length > 0 && (
+            <div className="w-full aspect-video rounded-lg overflow-hidden bg-grey mt-4">
+              <img
+                src={banner}
+                alt="Preview Banner"
+                onError={(e) => (e.target.src = bannerDefault)}
+              />
+            </div>
+          )}
 
           <h1 className="text-4xl font-medium mt-2 leading-tight line-clamp-2">
             {title}
@@ -282,157 +284,154 @@ const PublishForm = ({ isModal = false }) => {
         <div
           className={`${isModal ? "w-full border-t border-subtle mt-10 pt-10" : "border-grey lg:border-1 lg:pl-8"}`}
         >
-          <p className="text-dark-grey mb-2 mt-9">Blog Title</p>
-          <input
-            type="text"
-            placeholder="Blog Title"
-            defaultValue={title}
-            className="input-box pl-4"
-            onChange={handleBlogTitleChange}
-          />
+          <div className="space-y-6">
+            <div>
+              <p className="text-dark-grey font-medium mb-2">Blog Title</p>
+              <input
+                type="text"
+                placeholder="Blog Title"
+                defaultValue={title}
+                className="input-box pl-4 focus:bg-white"
+                onChange={handleBlogTitleChange}
+              />
+            </div>
 
-          <p className="text-dark-grey mb-2 mt-9">
-            Short description about your blog
-          </p>
-
-          <textarea
-            maxLength={characterLimit}
-            defaultValue={des}
-            className="h-40 resize-none leading-7 input-box pl-4"
-            onChange={handleBlogDesChange}
-            onKeyDown={handleTitleKeyDown}
-          ></textarea>
-
-          <p className="mt-1 text-dark-grey text-sm text-right">
-            {characterLimit - des.length} characters left
-          </p>
-
-          {/* Thanh dropdown riêng cho các tag lớp mặc định */}
-          <p className="text-dark-grey mb-2 mr-32 w-1/2">
-            Choose default class
-          </p>
-          <select
-            className="select select-bordered w-full max-w-2xl mb-2"
-            value={selectedClassTag}
-            onChange={(e) => {
-              const selectedTag = e.target.value;
-
-              // If swapping an existing class tag
-              let newTags = [...tags];
-              if (selectedClassTag) {
-                newTags = newTags.filter((t) => t !== selectedClassTag);
-              }
-
-              if (
-                selectedTag &&
-                !newTags.includes(selectedTag) &&
-                newTags.length < tagLimit
-              ) {
-                setBlog({ ...blog, tags: [...newTags, selectedTag] });
-                setSelectedClassTag(selectedTag);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Choose a tag class
-            </option>
-            {defaultTagsClass.map((defaultTag, index) => (
-              <option key={index} value={defaultTag}>
-                {defaultTag}
-              </option>
-            ))}
-          </select>
-
-          {/* Thanh dropdown riêng cho các tag môn mặc định */}
-          <p className="text-dark-grey mb-2 mr-32 w-1/2">
-            {" "}
-            Choose default subjects
-          </p>
-          <select
-            className="select select-bordered w-full max-w-2xl mb-2"
-            value={selectedSubjectTag}
-            onChange={(e) => {
-              const selectedTag = e.target.value;
-
-              // If swapping an existing subject tag
-              let newTags = [...tags];
-              if (selectedSubjectTag) {
-                newTags = newTags.filter((t) => t !== selectedSubjectTag);
-              }
-
-              if (
-                selectedTag &&
-                !newTags.includes(selectedTag) &&
-                newTags.length < tagLimit
-              ) {
-                setBlog({ ...blog, tags: [...newTags, selectedTag] });
-                setSelectedSubjectTag(selectedTag);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Choose a tag subject
-            </option>
-            {defaultTagsSubject.map((defaultTag, index) => (
-              <option key={index} value={defaultTag}>
-                {defaultTag}
-              </option>
-            ))}
-          </select>
-
-          {/* Dropdown cho các tag đã chọn từ server */}
-          <p className="text-dark-grey mb-2 mr-32 w-1/2">
-            Choose from existing topics
-          </p>
-          <select
-            className="select select-bordered w-full max-w-2xl mb-2"
-            defaultValue=""
-            onChange={(e) => {
-              const selectedTag = e.target.value;
-              if (
-                selectedTag &&
-                !tags.includes(selectedTag) &&
-                tags.length < tagLimit
-              ) {
-                setBlog({ ...blog, tags: [...tags, selectedTag] });
-              } else if (tags.length >= tagLimit) {
-                toast.error(`You can add max ${tagLimit} Tags`);
-              }
-            }}
-          >
-            <option value="" disabled>
-              Choose a topic
-            </option>
-            {availableTags.map((tag, index) => (
-              <option key={index} value={tag.tag_name}>
-                {tag.tag_name}
-              </option>
-            ))}
-          </select>
-
-          <p className="text-dark-grey mb-2 mr-32 w-1/2">
-            Or create a new one topic
-          </p>
-          <div className="relative input-box pl-2 py-2 pb-4">
-            <input
-              type="text"
-              placeholder="A new topic"
-              className="sticky input-box bg-white top-0 left-0  pl-4 mb-3 focus:bg-white "
-              onKeyDown={handleKeyDown}
-            />
-
-            {tags.map((tag, i) => {
-              return <Tag tag={tag} tagIndex={i} key={i} />;
-            })}
+            <div>
+              <p className="text-dark-grey font-medium mb-2">
+                Short description about your blog
+              </p>
+              <textarea
+                maxLength={characterLimit}
+                defaultValue={des}
+                className="h-32 resize-none leading-7 input-box pl-4 focus:bg-white"
+                onChange={handleBlogDesChange}
+                onKeyDown={handleTitleKeyDown}
+              ></textarea>
+              <p className="mt-1.5 text-dark-grey text-xs text-right opacity-60">
+                {characterLimit - des.length} characters left
+              </p>
+            </div>
           </div>
 
-          <p className="mt-1 mb-4 text-dark-grey text-right">
-            {tagLimit - tags.length} Tags left
-          </p>
+          <div className="space-y-5 mt-8">
+            <div>
+              <p className="text-dark-grey font-medium mb-2">
+                Choose default class
+              </p>
+              <select
+                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+                value={selectedClassTag}
+                onChange={(e) => {
+                  const selectedTag = e.target.value;
+                  let newTags = [...tags];
+                  if (selectedClassTag) {
+                    newTags = newTags.filter((t) => t !== selectedClassTag);
+                  }
+                  if (
+                    selectedTag &&
+                    !newTags.includes(selectedTag) &&
+                    newTags.length < tagLimit
+                  ) {
+                    setBlog({ ...blog, tags: [...newTags, selectedTag] });
+                    setSelectedClassTag(selectedTag);
+                  }
+                }}
+              >
+                <option value="" disabled>
+                  Choose a class
+                </option>
+                {defaultTagsClass.map((tag, i) => (
+                  <option key={i} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <button className="btn-dark px-8" onClick={publishBlog}>
-            Publish
-          </button>
+            <div>
+              <p className="text-dark-grey font-medium mb-2">
+                Choose default subjects
+              </p>
+              <select
+                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+                value={selectedSubjectTag}
+                onChange={(e) => {
+                  const selectedTag = e.target.value;
+                  let newTags = [...tags];
+                  if (selectedSubjectTag) {
+                    newTags = newTags.filter((t) => t !== selectedSubjectTag);
+                  }
+                  if (
+                    selectedTag &&
+                    !newTags.includes(selectedTag) &&
+                    newTags.length < tagLimit
+                  ) {
+                    setBlog({ ...blog, tags: [...newTags, selectedTag] });
+                    setSelectedSubjectTag(selectedTag);
+                  }
+                }}
+              >
+                <option value="" disabled>
+                  Choose a subject
+                </option>
+                {defaultTagsSubject.map((tag, i) => (
+                  <option key={i} value={tag}>
+                    {tag}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <p className="text-dark-grey font-medium mb-2">
+                Choose from existing topics
+              </p>
+              <select
+                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
+                defaultValue=""
+                onChange={(e) => {
+                  const selectedTag = e.target.value;
+                  if (
+                    selectedTag &&
+                    !tags.includes(selectedTag) &&
+                    tags.length < tagLimit
+                  ) {
+                    setBlog({ ...blog, tags: [...tags, selectedTag] });
+                  } else if (tags.length >= tagLimit) {
+                    toast.error(`You can add max ${tagLimit} Tags`);
+                  }
+                }}
+              >
+                <option value="" disabled>
+                  Choose a topic
+                </option>
+                {availableTags.map((tag, i) => (
+                  <option key={i} value={tag.tag_name}>
+                    {tag.tag_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {tags.length > 0 && (
+            <div className="relative bg-grey/20 border border-subtle rounded-2xl p-4 mt-6">
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag, i) => (
+                  <Tag tag={tag} tagIndex={i} key={i} />
+                ))}
+              </div>
+              <p className="mt-3 text-dark-grey text-[10px] font-bold uppercase tracking-widest opacity-50 text-right">
+                {tagLimit - tags.length} Tags remaining
+              </p>
+            </div>
+          )}
+
+          {!isModal && (
+            <button className="btn-dark px-8" onClick={publishBlog}>
+              Publish
+            </button>
+          )}
         </div>
       </section>
     </AnimationWrapper>
