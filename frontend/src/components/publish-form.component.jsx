@@ -9,6 +9,7 @@ import axios from "axios";
 import { UserContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
 import confetti from "canvas-confetti";
+import { uploadImage } from "../common/aws";
 // import bannerDefault from "../imgs/banner-default.png";
 
 const PublishForm = ({ isModal = false }) => {
@@ -134,9 +135,25 @@ const PublishForm = ({ isModal = false }) => {
       let loadingToast = toast.loading("Publishing....");
       if (e && e.target) e.target.classList.add("disable");
 
+      let currentBanner = banner;
+
+      // If there's a local banner file, upload it now
+      if (blog.bannerFile) {
+        toast.loading("Uploading banner...", { id: loadingToast });
+        try {
+          currentBanner = await uploadImage(blog.bannerFile);
+          // Update the blog state
+          setBlog((prev) => ({ ...prev, banner: currentBanner, bannerFile: null }));
+        } catch (uploadErr) {
+          toast.dismiss(loadingToast);
+          if (e && e.target) e.target.classList.remove("disable");
+          return toast.error(uploadErr.message);
+        }
+      }
+
       let blogObj = {
         title,
-        banner: banner.length === 0 ? bannerDefault : banner,
+        banner: currentBanner.length === 0 ? bannerDefault : currentBanner,
         des,
         content,
         tags,
@@ -169,6 +186,8 @@ const PublishForm = ({ isModal = false }) => {
             },
           },
         );
+
+        localStorage.removeItem("blog_editor_draft"); // Clear draft cache
 
         toast.dismiss(loadingToast);
         toast.success("Published 👍 \nBài viết của bạn đang chờ duyệt");

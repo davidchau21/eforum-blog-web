@@ -13,9 +13,10 @@ const serviceAccountKey = JSON.parse(
 );
 // import serviceAccountKey from "./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
-import aws from "aws-sdk";
-import crypto from "crypto";
+// import aws from "aws-sdk";
+// import crypto from "crypto";
 import { server, app } from "./socket/socket.js";
+import { generateUploadURL } from "./service/supabase.js";
 import EE from "./socket/eventManager.js";
 
 // schema below
@@ -74,14 +75,18 @@ server.use("/comments", commnentRouter);
 server.use("/reports", reportRouter);
 server.use("/search", searchRouter);
 
-// setting up s3 bucket
+// Supabase Storage is handled via the separate service/supabase.js
+
+/* 
+// AWS S3 setup (commented out)
+import aws from "aws-sdk";
 const s3 = new aws.S3({
   region: process.env.AWS_BUCKET_REGION,
   accessKeyId: process.env.AWS_ACCESS_KEY,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
-const generateUploadURL = async () => {
+const generateS3UploadURL = async () => {
   const date = new Date();
   const imageName = `${nanoid()}-${date.getTime()}.jpeg`;
 
@@ -92,6 +97,7 @@ const generateUploadURL = async () => {
     ContentType: "image/jpeg",
   });
 };
+*/
 
 const verifyJWT = (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -142,7 +148,7 @@ const generateUsername = async (email) => {
 // upload image url route
 server.get("/get-upload-url", (req, res) => {
   generateUploadURL()
-    .then((url) => res.status(200).json({ uploadURL: url }))
+    .then((urls) => res.status(200).json(urls))
     .catch((err) => {
       console.log(err.message);
       return res.status(500).json({ error: err.message });
@@ -1710,7 +1716,7 @@ server.post("/all-notifications-count", verifyJWT, (req, res) => {
 server.post("/user-written-blogs", verifyJWT, (req, res) => {
   let user_id = req.user;
 
-  let { page, draft, query, deletedDocCount } = req.body;
+  let { page, draft, query, deletedDocCount, filter } = req.body;
 
   let maxLimit = 5;
   let skipDocs = (page - 1) * maxLimit;
@@ -1719,11 +1725,24 @@ server.post("/user-written-blogs", verifyJWT, (req, res) => {
     skipDocs -= deletedDocCount;
   }
 
-  Blog.find({ author: user_id, draft, title: new RegExp(query, "i") })
+  let findQuery = { author: user_id, title: new RegExp(query, "i") };
+
+  if (filter === 'pending') {
+    findQuery.draft = false;
+    findQuery.isActive = false;
+  } else if (filter === 'draft') {
+    findQuery.draft = true;
+  } else {
+    // default to published
+    findQuery.draft = false;
+    findQuery.isActive = true;
+  }
+
+  Blog.find(findQuery)
     .skip(skipDocs)
     .limit(maxLimit)
     .sort({ publishedAt: -1 })
-    .select(" title banner publishedAt blog_id activity des draft -_id ")
+    .select(" title banner publishedAt blog_id activity des draft isActive -_id ")
     .then((blogs) => {
       return res.status(200).json({ blogs });
     })
@@ -1735,9 +1754,22 @@ server.post("/user-written-blogs", verifyJWT, (req, res) => {
 server.post("/user-written-blogs-count", verifyJWT, (req, res) => {
   let user_id = req.user;
 
-  let { draft, query } = req.body;
+  let { draft, query, filter } = req.body;
 
-  Blog.countDocuments({ author: user_id, draft, title: new RegExp(query, "i") })
+  let findQuery = { author: user_id, title: new RegExp(query, "i") };
+
+  if (filter === 'pending') {
+    findQuery.draft = false;
+    findQuery.isActive = false;
+  } else if (filter === 'draft') {
+    findQuery.draft = true;
+  } else {
+    // default to published
+    findQuery.draft = false;
+    findQuery.isActive = true;
+  }
+
+  Blog.countDocuments(findQuery)
     .then((count) => {
       return res.status(200).json({ totalDocs: count });
     })

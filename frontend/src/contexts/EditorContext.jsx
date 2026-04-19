@@ -3,6 +3,7 @@ import { createContext } from 'react';
 export const blogStructure = {
     title: '',
     banner: '',
+    bannerFile: null, // To store raw File object for lazy upload
     content: [],
     tags: [],
     des: '',
