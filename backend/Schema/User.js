@@ -98,7 +98,7 @@ const userSchema = mongoose.Schema(
         default: "",
       },
     },
-    account_info: {
+  account_info: {
       total_posts: {
         type: Number,
         default: 0,
@@ -107,10 +107,32 @@ const userSchema = mongoose.Schema(
         type: Number,
         default: 0,
       },
+      total_following: {
+        type: Number,
+        default: 0,
+      },
+      total_followers: {
+        type: Number,
+        default: 0,
+      },
     },
     google_auth: {
       type: Boolean,
       default: false,
+    },
+    following: {
+      type: [Schema.Types.ObjectId],
+      ref: "users",
+      default: [],
+    },
+    followers: {
+      type: [Schema.Types.ObjectId],
+      ref: "users",
+      default: [],
+    },
+    interests: {
+      type: [String],
+      default: [],
     },
     blogs: {
       type: [Schema.Types.ObjectId],

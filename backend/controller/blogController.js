@@ -291,3 +291,47 @@ export const removeReportBlog = async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 };
+
+export const getFollowingBlogs = async (req, res) => {
+  let user_id = req.user.id;
+  let { page = 1 } = req.body;
+  let maxLimit = 5;
+
+  try {
+    let user = await User.findById(user_id);
+    let following = user.following;
+
+    if (!following.length) {
+      return res.status(200).json({ blogs: [] });
+    }
+
+    let blogs = await Blog.find({ author: { $in: following }, draft: false, isActive: true })
+      .skip((page - 1) * maxLimit)
+      .limit(maxLimit)
+      .sort({ publishedAt: -1 })
+      .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")
+      .select("blog_id title des banner activity tags publishedAt -_id");
+
+    return res.status(200).json({ blogs });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getFollowingBlogsCount = async (req, res) => {
+  let user_id = req.user.id;
+
+  try {
+    let user = await User.findById(user_id);
+    let following = user.following;
+
+    if (!following.length) {
+      return res.status(200).json({ totalDocs: 0 });
+    }
+
+    let count = await Blog.countDocuments({ author: { $in: following }, draft: false, isActive: true });
+    return res.status(200).json({ totalDocs: count });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};

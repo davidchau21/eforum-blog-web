@@ -235,8 +235,46 @@
     .text-gradient-emerald {
         @apply bg-clip-text text-transparent bg-gradient-to-br from-emerald-400 to-emerald-600 font-black;
     }
-    
+
+    /* ==========================================
+       HOME FEED — DARK THEME OVERRIDES
+       ========================================== */
+
+    /* Section & feed bg */
+    [data-theme='dark'] .home-section,
+    [data-theme='dark'] .home-feed-main {
+        background-color: #0a0a0b !important;
+    }
+
+    /* Sidebars */
+    [data-theme='dark'] .home-sidebar {
+        background-color: #111113 !important;
+        border-color: rgba(255,255,255,0.06) !important;
+    }
+
+    /* Tab nav bar */
+    [data-theme='dark'] .inpage-tab-bar {
+        background-color: #111113 !important;
+        border-color: rgba(255,255,255,0.06) !important;
+    }
+
+    /* Blog post cards */
+    [data-theme='dark'] .blog-post-card {
+        background-color: #18181b !important;
+        border-color: rgba(255,255,255,0.07) !important;
+    }
+    [data-theme='dark'] .blog-post-card:hover {
+        border-color: rgba(99,102,241,0.3) !important;
+        box-shadow: 0 4px 24px rgba(99,102,241,0.07) !important;
+    }
+
+    /* Sidebar sections */
+    [data-theme='dark'] .sidebar-section {
+        border-color: rgba(255,255,255,0.05) !important;
+    }
+
 }
+
 
 .ce-block__content, .ce-toolbar__content{
     max-width: 900px;

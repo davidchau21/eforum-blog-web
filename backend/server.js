@@ -25,6 +25,7 @@ import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
 import Comment from "./Schema/Comment.js";
 import Message from "./Schema/Message.js";
+import { getPersonalizedRecommendation } from "./service/aiService.js";
 
 // nodemailer
 // import mailService from "./service/brevo.js";
@@ -743,33 +744,64 @@ server.post("/reset-password", async (req, res) => {
 //     });
 //   });
 
-server.post("/latest-blogs", (req, res) => {
+server.post("/latest-blogs", async (req, res) => {
   let { page } = req.body;
-
   let maxLimit = 6;
 
-  Blog.find({ draft: false, isActive: true })
-    .populate({
-      path: "author",
-      match: { "personal_info.role": { $ne: "ADMIN" } },
-      select: "personal_info.profile_img personal_info.username personal_info.fullname -_id"
-    })
-    .sort({ publishedAt: -1 })
-    .select("blog_id title des banner activity tags publishedAt")
-    // .skip((page - 1) * maxLimit)
-    // .limit(maxLimit)
-    .then((blogs) => {
-      // const filteredBlogs = blogs.filter(blog => blog.author !== null);
+  try {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    let userInterests = [];
 
-      // Tạo một danh sách các blog không phải ADMIN
-      const nonAdminBlogs = blogs.filter(blog => blog.author && blog.author.personal_info.role !== 'ADMIN');
-      // Nếu có trang hiện tại, áp dụng maxLimit cho các bài blog không phải ADMIN
-      const filteredBlogs = nonAdminBlogs.slice((page - 1) * maxLimit, page * maxLimit);
-      return res.status(200).json({ blogs: filteredBlogs });
-    })
-    .catch((err) => {
-      return res.status(500).json({ error: err.message });
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.SECRET_ACCESS_KEY);
+        const user = await User.findById(decoded.id);
+        if (user) userInterests = user.interests || [];
+      } catch (err) {
+        // console.log("Invalid token detected, serving general feed");
+      }
+    }
+
+    const blogs = await Blog.find({ draft: false, isActive: true })
+      .populate({
+        path: "author",
+        match: { "personal_info.role": { $ne: "ADMIN" } },
+        select: "personal_info.profile_img personal_info.username personal_info.fullname",
+      })
+      .sort({ publishedAt: -1 })
+      .select("blog_id title des banner activity tags publishedAt");
+
+    let nonAdminBlogs = blogs.filter((blog) => blog.author && blog.author.personal_info.role !== "ADMIN");
+
+    // Temporarily disabled AI recommendations
+    // if (userInterests.length > 0) {
+    //   nonAdminBlogs = await getPersonalizedRecommendation(userInterests, nonAdminBlogs);
+    // }
+
+    // Check following status for each author if user is logged in
+    let currentUser = null;
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.SECRET_ACCESS_KEY);
+        currentUser = await User.findById(decoded.id);
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    const filteredBlogs = nonAdminBlogs.slice((page - 1) * maxLimit, page * maxLimit).map(blog => {
+      let isFollowingAuthor = false;
+      if (currentUser && currentUser.following.includes(blog.author._id)) {
+        isFollowingAuthor = true;
+      }
+      return { ...blog.toObject(), isFollowingAuthor };
     });
+
+    return res.status(200).json({ blogs: filteredBlogs });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
 });
 
 server.post("/all-latest-blogs-count", (req, res) => {
@@ -790,7 +822,7 @@ server.get("/trending-blogs", (req, res) => {
   Blog.find({ draft: false, isActive: true })
     .populate(
       "author",
-      "personal_info.profile_img personal_info.username personal_info.fullname -_id"
+      "personal_info.profile_img personal_info.username personal_info.fullname"
     )
     .sort({
       "activity.total_reads": -1,
@@ -827,7 +859,7 @@ server.post("/search-blogs", (req, res) => {
   Blog.find({ ...findQuery, isActive: true })
     .populate(
       "author",
-      "personal_info.profile_img personal_info.username personal_info.fullname -_id"
+      "personal_info.profile_img personal_info.username personal_info.fullname"
     )
     .sort({ publishedAt: -1 })
     .select("blog_id title des banner activity tags publishedAt")
@@ -889,6 +921,12 @@ server.post("/get-profile", (req, res) => {
   User.findOne({ "personal_info.username": username })
     .select("-personal_info.password -google_auth -updatedAt -blogs")
     .then((user) => {
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      // Recalculate counts based on actual array lengths to ensure accuracy
+      user.account_info.total_followers = user.followers ? user.followers.length : 0;
+      user.account_info.total_following = user.following ? user.following.length : 0;
+
       return res.status(200).json(user);
     })
     .catch((err) => {
@@ -1137,6 +1175,26 @@ server.post("/get-blog", (req, res) => {
     .catch((err) => {
       return res.status(500).json({ error: err.message });
     });
+});
+
+server.post("/track-interest", verifyJWT, (req, res) => {
+  let user_id = req.user;
+  let { tags } = req.body;
+
+  if (tags && tags.length) {
+    User.findOneAndUpdate(
+      { _id: user_id },
+      { $addToSet: { interests: { $each: tags } } }
+    )
+      .then(() => {
+        return res.status(200).json({ status: "done" });
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: err.message });
+      });
+  } else {
+    return res.status(200).json({ status: "no tags" });
+  }
 });
 
 server.get("/admin-blogs", (req, res) => {

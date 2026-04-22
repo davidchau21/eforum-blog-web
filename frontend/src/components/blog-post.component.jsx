@@ -17,12 +17,12 @@ import {
 } from "react-share";
 import { getTranslations } from "../../translations";
 
-
 const BlogPostCard = ({ content, author }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { onlineUsers } = useContext(SocketContext) || { onlineUsers: [] };
-  const { userAuth, userAuth: { access_token, language } = {} } = useContext(UserContext) || {};
+  const { userAuth, userAuth: { access_token, language } = {} } =
+    useContext(UserContext) || {};
   const translations = getTranslations(language);
   let {
     publishedAt,
@@ -30,11 +30,50 @@ const BlogPostCard = ({ content, author }) => {
     title,
     des,
     banner,
-    activity: { total_likes, total_comments, total_share },
+    activity: { total_likes, total_comments, total_share } = {},
     blog_id: id,
-  } = content;
-  let { fullname, profile_img, username, _id: authorId } = author;
+  } = content || {};
+  let {
+    personal_info: { fullname, username, profile_img } = {},
+    _id: authorId,
+  } = author || {};
   const isOnline = onlineUsers?.includes(authorId);
+
+  const [localIsFollowing, setLocalIsFollowing] = useState(
+    content.isFollowingAuthor || false,
+  );
+
+  const handleFollowAuthor = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!access_token) {
+      return toast.error("Please login to follow");
+    }
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/users/follow-user",
+        { target_id: authorId },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      .then(({ data }) => {
+        setLocalIsFollowing(data.followed_status);
+        toast.success(
+          data.followed_status
+            ? `Following ${fullname}`
+            : `Unfollowed ${fullname}`,
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Failed to update follow status");
+      });
+  };
 
   const handleCommentClick = (e) => {
     e.preventDefault();
@@ -160,167 +199,240 @@ const BlogPostCard = ({ content, author }) => {
     }
   };
 
-  return (
-    <div className="group relative bg-white rounded-3xl border border-grey/50 overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.06)] hover:border-purple/20 transition-all duration-300 hover:-translate-y-1 mb-6">
-      {/* Banner Image */}
-      {!isDefaultBanner && (
-        <Link to={`/blog/${id}`} className="block w-full h-48 overflow-hidden">
-          <img
-            src={banner || bannerDefault}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={handleBannerError}
-          />
-        </Link>
-      )}
+  const layout = content.layout || "list"; 
 
-      <div className="p-5">
-        {/* Author Info */}
-        <div className="flex gap-3 items-center mb-4">
+  if (layout === "grid") {
+    return (
+      <div className="blog-post-card bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 flex flex-col relative overflow-hidden h-full">
+        {/* Top Banner */}
+        {banner && !isDefaultBanner ? (
+          <Link to={`/blog/${id}`} className="block h-48 w-full overflow-hidden shrink-0 border-b border-slate-100">
+            <img src={banner} alt={title} className="w-full h-full object-cover hover:scale-[1.03] transition-transform duration-500" />
+          </Link>
+        ) : (
+          <Link to={`/blog/${id}`} className="block h-32 w-full bg-slate-50 border-b border-slate-100 shrink-0 flex items-center justify-center">
+            <i className="fi fi-rr-document text-3xl text-slate-200"></i>
+          </Link>
+        )}
+
+        {/* Content Body */}
+        <div className="p-5 flex flex-col flex-1">
+          {/* Author Row */}
+          <div className="flex items-center justify-between mb-3">
+            <Link to={`/user/${username}`} className="flex items-center gap-2 group/author">
+              <img src={profile_img} className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200" />
+              <span className="text-[13px] font-semibold text-slate-600 group-hover/author:text-indigo-600 transition-colors line-clamp-1">{fullname}</span>
+            </Link>
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400 text-xs whitespace-nowrap">{getDisplayDate(publishedAt)}</span>
+            </div>
+          </div>
+
+          {/* Title */}
+          <Link to={`/blog/${id}`} className="block group/title mb-2">
+            <h3 className="font-bold text-[15.5px] text-slate-800 leading-[1.4] group-hover/title:text-indigo-600 transition-colors duration-200 line-clamp-2">
+              {title}
+            </h3>
+          </Link>
+
+          {/* Description */}
+          <Link to={`/blog/${id}`} className="block mb-4">
+            <p className="text-[13.5px] text-slate-500 line-clamp-2 leading-[1.6]">
+              {des}
+            </p>
+          </Link>
+
+          {/* Tags */}
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-5 mt-auto">
+              {tags.slice(0, 2).map((tag, index) => (
+                <span key={index} className="bg-slate-50 text-slate-500 text-[11px] px-2.5 py-1 rounded-md font-medium border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 transition-all cursor-pointer truncate max-w-[100px]">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Footer Actions */}
+          <div className="flex items-center justify-between text-slate-400 text-[12px] pt-4 border-t border-slate-100 mt-auto">
+            <div className="flex gap-4">
+              <button className={`flex items-center gap-1.5 hover:text-rose-500 transition-colors ${isLikedByUser ? "text-rose-500" : ""}`} onClick={handleLike}>
+                <i className={isLikedByUser ? "fi fi-sr-heart text-sm" : "fi fi-rr-heart text-sm"}></i>
+                <span className="font-medium">{localLikes}</span>
+              </button>
+              <button className="flex items-center gap-1.5 hover:text-indigo-500 transition-colors" onClick={handleCommentClick}>
+                <i className="fi fi-rr-comment-alt text-sm"></i>
+                <span className="font-medium">{total_comments}</span>
+              </button>
+            </div>
+            <button className="hover:text-indigo-500 transition-colors" onClick={handleShareClick}>
+              <i className="fi fi-rr-share text-sm"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // DEFAULT LIST LAYOUT
+  return (
+    <div className="blog-post-card bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 hover:border-indigo-200 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 relative mb-4">
+      {/* Content */}
+      <div className="w-full">
+        {/* Author Row */}
+        <div className="flex items-center justify-between mb-3">
           <Link
             to={`/user/${username}`}
-            className="flex items-center gap-3 group/author"
+            className="flex items-center gap-2 group/author"
           >
-            <div className="relative">
-              <img
-                src={profile_img}
-                className="w-9 h-9 rounded-full object-cover ring-2 ring-purple/20 group-hover/author:ring-purple/60 transition-all duration-300"
-              />
-              {isOnline && (
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white"></div>
-              )}
-            </div>
-            <div className="flex flex-col">
-              <p className="text-sm font-semibold text-black line-clamp-1 group-hover/author:text-purple transition-colors duration-200">
-                {fullname}
-              </p>
-              <p className="text-xs text-dark-grey">
-                @{username} · {getDisplayDate(publishedAt)}
-              </p>
-            </div>
+            <img
+              src={profile_img}
+              className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200"
+            />
+            <span className="text-[13px] font-semibold text-slate-600 group-hover/author:text-indigo-600 transition-colors">
+              {fullname}
+            </span>
           </Link>
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400 text-xs">
+              {getDisplayDate(publishedAt)}
+            </span>
+            <button className="text-slate-300 hover:text-slate-500 w-6 h-6 flex items-center justify-center rounded transition-colors">
+              <i className="fi fi-rr-menu-dots text-sm"></i>
+            </button>
+          </div>
         </div>
 
-        {/* Title & Description */}
-        <Link to={`/blog/${id}`} className="block group/title mb-4">
-          <p className="text-xl font-bold text-black leading-snug line-clamp-2 group-hover/title:text-purple transition-colors duration-200 mb-2">
+        {/* Title */}
+        <Link to={`/blog/${id}`} className="block group/title mb-1.5">
+          <h3 className="font-bold text-[16px] text-slate-700 leading-snug group-hover/title:text-indigo-600 transition-colors duration-200">
             {title}
-          </p>
-          <p
-            className={`text-sm text-dark-grey leading-relaxed ${isDefaultBanner ? "line-clamp-3" : "line-clamp-2"}`}
-          >
+          </h3>
+        </Link>
+
+        {/* Description */}
+        <Link to={`/blog/${id}`} className="block mb-4">
+          <p className="text-[14px] text-slate-500 line-clamp-2 leading-[1.6]">
             {des}
           </p>
         </Link>
 
+        {/* Banner (Full width, hide if default) */}
+        {banner && !isDefaultBanner && (
+          <Link
+            to={`/blog/${id}`}
+            className="block mb-4 overflow-hidden rounded-xl border border-slate-100"
+          >
+            <img
+              src={banner}
+              alt={title}
+              className="w-full h-auto max-h-[300px] object-cover hover:scale-[1.02] transition-transform duration-500"
+            />
+          </Link>
+        )}
+
         {/* Tags */}
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
-            {tags
-              .slice(0, window.innerWidth < 640 ? 2 : 3)
-              .map((tag, index) => (
-                <span
-                  key={index}
-                  className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple/10 text-purple hover:bg-purple/20 transition-colors duration-200"
-                >
-                  #{tag}
-                </span>
-              ))}
+            {tags.slice(0, 3).map((tag, index) => (
+              <span
+                key={index}
+                className="bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-md font-medium border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer"
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         )}
 
-        {/* Stats Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-grey">
-          <div className="flex items-center gap-4">
-            <div
-              className="flex items-center gap-1.5 text-dark-grey transition-colors duration-200 cursor-pointer"
-              onClick={handleLike}
-            >
-              <button
-                className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${isLikedByUser ? "text-rose-500 bg-rose-50" : "hover:text-rose-500 hover:bg-grey"}`}
-              >
-                <i
-                  className={`fi ${isLikedByUser ? "fi-sr-heart" : "fi-rr-heart"} text-base leading-none`}
-                ></i>
-                <span className="text-xs font-medium">{localLikes}</span>
-              </button>
-            </div>
-            <button className="flex items-center gap-1.5 text-dark-grey hover:text-blue-500 hover:bg-grey px-2 py-1.5 rounded-lg transition-colors duration-200 cursor-pointer" onClick={handleCommentClick}>
-              <i className="fi fi-rr-comment text-base leading-none"></i>
-              <span className="text-xs font-medium">{total_comments}</span>
-            </button>
-            <div className="relative">
-              <button
-                className="flex items-center gap-1.5 text-dark-grey hover:text-emerald-500 hover:bg-grey px-2 py-1.5 rounded-lg transition-colors duration-200 cursor-pointer"
-                onClick={handleShareClick}
-              >
-                <i className="fi fi-rr-share text-base leading-none"></i>
-                <span className="text-xs font-medium">{localShares}</span>
-              </button>
-              {showShareOptions && (
-                <div
-                  className="absolute bottom-full mb-1 -left-10 bg-white border border-grey rounded-xl shadow-lg p-2 flex gap-2 share-options-feed z-30 min-w-max"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(urlShare);
-                      toast.success(translations.copyLink + " 👍");
-                      handleShare("link");
-                      setShowShareOptions(false);
-                    }}
-                    className="w-8 h-8 rounded-lg bg-grey flex items-center justify-center hover:bg-grey/80 transition-colors duration-200"
-                  >
-                    <i className="fi fi-rr-link text-sm leading-none"></i>
-                  </button>
-                  <TwitterShareButton
-                    url={urlShare}
-                    title={title}
-                    hashtags={["blog", "eforum"]}
-                    onClick={() => {
-                      handleShare("twitter");
-                      setShowShareOptions(false);
-                    }}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center hover:bg-sky-100 transition-colors duration-200">
-                      <i className="fi fi-brands-twitter text-sky-500 text-sm leading-none"></i>
-                    </div>
-                  </TwitterShareButton>
-                  <FacebookShareButton
-                    url={urlShare}
-                    hashtag="#blog"
-                    onClick={() => {
-                      handleShare("facebook");
-                      setShowShareOptions(false);
-                    }}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
-                      <i className="fi fi-brands-facebook text-blue-600 text-sm leading-none"></i>
-                    </div>
-                  </FacebookShareButton>
-                  <LinkedinShareButton
-                    url={urlShare}
-                    title={title}
-                    summary="blog"
-                    onClick={() => {
-                      handleShare("linkedin");
-                      setShowShareOptions(false);
-                    }}
-                  >
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
-                      <i className="fi fi-brands-linkedin text-blue-700 text-sm leading-none"></i>
-                    </div>
-                  </LinkedinShareButton>
-                </div>
-              )}
-            </div>
-          </div>
-          <Link
-            to={`/blog/${id}`}
-            className="text-xs font-semibold text-purple hover:text-purple/70 transition-colors duration-200 flex items-center gap-1"
+        {/* Footer Actions */}
+        <div className="flex items-center gap-1 sm:gap-2 text-slate-500 text-[13px] pt-3 border-t border-slate-100">
+          <button
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${isLikedByUser ? "text-rose-500 bg-rose-50" : "hover:bg-slate-50 hover:text-rose-500"}`}
+            onClick={handleLike}
           >
-            {translations.readMore}{" "}
-            <i className="fi fi-rr-arrow-right text-xs leading-none"></i>
-          </Link>
+            <i className={isLikedByUser ? "fi fi-sr-heart text-[15px] leading-none" : "fi fi-rr-heart text-[15px] leading-none"}></i>
+            <span className="font-medium">{localLikes} <span className="hidden sm:inline">Likes</span></span>
+          </button>
+
+          <button
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-all"
+            onClick={handleCommentClick}
+          >
+            <i className="fi fi-rr-comment-alt text-[15px] leading-none"></i>
+            <span className="font-medium">{total_comments} <span className="hidden sm:inline">Comments</span></span>
+          </button>
+
+          <div className="relative">
+            <button
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-50 hover:text-slate-700 transition-all"
+              onClick={handleShareClick}
+            >
+              <i className="fi fi-rr-share text-[15px] leading-none"></i>
+              <span className="font-medium">Share</span>
+            </button>
+            {showShareOptions && (
+              <div
+                className="absolute bottom-full mb-2 -left-10 bg-white border border-slate-200 rounded-xl shadow-xl p-2 flex gap-2 share-options-feed z-30 min-w-max"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(urlShare);
+                    toast.success(translations.copyLink + " 👍");
+                    handleShare("link");
+                    setShowShareOptions(false);
+                  }}
+                  className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors duration-200 text-slate-600"
+                >
+                  <i className="fi fi-rr-link text-sm leading-none mt-0.5"></i>
+                </button>
+                <TwitterShareButton
+                  url={urlShare}
+                  title={title}
+                  hashtags={["blog", "eforum"]}
+                  onClick={() => {
+                    handleShare("twitter");
+                    setShowShareOptions(false);
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center hover:bg-sky-100 transition-colors duration-200">
+                    <i className="fi fi-brands-twitter text-sky-500 text-sm leading-none mt-0.5"></i>
+                  </div>
+                </TwitterShareButton>
+                <FacebookShareButton
+                  url={urlShare}
+                  hashtag="#blog"
+                  onClick={() => {
+                    handleShare("facebook");
+                    setShowShareOptions(false);
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                    <i className="fi fi-brands-facebook text-blue-600 text-sm leading-none mt-0.5"></i>
+                  </div>
+                </FacebookShareButton>
+                <LinkedinShareButton
+                  url={urlShare}
+                  title={title}
+                  summary="blog"
+                  onClick={() => {
+                    handleShare("linkedin");
+                    setShowShareOptions(false);
+                  }}
+                >
+                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                    <i className="fi fi-brands-linkedin text-blue-700 text-sm leading-none mt-0.5"></i>
+                  </div>
+                </LinkedinShareButton>
+              </div>
+            )}
+          </div>
+
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all ml-auto font-medium">
+            <i className="fi fi-rr-bookmark text-[15px] leading-none"></i>
+            <span className="hidden sm:inline">Save</span>
+          </button>
         </div>
       </div>
     </div>

@@ -52,6 +52,7 @@ const translations = {
         publishedBlogs: "Bài viết đã xuất bản",
         drafts: "Bản nháp",
         pendingBlogs: "Bài viết chờ duyệt",
+        following: "Đang theo dõi",
         noPublishedBlogs: "Không có bài viết đã xuất bản",
         noDraftBlogs: "Không có bản nháp",
         noPendingBlogs: "Không có bài viết chờ duyệt",
@@ -147,6 +148,8 @@ const translations = {
         noBlogsFound: "Không tìm thấy bài viết nào",
         usersSearchResult: "Người dùng liên quan",
         whatsOnYourMind: "Bạn đang nghĩ gì?",
+        followersLabel: "Người theo dõi",
+        followingLabel: "Đang theo dõi",
     },
     en: {
         searchPlaceholder: "Search",
@@ -200,6 +203,7 @@ const translations = {
         publishedBlogs: "Published Blogs",
         drafts: "Drafts",
         pendingBlogs: "Pending Blogs",
+        following: "Following",
         noPublishedBlogs: "No published blogs",
         noDraftBlogs: "No draft blogs",
         noPendingBlogs: "No pending blogs",
@@ -295,6 +299,8 @@ const translations = {
         noBlogsFound: "No blogs published",
         usersSearchResult: "User related to search",
         whatsOnYourMind: "What's on your mind?",
+        followersLabel: "Followers",
+        followingLabel: "Following",
     },
 };
 

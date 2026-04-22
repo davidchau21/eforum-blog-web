@@ -120,6 +120,7 @@ const App = () => {
     "/chat",
     "/editor",
     "/landing",
+    "/feed",
   ];
   const shouldShowFooter = !excludedPaths.some((path) =>
     path === "/"

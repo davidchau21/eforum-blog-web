@@ -16,7 +16,7 @@ const NotificationPanel = ({ closePanel }) => {
     userAuth: { access_token, language },
     setUserAuth,
   } = useContext(UserContext);
-  const { socket } = useContext(SocketContext);
+  const { socket } = useContext(SocketContext) || {};
   const [notifications, setNotifications] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);

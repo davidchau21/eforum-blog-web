@@ -23,44 +23,44 @@ export const getUserForSidebar = async (req, res, next) => {
 
     const userWithConversation = await Promise.all(allUserExceptLoggedIn.map(async (user) => {
       const conversation = conversations.find(conversation => conversation.participants.includes(user._id));
-      
+
       let unread_count = 0;
       let last_message = null;
       let last_message_time = null;
 
       if (conversation && conversation.messages && conversation.messages.length > 0) {
-          // Get unread count
-          unread_count = await Message.countDocuments({
-              _id: { $in: conversation.messages },
-              receiverId: loggedInUserId,
-              seen: false
-          });
+        // Get unread count
+        unread_count = await Message.countDocuments({
+          _id: { $in: conversation.messages },
+          receiverId: loggedInUserId,
+          seen: false
+        });
 
-          // Get the very last message
-          const lastMsgDoc = await Message.findOne({
-              _id: { $in: conversation.messages }
-          }).sort({ createdAt: -1 });
+        // Get the very last message
+        const lastMsgDoc = await Message.findOne({
+          _id: { $in: conversation.messages }
+        }).sort({ createdAt: -1 });
 
-          if (lastMsgDoc) {
-              last_message = lastMsgDoc.message;
-              last_message_time = lastMsgDoc.createdAt;
-          }
+        if (lastMsgDoc) {
+          last_message = lastMsgDoc.message;
+          last_message_time = lastMsgDoc.createdAt;
+        }
       }
 
-      return { 
-          ...user.toObject(), 
-          conversation: conversation ? conversation._id : null, 
-          unread_count,
-          last_message,
-          last_message_time
+      return {
+        ...user.toObject(),
+        conversation: conversation ? conversation._id : null,
+        unread_count,
+        last_message,
+        last_message_time
       };
     }));
 
     // Sort by last_message_time descending so most recent chats are at the top
     userWithConversation.sort((a, b) => {
-        const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
-        const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
-        return timeB - timeA;
+      const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
+      const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
+      return timeB - timeA;
     });
 
     res.status(200).json(userWithConversation);
@@ -219,3 +219,115 @@ export const blockComment = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const followUser = async (req, res) => {
+  let user_id = req.user.id; // current user
+  let { target_id } = req.body; // user to follow
+
+  if (user_id === target_id) {
+    return res.status(403).json({ error: "You cannot follow yourself" });
+  }
+
+  try {
+    let user = await User.findById(user_id);
+    let isFollowing = user.following.includes(target_id);
+
+    if (isFollowing) {
+      // Unfollow
+      await User.findByIdAndUpdate(user_id, {
+        $pull: { following: target_id },
+        $inc: { "account_info.total_following": -1 },
+      });
+      await User.findByIdAndUpdate(target_id, {
+        $pull: { followers: user_id },
+        $inc: { "account_info.total_followers": -1 },
+      });
+      return res.status(200).json({ followed_status: false });
+    } else {
+      // Follow
+      await User.findByIdAndUpdate(user_id, {
+        $addToSet: { following: target_id },
+        $inc: { "account_info.total_following": 1 },
+      });
+      await User.findByIdAndUpdate(target_id, {
+        $addToSet: { followers: user_id },
+        $inc: { "account_info.total_followers": 1 },
+      });
+      return res.status(200).json({ followed_status: true });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getFollowingStatus = async (req, res) => {
+  let user_id = req.user.id;
+  let { target_id } = req.body;
+
+  try {
+    let user = await User.findById(user_id);
+    let isFollowing = user.following.includes(target_id);
+    return res.status(200).json({ followed_status: isFollowing });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getFollowers = async (req, res) => {
+  let { user_id, page = 1, limit = 10 } = req.query;
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  try {
+    const user = await User.findById(user_id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const followers = await User.aggregate([
+      { $match: { _id: { $in: user.followers } } },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $project: {
+          "personal_info.fullname": 1,
+          "personal_info.username": 1,
+          "personal_info.profile_img": 1,
+          "personal_info.bio": 1,
+        }
+      }
+    ]);
+
+    return res.status(200).json({ followers });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+export const getFollowing = async (req, res) => {
+  let { user_id, page = 1, limit = 10 } = req.query;
+  page = parseInt(page);
+  limit = parseInt(limit);
+
+  try {
+    const user = await User.findById(user_id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const following = await User.aggregate([
+      { $match: { _id: { $in: user.following } } },
+      { $skip: (page - 1) * limit },
+      { $limit: limit },
+      {
+        $project: {
+          "personal_info.fullname": 1,
+          "personal_info.username": 1,
+          "personal_info.profile_img": 1,
+          "personal_info.bio": 1,
+        }
+      }
+    ]);
+
+
+    return res.status(200).json({ following });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+}

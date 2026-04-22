@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useCallback, useContext, useEffect, useState } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import darkLogo from "../imgs/logo-dark.png";
 import lightLogo from "../imgs/logo-light.png";
 import { ThemeContext, UserContext } from "../App";
@@ -136,35 +136,54 @@ const Navbar = () => {
     }
   }, [language, setUserAuth]);
 
+  const location = useLocation();
+
+  const handleExploreClick = (e) => {
+    if (location.pathname === "/feed") {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <>
-      <nav className="navbar z-50">
-        <Link to="/feed" className="flex-none w-10">
-          <img
-            src={theme == "light" ? darkLogo : lightLogo}
-            className="w-full"
-          />
-        </Link>
+      <nav className="bg-white w-full h-[80px] flex items-center justify-between px-4 lg:px-8 border-b border-slate-200 sticky top-0 z-50">
+        
+        {/* Left Section: Logo & Search */}
+        <div className="flex items-center gap-6 lg:gap-10">
+          <Link to="/feed" onClick={handleExploreClick} className="flex items-center">
+            <img
+              src={theme == "light" ? darkLogo : lightLogo}
+              className="h-9 w-auto object-contain"
+              alt="EduBlog Logo"
+            />
+          </Link>
+
+          <div className="hidden md:flex items-center bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 w-64 lg:w-[400px] group focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-300 transition-all">
+            <i className="fi fi-rr-search text-slate-400 text-sm"></i>
+            <input
+              type="search"
+              placeholder="Search ⌘K"
+              className="bg-transparent border-none outline-none w-full ml-3 text-sm placeholder:text-slate-400 text-slate-700"
+              onKeyDown={handleSearch}
+            />
+          </div>
+        </div>
+
+        {/* Center Section: Navigation Links */}
+        <div className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2 h-full">
+          <Link to="/feed" onClick={handleExploreClick} className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all ${location.pathname === "/feed" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}>
+            Explore
+          </Link>
+          <Link to="/feed" onClick={handleExploreClick} className="h-full flex items-center text-slate-500 hover:text-slate-900 font-medium text-sm px-1 transition-colors">
+            Directory
+          </Link>
+        </div>
 
         {/* <button className="flex right-0 items-center justify-center hover:text-emerald-500" onClick={() => setSearchBoxVisibility(prev => !prev)}>
                     <i className="fi fi-rr-search text-xl"></i>
                 </button> */}
 
-        <div
-          className={
-            "absolute bg-white w-full left-0 top-full mt-0.5 border-b border-grey py-4 px-[5vw] md:border-0 md:block md:relative md:inset-0 md:p-0 md:w-auto md:show " +
-            (searchBoxVisibility ? "show" : "hide")
-          }
-        >
-          <input
-            type="search"
-            placeholder={currentTranslations.searchPlaceholder}
-            className="w-full md:w-auto bg-grey p-4 pl-6 pr-[12%] md:pr-6 rounded-full placeholder:text-dark-grey md:pl-12"
-            onKeyDown={handleSearch}
-          />
-
-          <i className="fi fi-rr-search absolute right-[10%] md:pointer-events-none md:left-5 top-1/2 -translate-y-1/2 text-xl text-dark-grey"></i>
-        </div>
 
         <div className="flex items-center gap-4 md:gap-6 ml-auto">
           {/* Search in mobile */}
@@ -315,64 +334,48 @@ const Navbar = () => {
           )}
 
           {/* Desktop-Only Items */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Write button moved to feed */}
+          <div className="hidden md:flex items-center gap-2">
+            
+            {access_token && (
+              <Link to="/editor" className="bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors mr-2">
+                Write a Post
+              </Link>
+            )}
 
             <button
-              className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500"
+              className="w-10 h-10 rounded-full text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors"
               onClick={changeTheme}
             >
               <i
                 className={
                   "fi fi-rr-" +
                   (theme == "light" ? "moon-stars" : "sun") +
-                  " text-2xl block mt-1"
+                  " text-lg mt-1"
                 }
               ></i>
             </button>
 
             <button
-              className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 flex items-center justify-center"
+              className="w-10 h-10 rounded-full text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors mr-2"
               onClick={changeLanguage}
             >
               <img
                 src={language === "en" ? usFlag : vietnamFlag}
                 alt={language === "vi" ? "Cờ Mỹ" : "Cờ Việt"}
-                className="w-6 h-6"
+                className="w-5 h-5 rounded-full object-cover"
               />
             </button>
 
             {access_token ? (
-              <>
-                <Link
-                  to="/search-google"
-                  className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500"
-                >
-                  <i className="fi fi-rr-book text-2xl block mt-1"></i>
-                </Link>
-
-                <Link
-                  to="/chat"
-                  className="bg-grey w-12 h-12 rounded-full flex items-center justify-center hover:bg-black/10 hover:text-emerald-500 relative"
-                >
-                  <i className="fi fi-rr-messages text-2xl block mt-1"></i>
-                  {unread_messages > 0 ? (
-                    <span className="bg-red w-5 h-5 rounded-full absolute z-10 top-0 right-0 flex items-center justify-center text-white text-[10px] font-bold">
-                      {unread_messages > 99 ? "99+" : unread_messages}
-                    </span>
-                  ) : (
-                    ""
-                  )}
-                </Link>
-
+              <div className="flex items-center gap-1">
                 <div className="relative" ref={notifRef}>
                   <button
-                    className="w-12 h-12 rounded-full bg-grey relative hover:bg-black/10 hover:text-emerald-500"
+                    className="w-10 h-10 rounded-full text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors"
                     onClick={() => setNotifPanel((prev) => !prev)}
                   >
-                    <i className="fi fi-rr-bell text-2xl block mt-1"></i>
+                    <i className="fi fi-rr-bell text-xl mt-1"></i>
                     {new_notification_available > 0 && (
-                      <span className="bg-red w-5 h-5 rounded-full absolute z-10 top-0 right-0 flex items-center justify-center text-white text-[10px] font-bold">
+                      <span className="bg-rose-500 w-4 h-4 rounded-full absolute top-1.5 right-1.5 flex items-center justify-center text-white text-[9px] font-bold border border-white">
                         {new_notification_available > 99
                           ? "99+"
                           : new_notification_available}
@@ -387,12 +390,24 @@ const Navbar = () => {
                   </AnimatePresence>
                 </div>
 
+                <Link
+                  to="/chat"
+                  className="w-10 h-10 rounded-full text-slate-500 hover:bg-slate-100 flex items-center justify-center transition-colors relative"
+                >
+                  <i className="fi fi-rr-comment-alt text-xl mt-1"></i>
+                  {unread_messages > 0 && (
+                    <span className="bg-rose-500 w-4 h-4 rounded-full absolute top-1.5 right-1.5 flex items-center justify-center text-white text-[9px] font-bold border border-white">
+                      {unread_messages > 99 ? "99+" : unread_messages}
+                    </span>
+                  )}
+                </Link>
+
                 <div
-                  className="relative"
+                  className="relative ml-2"
                   onClick={handleUserNavPanel}
                   ref={userNavRef}
                 >
-                  <button className="w-12 h-12 mt-1">
+                  <button className="w-9 h-9 rounded-full ring-2 ring-transparent hover:ring-indigo-100 transition-all focus:outline-none focus:ring-indigo-200 cursor-pointer">
                     <img
                       src={profile_img}
                       className="w-full h-full object-cover rounded-full"
@@ -401,16 +416,16 @@ const Navbar = () => {
 
                   {userNavPanel ? <UserNavigationPanel /> : ""}
                 </div>
-              </>
+              </div>
             ) : (
-              <>
-                <Link className="btn-dark py-2" to="/signin">
+              <div className="flex items-center gap-3">
+                <Link className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors" to="/signin">
                   {currentTranslations.signIn}
                 </Link>
-                <Link className="btn-light py-2 hidden md:block" to="/signup">
+                <Link className="px-5 py-2 text-sm font-medium bg-slate-900 text-white rounded-full hover:bg-slate-800 transition-colors hidden md:block" to="/signup">
                   {currentTranslations.signUp}
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
