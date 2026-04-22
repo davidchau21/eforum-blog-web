@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Conversation from "./Conversation";
 import useGetConversations from "../../hook/useGetConversations";
 import Loader from "../loader.component";
@@ -35,10 +35,12 @@ const Conversations = () => {
 
   // console.log("conversations: ", conversations);
 
-  const filteredConversations = conversations.filter((conversation) => conversation.conversation !== null);
+  const filteredConversations = conversations.filter(
+    (conversation) => conversation.conversation !== null,
+  );
 
   return (
-    <div className="py-2 flex flex-col overflow-auto">
+    <div className="py-2 flex flex-col overflow-y-auto overflow-x-hidden">
       {loading ? (
         <Loader />
       ) : (

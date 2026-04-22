@@ -57,10 +57,10 @@ const MessageInput = () => {
 
   return (
     <>
-      <div className="px-4 py-3 border-t border-grey/40 bg-white">
+      <div className="px-4 py-3 bg-white">
         {preview && (
           <div className="relative mb-3 inline-block">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-purple/20 shadow-lg">
+            <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-indigo-100 shadow-md">
                <img className="w-full h-full object-cover" src={preview} alt="Preview" />
             </div>
             <button
@@ -72,12 +72,12 @@ const MessageInput = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <form onSubmit={handleSubmit} className="flex items-center gap-3">
           {/* Emoji Button */}
           <div className="relative">
             <button
                type="button"
-               className="w-11 h-11 flex items-center justify-center rounded-2xl text-dark-grey hover:bg-grey/60 hover:text-purple transition-all duration-200"
+               className="w-10 h-10 flex items-center justify-center rounded-full text-slate-400 hover:bg-slate-50 hover:text-indigo-600 transition-all duration-200"
                onClick={() => setShowEmojiPicker((prev) => !prev)}
             >
               <i className="fi fi-rr-smile text-xl"></i>
@@ -93,14 +93,14 @@ const MessageInput = () => {
           <div className="flex-1 relative group">
              <input
                 type="text"
-                placeholder="Aa"
-                className="w-full py-2.5 px-5 bg-grey/40 border border-transparent rounded-2xl focus:outline-none focus:bg-white focus:border-purple/30 focus:shadow-sm transition-all duration-200"
+                placeholder="Type a message..."
+                className="w-full py-2.5 px-5 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:bg-white focus:border-indigo-200 focus:ring-4 focus:ring-indigo-500/5 transition-all duration-200"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
              />
              
              {/* Upload File Inside Input Container */}
-             <label className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-xl text-dark-grey hover:bg-grey/60 hover:text-purple cursor-pointer transition-all duration-200">
+             <label className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-xl text-slate-400 hover:bg-slate-100 hover:text-indigo-600 cursor-pointer transition-all duration-200">
                 <i className="fi fi-rr-clip text-lg"></i>
                 <input
                   id="FileInput"
@@ -114,14 +114,14 @@ const MessageInput = () => {
           {/* Send Button */}
           <button
             type="submit"
-            className={`w-11 h-11 flex items-center justify-center rounded-2xl shadow-lg transition-all duration-300 ${
+            className={`w-10 h-10 flex items-center justify-center rounded-full transition-all duration-300 shadow-sm ${
                 (message.trim() || selectedFile) 
-                ? "bg-gradient-to-br from-purple to-emerald-500 text-white shadow-purple/20 hover:scale-105 active:scale-95" 
-                : "bg-grey/60 text-dark-grey/40 cursor-not-allowed"
+                ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:scale-105 active:scale-95" 
+                : "bg-slate-100 text-slate-300 cursor-not-allowed"
             }`}
             disabled={!message.trim() && !selectedFile}
           >
-            <i className="fi fi-rs-paper-plane text-lg"></i>
+            <i className="fi fi-rs-paper-plane text-lg ml-0.5"></i>
           </button>
         </form>
       </div>

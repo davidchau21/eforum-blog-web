@@ -16,62 +16,68 @@ const MessageContainer = () => {
   const isOnline = onlineUsers.includes(selectedConversation?._id);
 
   return (
-    <div className="md:min-w-[450px] flex flex-col h-full overflow-y-auto">
+    <div className="flex flex-col h-full bg-white relative">
       {!selectedConversation ? (
         <NoChatSelected />
       ) : (
         <>
-          {/* Header */}
-          <div className="bg-white/80 backdrop-blur-md border-b border-grey/40 px-5 py-3 flex items-center justify-between sticky top-0 z-10">
+          {/* Glassmorphic Header */}
+          <div className="h-[72px] bg-white/80 backdrop-blur-xl border-b border-slate-100 px-6 flex items-center justify-between sticky top-0 z-20">
             <div className="flex items-center gap-4">
               <Link 
                 to={`/user/${selectedConversation?.personal_info.username}`}
-                className="relative group"
+                className="relative shrink-0"
               >
-                <img 
-                  src={selectedConversation?.personal_info.profile_img} 
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-grey group-hover:ring-purple/40 transition-all duration-300"
-                  alt={selectedConversation?.personal_info.fullname}
-                />
+                <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-slate-100">
+                  <img 
+                    src={selectedConversation?.personal_info.profile_img} 
+                    className="w-full h-full object-cover"
+                    alt={selectedConversation?.personal_info.fullname}
+                  />
+                </div>
                 {isOnline && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full scale-110"></span>
+                  <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
                 )}
               </Link>
 
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <Link 
                   to={`/user/${selectedConversation?.personal_info.username}`}
-                  className="text-black font-bold hover:text-purple transition-colors duration-200 leading-tight"
+                  className="text-slate-800 font-bold hover:text-indigo-600 transition-colors duration-200 leading-tight truncate"
                 >
                   {selectedConversation?.personal_info.fullname}
                 </Link>
-                <div className="flex items-center gap-1.5">
-                  <span className={`text-[10px] uppercase tracking-wider font-bold ${isOnline ? 'text-emerald-500' : 'hidden'}`}>
-                    Đang hoạt động
+                <div className="flex items-center gap-2">
+                  <span className={`text-[11px] font-semibold ${isOnline ? 'text-emerald-500' : 'text-slate-400'}`}>
+                    {isOnline ? 'Active Now' : 'Offline'}
                   </span>
-                  <span className="text-dark-grey/40 text-[10px]">@{selectedConversation?.personal_info.username}</span>
+                  <span className="text-slate-300 text-[11px]">@ {selectedConversation?.personal_info.username}</span>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-               <button className="w-9 h-9 flex items-center justify-center rounded-xl text-dark-grey hover:bg-grey/60 hover:text-purple transition-all duration-200">
+               <button className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-all">
                   <i className="fi fi-rr-phone-call text-lg"></i>
                </button>
-               <button className="w-9 h-9 flex items-center justify-center rounded-xl text-dark-grey hover:bg-grey/60 hover:text-purple transition-all duration-200">
+               <button className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-all">
                   <i className="fi fi-rr-video-camera text-lg"></i>
                </button>
-               <button className="w-9 h-9 flex items-center justify-center rounded-xl text-dark-grey hover:bg-grey/60 hover:text-purple transition-all duration-200">
+               <button className="w-10 h-10 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-all">
                   <i className="fi fi-rr-info text-lg"></i>
                </button>
             </div>
           </div>
 
-          <div className="flex-1 h-1/2 overflow-y-auto">
+          {/* Messages List Area */}
+          <div className="flex-1 bg-slate-50/20 flex flex-col min-h-0">
             <Messages />
           </div>
 
-          <MessageInput />
+          {/* Message Input Area */}
+          <div className="p-4 bg-white border-t border-slate-100">
+            <MessageInput />
+          </div>
         </>
       )}
     </div>

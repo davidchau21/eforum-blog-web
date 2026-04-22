@@ -23,6 +23,7 @@ export const blogStructure = {
   banner: "",
   publishedAt: "",
   tags: [],
+  activity: { total_likes: 0, total_comments: 0, total_share: 0 },
 };
 
 export const BlogContext = createContext({});

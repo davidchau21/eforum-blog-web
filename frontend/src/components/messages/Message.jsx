@@ -21,12 +21,12 @@ const Message = ({ message }) => {
     message?.type?.startsWith("video");
   const formattedTime = formatTime(message.createdAt);
 
-  const bubbleClasses = `max-w-[80%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
+  const bubbleClasses = `max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
     isImage
       ? "bg-transparent p-0 shadow-none"
       : messageFromMe
-        ? "bg-purple text-white rounded-tr-none"
-        : "bg-grey/40 text-black rounded-tl-none"
+        ? "bg-indigo-600 text-white rounded-tr-none"
+        : "bg-white text-slate-700 border border-slate-100 rounded-tl-none"
   }`;
 
   return (
@@ -36,7 +36,7 @@ const Message = ({ message }) => {
       <div
         className={`flex gap-2 items-end ${messageFromMe ? "flex-row-reverse" : "flex-row"}`}
       >
-        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 shadow-sm border border-grey/20">
+        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-slate-100">
           <img
             src={profileImage}
             alt="Avatar"

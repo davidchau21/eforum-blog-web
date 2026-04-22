@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import http, { get } from "http";
 import express from "express";
 import EE from "./eventManager.js"
+import "./notificationHandler.js"
 const server = express();
 
 const app = http.createServer(server);
@@ -37,13 +38,7 @@ EE.on('online', () => {
   io.emit("online-users", Object.keys(userSocketMap));
 });
 
-// Sự kiện tạo thông báo gửi từ server
-EE.on('new-notification', (receiverId, newNotification) => {
-  const receiverSocketId = getReceiverSocketId(receiverId);
-  if (receiverSocketId) {
-    io.to(receiverSocketId).emit("newNotification", newNotification);
-  }
-});
+// Notifications are now handled by notificationHandler.js via the 'publish-notification' event
 
 io.on("connection", (socket) => {
   // console.log("a user connected", socket.id);

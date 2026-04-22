@@ -1,4 +1,5 @@
 import User from "../Schema/User.js";
+import Notification from "../Schema/Notification.js";
 import { setSocketId } from "../socket/socket.js";
 import EventEmitter from "eventemitter3";
 import bcrypt from "bcrypt";
@@ -27,6 +28,7 @@ export const getUserForSidebar = async (req, res, next) => {
       let unread_count = 0;
       let last_message = null;
       let last_message_time = null;
+      let last_message_sender = null;
 
       if (conversation && conversation.messages && conversation.messages.length > 0) {
         // Get unread count
@@ -42,8 +44,13 @@ export const getUserForSidebar = async (req, res, next) => {
         }).sort({ createdAt: -1 });
 
         if (lastMsgDoc) {
-          last_message = lastMsgDoc.message;
+          const isImage = lastMsgDoc.type === "img" || 
+                          /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(lastMsgDoc.message) ||
+                          lastMsgDoc.message.includes('supabase.co/storage/v1/object/public/');
+          
+          last_message = isImage ? "[Ảnh]" : lastMsgDoc.message;
           last_message_time = lastMsgDoc.createdAt;
+          last_message_sender = lastMsgDoc.senderId;
         }
       }
 
@@ -52,7 +59,8 @@ export const getUserForSidebar = async (req, res, next) => {
         conversation: conversation ? conversation._id : null,
         unread_count,
         last_message,
-        last_message_time
+        last_message_time,
+        last_message_sender
       };
     }));
 
@@ -242,6 +250,14 @@ export const followUser = async (req, res) => {
         $pull: { followers: user_id },
         $inc: { "account_info.total_followers": -1 },
       });
+
+      // Remove follow notification
+      await Notification.findOneAndDelete({
+        user: user_id,
+        notification_for: target_id,
+        type: "follow",
+      });
+
       return res.status(200).json({ followed_status: false });
     } else {
       // Follow
@@ -253,6 +269,13 @@ export const followUser = async (req, res) => {
         $addToSet: { followers: user_id },
         $inc: { "account_info.total_followers": 1 },
       });
+
+      EE.emit("publish-notification", {
+        type: "follow",
+        notification_for: target_id,
+        user: user_id,
+      });
+
       return res.status(200).json({ followed_status: true });
     }
   } catch (err) {

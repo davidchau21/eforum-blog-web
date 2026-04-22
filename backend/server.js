@@ -1244,7 +1244,7 @@ server.post("/share-blog", verifyJWT, (req, res) => {
 
   Blog.findOneAndUpdate({ _id: blog_id }, { $inc: { "activity.total_share": 1 } })
     .then(blog => {
-      let share = new Notification({
+      EE.emit("publish-notification", {
         type: "share",
         blog: blog_id,
         notification_for: blog.author,
@@ -1255,11 +1255,7 @@ server.post("/share-blog", verifyJWT, (req, res) => {
           share_type,
         },
       });
-
-      share.save().then(notification => {
-        EE.emit('new-notification', blog.author, notification);
-        return res.status(200).json({ shared_by_user: true });
-      });
+      return res.status(200).json({ shared_by_user: true });
     })
     .catch(err => {
       return res.status(500).json({ error: err.message });
@@ -1282,17 +1278,15 @@ server.post("/like-blog", verifyJWT, (req, res) => {
     }
 
     if (!islikedByUser) {
-      let like = new Notification({
-        type: "like",
-        blog: _id,
-        notification_for: blog.author,
-        user: user_id,
-      });
-
-      like.save().then((notification) => {
-        EE.emit("new-notification", blog.author, notification);
-        return res.status(200).json({ liked_by_user: true });
-      });
+      if (user_id != blog.author) {
+        EE.emit("publish-notification", {
+          type: "like",
+          blog: _id,
+          notification_for: blog.author,
+          user: user_id,
+        });
+      }
+      return res.status(200).json({ liked_by_user: true });
     } else {
       Notification.findOneAndDelete({ user: user_id, blog: _id, type: "like" })
         .then((data) => {
@@ -1474,23 +1468,17 @@ server.post("/add-comment", verifyJWT, async (req, res) => {
       ).then((replyingToCommentDoc) => {
         notificationObj.notification_for = replyingToCommentDoc.commented_by;
       });
-
-      // If there's an existing notification, update it with the reply ID
-      if (notification_id) {
-        await Notification.findOneAndUpdate(
-          { _id: notification_id },
-          { reply: commentFile._id }
-        );
-      }
     }
 
-    // Save the notification only if the commenter is not the one being notified
     if (user_id != notificationObj.notification_for) {
-      const notification = await new Notification(notificationObj).save();
-      EE.emit(
-        "new-notification",
-        notificationObj.notification_for,
-        notification,
+      EE.emit("publish-notification", notificationObj);
+    }
+
+    // If there's an existing notification and this is a reply, update it
+    if (replying_to && notification_id) {
+      await Notification.findOneAndUpdate(
+        { _id: notification_id },
+        { reply: commentFile._id }
       );
     }
 

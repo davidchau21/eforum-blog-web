@@ -44,19 +44,26 @@ export const sendMessage = async (req, res, next) => {
 
 export const getMessage = async (req, res, next) => {
     try {
-        const { id: userToMessage } = req.params
-        const senderId = req.user.id
+        const { id: userToMessage } = req.params;
+        const senderId = req.user.id;
+        const { limit = 10, page = 1 } = req.query;
+        const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        const conversation = await Conversation.findOne({
-            participants: { $all: [senderId, userToMessage] },
-        }).populate("messages")
+        // Query messages directly for better performance and pagination
+        const messages = await Message.find({
+            $or: [
+                { senderId: senderId, receiverId: userToMessage },
+                { senderId: userToMessage, receiverId: senderId }
+            ]
+        })
+        .sort({ createdAt: -1 }) // Get newest first
+        .skip(skip)
+        .limit(parseInt(limit));
 
-        if (!conversation) {
-            return res.status(200).json([])
-        }
+        // We want to return them in ascending order for the UI, but the query got them newest first
+        const resultMessages = messages.reverse();
 
-        const messages = conversation.messages
-
+        // Mark unread messages as seen
         const unreadMessageIds = messages
             .filter(m => m.receiverId.toString() === senderId.toString() && !m.seen)
             .map(m => m._id);
@@ -68,7 +75,7 @@ export const getMessage = async (req, res, next) => {
             );
         }
 
-        res.status(200).json(messages)
+        res.status(200).json(resultMessages);
     } catch (error) {
         next(error);
     }

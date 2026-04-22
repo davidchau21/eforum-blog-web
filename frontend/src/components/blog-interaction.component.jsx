@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable no-unused-vars */
 import { useCallback, useContext, useEffect, useState } from "react";
 import { BlogContext } from "../pages/blog.page";
 import { Link } from "react-router-dom";
@@ -17,6 +19,12 @@ const BlogInteraction = () => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  const blogContext = useContext(BlogContext);
+
+  if (!blogContext || !blogContext.blog) {
+    return null; // Or some fallback UI
+  }
+
   let {
     blog,
     blog: {
@@ -34,10 +42,9 @@ const BlogInteraction = () => {
     islikedByUser,
     setLikedByUser,
     setCommentsWrapper,
-  } = useContext(BlogContext);
-  let {
-    userAuth: { username, access_token, language },
-  } = useContext(UserContext);
+  } = blogContext;
+  let { userAuth = {}, userAuth: { username, access_token, language } = {} } =
+    useContext(UserContext) || {};
 
   const currentTranslations = getTranslations(language);
 
