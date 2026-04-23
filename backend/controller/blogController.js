@@ -3,6 +3,8 @@ import Blog from "../Schema/Blog.js";
 import User from "../Schema/User.js";
 import Notification from "../Schema/Notification.js";
 import Comment from "../Schema/Comment.js";
+import SavedBlog from "../Schema/SavedBlog.js";
+import UserFollow from "../Schema/UserFollow.js";
 
 export const createOrUpdateBlog = async (req, res) => {
   try {
@@ -80,7 +82,6 @@ export const createOrUpdateBlog = async (req, res) => {
           { _id: authorId },
           {
             $inc: { "account_info.total_posts": incrementVal },
-            $push: { blogs: blog._id },
           }
         )
           .then(() => {
@@ -218,7 +219,6 @@ export const deleteBlog = async (req, res) => {
     await User.findOneAndUpdate(
       { _id: user_id },
       {
-        $pull: { blogs: blog._id },
         $inc: { "account_info.total_posts": -1 },
       }
     );
@@ -298,8 +298,10 @@ export const getFollowingBlogs = async (req, res) => {
   let maxLimit = 5;
 
   try {
-    let user = await User.findById(user_id);
-    let following = user.following;
+    const followDocs = await UserFollow.find({ follower: user_id }).select(
+      "following -_id"
+    );
+    const following = followDocs.map((item) => item.following);
 
     if (!following.length) {
       return res.status(200).json({ blogs: [] });
@@ -322,8 +324,10 @@ export const getFollowingBlogsCount = async (req, res) => {
   let user_id = req.user.id;
 
   try {
-    let user = await User.findById(user_id);
-    let following = user.following;
+    const followDocs = await UserFollow.find({ follower: user_id }).select(
+      "following -_id"
+    );
+    const following = followDocs.map((item) => item.following);
 
     if (!following.length) {
       return res.status(200).json({ totalDocs: 0 });
@@ -331,6 +335,92 @@ export const getFollowingBlogsCount = async (req, res) => {
 
     let count = await Blog.countDocuments({ author: { $in: following }, draft: false, isActive: true });
     return res.status(200).json({ totalDocs: count });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const saveBlog = async (req, res) => {
+  let user_id = req.user.id;
+  let { blog_id } = req.body;
+
+  try {
+    let blog = await Blog.findOne({ blog_id });
+
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    let existingSave = await SavedBlog.findOne({ user: user_id, blog: blog._id });
+
+    if (existingSave) {
+      await SavedBlog.findOneAndDelete({ _id: existingSave._id });
+      return res.status(200).json({ saved_status: false });
+    } else {
+      await new SavedBlog({ user: user_id, blog: blog._id }).save();
+      return res.status(200).json({ saved_status: true });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getSavedBlogs = async (req, res) => {
+  let user_id = req.user.id;
+  let { page = 1 } = req.body;
+  let maxLimit = 5;
+
+  try {
+    let savedBlogs = await SavedBlog.find({ user: user_id })
+      .skip((page - 1) * maxLimit)
+      .limit(maxLimit)
+      .sort({ createdAt: -1 });
+
+    if (!savedBlogs.length) {
+      return res.status(200).json({ blogs: [] });
+    }
+
+    let blogIds = savedBlogs.map((item) => item.blog);
+
+    let blogs = await Blog.find({ _id: { $in: blogIds }, draft: false, isActive: true })
+      .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")
+      .select("blog_id title des banner activity tags publishedAt -_id");
+
+    // Re-sort because $in doesn't preserve order
+    const sortedBlogs = blogIds
+      .map((id) => blogs.find((blog) => blog._id.toString() === id.toString()))
+      .filter((blog) => blog !== undefined);
+
+    return res.status(200).json({ blogs: sortedBlogs });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const getSavedBlogsCount = async (req, res) => {
+  let user_id = req.user.id;
+
+  try {
+    let count = await SavedBlog.countDocuments({ user: user_id });
+    return res.status(200).json({ totalDocs: count });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+};
+
+export const isSavedByUser = async (req, res) => {
+  let user_id = req.user.id;
+  let { blog_id } = req.body;
+
+  try {
+    let blog = await Blog.findOne({ blog_id });
+
+    if (!blog) {
+      return res.status(404).json({ error: "Blog not found" });
+    }
+
+    let existingSave = await SavedBlog.exists({ user: user_id, blog: blog._id });
+    return res.status(200).json({ result: !!existingSave });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

@@ -57,15 +57,13 @@ const userSchema = mongoose.Schema(
       profile_img: {
         type: String,
         default: () => {
-          return `https://api.dicebear.com/6.x/${
-            profile_imgs_collections_list[
-              Math.floor(Math.random() * profile_imgs_collections_list.length)
+          return `https://api.dicebear.com/6.x/${profile_imgs_collections_list[
+            Math.floor(Math.random() * profile_imgs_collections_list.length)
+          ]
+            }/svg?seed=${profile_imgs_name_list[
+            Math.floor(Math.random() * profile_imgs_name_list.length)
             ]
-          }/svg?seed=${
-            profile_imgs_name_list[
-              Math.floor(Math.random() * profile_imgs_name_list.length)
-            ]
-          }`;
+            }`;
         },
       },
       role: {
@@ -98,7 +96,7 @@ const userSchema = mongoose.Schema(
         default: "",
       },
     },
-  account_info: {
+    account_info: {
       total_posts: {
         type: Number,
         default: 0,
@@ -120,46 +118,9 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    following: {
-      type: [Schema.Types.ObjectId],
-      ref: "users",
-      default: [],
-    },
-    followers: {
-      type: [Schema.Types.ObjectId],
-      ref: "users",
-      default: [],
-    },
-    interests: {
-      type: [String],
-      default: [],
-    },
-    blogs: {
-      type: [Schema.Types.ObjectId],
-      ref: "blogs",
-      default: [],
-    },
-    otp: {
-      type: String,
-    },
-    otp_expiry_time: {
-      type: Date,
-    },
     verified: {
       type: Boolean,
       default: false,
-    },
-    passwordConfirm: {
-      type: String,
-    },
-    passwordChangedAt: {
-      type: Date,
-    },
-    passwordResetToken: {
-      type: String,
-    },
-    passwordResetExpires: {
-      type: Date,
     },
     socket_id: {
       type: String,

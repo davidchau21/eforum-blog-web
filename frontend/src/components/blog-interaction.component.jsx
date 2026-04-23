@@ -42,6 +42,8 @@ const BlogInteraction = () => {
     islikedByUser,
     setLikedByUser,
     setCommentsWrapper,
+    isSavedByUser,
+    setSavedByUser,
   } = blogContext;
   let { userAuth = {}, userAuth: { username, access_token, language } = {} } =
     useContext(UserContext) || {};
@@ -62,8 +64,19 @@ const BlogInteraction = () => {
         )
         .then(({ data: { result } }) => setLikedByUser(Boolean(result)))
         .catch((err) => console.log(err));
+
+      axios
+        .post(
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/is-saved-by-user",
+          { blog_id },
+          {
+            headers: { Authorization: `Bearer ${access_token}` },
+          },
+        )
+        .then(({ data: { result } }) => setSavedByUser(Boolean(result)))
+        .catch((err) => console.log(err));
     }
-  }, []);
+  }, [_id, blog_id, access_token]);
 
   const handleLike = () => {
     if (access_token) {
@@ -82,6 +95,31 @@ const BlogInteraction = () => {
     } else {
       toast.error(currentTranslations.loggedInToLike);
     }
+  };
+
+  const handleSave = () => {
+    if (!access_token) {
+      return toast.error("Vui lòng đăng nhập để lưu bài viết");
+    }
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/save-blog",
+        { blog_id },
+        {
+          headers: { Authorization: `Bearer ${access_token}` },
+        },
+      )
+      .then(({ data }) => {
+        setSavedByUser(data.saved_status);
+        toast.success(
+          data.saved_status ? "Đã lưu bài viết" : "Đã bỏ lưu bài viết",
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Không thể lưu bài viết");
+      });
   };
 
   const handleShare = (shareType) => {
@@ -266,6 +304,20 @@ const BlogInteraction = () => {
               </div>
             )}
           </div>
+
+          {/* Save/Bookmark */}
+          <button
+            onClick={handleSave}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+              isSavedByUser
+                ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                : "text-dark-grey hover:bg-grey/60 hover:text-indigo-600"
+            }`}
+          >
+            <i
+              className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-base leading-none`}
+            ></i>
+          </button>
         </div>
 
         {/* Right: Actions */}

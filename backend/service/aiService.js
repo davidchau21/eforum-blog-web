@@ -1,7 +1,8 @@
 import axios from "axios";
+import { geminiApiKey } from "../config/ai.js";
 
 export const getPersonalizedRecommendation = async (interests, blogs) => {
-    const API_KEY = process.env.GEMINI_API_KEY;
+    const API_KEY = geminiApiKey;
 
     if (!API_KEY) {
         // Fallback: Simple tag-based sorting if no API key

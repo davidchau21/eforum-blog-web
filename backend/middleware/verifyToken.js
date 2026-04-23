@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { accessTokenSecret } from "../config/auth.js";
 
 export const isAuthenticate = async (req, res, next) => {
   const authHeader = req.headers["authorization"];
@@ -8,7 +9,7 @@ export const isAuthenticate = async (req, res, next) => {
     return res.status(401).json({ error: "No access token" });
   }
 
-  jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+  jwt.verify(token, accessTokenSecret, (err, user) => {
     if (err) {
       return res.status(403).json({ error: "Access token is invalid" });
     }
@@ -25,7 +26,7 @@ export const isAdmin = async (req, res, next) => {
     return res.status(401).json({ error: "No access token" });
   }
 
-  jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+  jwt.verify(token, accessTokenSecret, (err, user) => {
     if (err) {
       return res.status(403).json({ error: "Access token is invalid" });
     }

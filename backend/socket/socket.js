@@ -3,13 +3,14 @@ import http, { get } from "http";
 import express from "express";
 import EE from "./eventManager.js"
 import "./notificationHandler.js"
+import { allowedOrigins } from "../config/app.js";
 const server = express();
 
 const app = http.createServer(server);
 
 const io = new Server(app, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
     credentials: true,
   },

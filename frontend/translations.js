@@ -150,6 +150,8 @@ const translations = {
         whatsOnYourMind: "Bạn đang nghĩ gì?",
         followersLabel: "Người theo dõi",
         followingLabel: "Đang theo dõi",
+        myGroups: "Nhóm của tôi",
+        savedBlogs: "Bài viết đã lưu",
     },
     en: {
         searchPlaceholder: "Search",
@@ -301,6 +303,8 @@ const translations = {
         whatsOnYourMind: "What's on your mind?",
         followersLabel: "Followers",
         followingLabel: "Following",
+        myGroups: "My Groups",
+        savedBlogs: "Saved Blogs",
     },
 };
 

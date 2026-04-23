@@ -137,6 +137,30 @@ const HomePage = () => {
       .catch(console.log);
   };
 
+  const fetchSavedBlogs = ({ page = 1 }) => {
+    axios
+      .get(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-saved-blogs",
+        { page },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      .then(async ({ data }) => {
+        const formattedData = await filterPaginationData({
+          state: blogs,
+          data: data.blogs,
+          page,
+          countRoute: "/blogs/get-saved-blogs-count",
+          data_to_send: { access_token },
+        });
+        setBlogs(formattedData);
+      })
+      .catch(console.log);
+  };
+
   const fetchTrendingBlogs = () => {
     axios
       .get(import.meta.env.VITE_SERVER_DOMAIN + "/trending-blogs")
@@ -165,6 +189,12 @@ const HomePage = () => {
         setPageState("feed");
       } else {
         fetchFollowingBlogs({ page: 1 });
+      }
+    } else if (pageState === translations.savedBlogs) {
+      if (!access_token) {
+        setPageState("feed");
+      } else {
+        fetchSavedBlogs({ page: 1 });
       }
     } else {
       fetchBlogsByCategory({ page: 1 });
@@ -272,38 +302,63 @@ const HomePage = () => {
                 <i className="fi fi-rr-graduation-cap text-base mt-0.5"></i>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900 leading-tight">EForum</p>
-                <p className="text-[10px] text-slate-400 tracking-wide">Academic Community</p>
+                <p className="text-sm font-bold text-slate-900 leading-tight">
+                  EForum
+                </p>
+                <p className="text-[10px] text-slate-400 tracking-wide">
+                  Academic Community
+                </p>
               </div>
             </div>
           </div>
 
           <nav className="px-3 py-3 space-y-0.5">
-            <button 
+            <button
               onClick={() => {
                 setPageState("feed");
                 activeTabRef.current.click();
               }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === "feed" ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
             >
-              <i className={`fi fi-rr-home text-base mt-0.5 ${pageState === "feed" ? "text-indigo-600" : ""}`}></i>
+              <i
+                className={`fi fi-rr-home text-base mt-0.5 ${pageState === "feed" ? "text-indigo-600" : ""}`}
+              ></i>
               Home
             </button>
-            <button 
-              onClick={() => { setPageState(translations.trending); }}
+            <button
+              onClick={() => {
+                setPageState(translations.trending);
+              }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === translations.trending ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
             >
-              <i className={`fi fi-rr-arrow-trend-up text-base mt-0.5 ${pageState === translations.trending ? "text-indigo-600" : ""}`}></i>
+              <i
+                className={`fi fi-rr-arrow-trend-up text-base mt-0.5 ${pageState === translations.trending ? "text-indigo-600" : ""}`}
+              ></i>
               Popular
             </button>
             <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800">
               <i className="fi fi-rr-users text-base mt-0.5"></i>
-              My Groups
+              {translations.myGroups}
+            </button>
+            <button
+              onClick={() => {
+                if (!access_token) return setPageState("feed");
+                setBlogs(null);
+                setPageState(translations.savedBlogs);
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === translations.savedBlogs ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
+            >
+              <i
+                className={`fi fi-rr-bookmark text-base mt-0.5 ${pageState === translations.savedBlogs ? "text-indigo-600" : ""}`}
+              ></i>
+              {translations.savedBlogs}
             </button>
           </nav>
 
           <div className="px-3 py-3 border-t border-slate-100">
-            <p className="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">Subjects</p>
+            <p className="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">
+              Subjects
+            </p>
             <nav className="space-y-0.5">
               {categories.slice(0, 6).map((category, i) => (
                 <button
@@ -311,7 +366,9 @@ const HomePage = () => {
                   onClick={loadBlogByCategory}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150 text-sm ${pageState === category ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
                 >
-                  <span className={`w-2 h-2 rounded-full flex-shrink-0 ${i%3===0 ? 'bg-blue-400' : i%3===1 ? 'bg-emerald-400' : 'bg-amber-400'}`}></span>
+                  <span
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${i % 3 === 0 ? "bg-blue-400" : i % 3 === 1 ? "bg-emerald-400" : "bg-amber-400"}`}
+                  ></span>
                   <span className="capitalize truncate">{category}</span>
                 </button>
               ))}
@@ -345,126 +402,134 @@ const HomePage = () => {
               </select>
               <i className="fi fi-rr-angle-small-down absolute right-3 top-1/2 mt-1 text-slate-400 pointer-events-none text-sm"></i>
             </div>
-            <button className="w-full bg-indigo-600 text-white font-medium text-sm py-2.5 rounded-lg hover:bg-indigo-700 transition-colors mt-1">Join Subject</button>
+            <button className="w-full bg-indigo-600 text-white font-medium text-sm py-2.5 rounded-lg hover:bg-indigo-700 transition-colors mt-1">
+              Join Subject
+            </button>
           </div>
         </aside>
 
         {/* Center Feed */}
         <main className="home-feed-main flex-1 min-w-0 pb-12 bg-slate-50">
           <div className="max-w-3xl mx-auto py-5 px-4 lg:px-8">
-          <InPageNavigation
-            routes={[
-              pageState === "feed" ? translations.feed : pageState,
-              translations.trending,
-              translations.adminPosts,
-            ]}
-            defaultHidden={[translations.trending, translations.adminPosts]}
-            hiddenAll={pageState === "feed" ? [translations.feed] : []}
-          >
-            <div>
-              <WritePostCard openModal={() => setShowWriteModal(true)} />
-              <WriteModal
-                isOpen={showWriteModal}
-                onClose={() => setShowWriteModal(false)}
-              />
-              {blogs == null ? (
-                <>
-                  <BlogCardSkeleton key={1} />
-                  <BlogCardSkeleton key={2} />
-                  <BlogCardSkeleton key={3} />
-                </>
-              ) : blogs?.results?.length ? (
-                <div className="flex flex-col gap-0">
-                  {blogs.results.map((blog, i) => (
-                    <AnimationWrapper
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      key={i}
-                    >
-                      <BlogPostCard
-                        content={blog}
-                        author={blog.author}
-                      />
-                    </AnimationWrapper>
-                  ))}
-                </div>
-              ) : (
-                <NoDataMessage message="No blogs published" />
-              )}
-              {blogs?.results?.length > 0 ? (
-                blogs.results.length < blogs.totalDocs ? (
-                  <LoadMoreDataBtn
-                    state={blogs}
-                    fetchDataFun={
-                      pageState == "feed"
-                        ? fetchLatestBlogs
-                        : fetchBlogsByCategory
-                    }
-                  />
-                ) : (
-                  <div className="flex flex-col items-center py-12 mt-8 border-t border-slate-100">
-                    <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mb-5 text-emerald-500 shadow-sm">
-                      <i className="fi fi-rr-check text-2xl mt-1"></i>
-                    </div>
-                    <p className="text-slate-800 font-bold text-lg mb-2">Bạn đã xem hết tin bài rồi! 🎉</p>
-                    <p className="text-slate-500 text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">Hãy quay lại sau để cập nhật thêm những kiến thức bổ ích nhé.</p>
-                    <button 
-                      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                      className="bg-[#111113] text-white px-10 py-3.5 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.15)] active:scale-95 flex items-center gap-2 group"
-                    >
-                      <i className="fi fi-rr-arrow-small-up text-xl group-hover:-translate-y-0.5 transition-transform"></i>
-                      Quay về đầu trang
-                    </button>
+            <InPageNavigation
+              routes={[
+                pageState === "feed" ? translations.feed : pageState,
+                translations.trending,
+                translations.adminPosts,
+              ]}
+              defaultHidden={[translations.trending, translations.adminPosts]}
+              hiddenAll={pageState === "feed" ? [translations.feed] : []}
+            >
+              <div>
+                <WritePostCard openModal={() => setShowWriteModal(true)} />
+                <WriteModal
+                  isOpen={showWriteModal}
+                  onClose={() => setShowWriteModal(false)}
+                />
+                {blogs == null ? (
+                  <>
+                    <BlogCardSkeleton key={1} />
+                    <BlogCardSkeleton key={2} />
+                    <BlogCardSkeleton key={3} />
+                  </>
+                ) : blogs?.results?.length ? (
+                  <div className="flex flex-col gap-0">
+                    {blogs.results.map((blog, i) => (
+                      <AnimationWrapper
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        key={i}
+                      >
+                        <BlogPostCard content={blog} author={blog.author} />
+                      </AnimationWrapper>
+                    ))}
                   </div>
-                )
-              ) : null}
-            </div>
+                ) : (
+                  <NoDataMessage message="No blogs published" />
+                )}
+                {blogs?.results?.length > 0 ? (
+                  blogs.results.length < blogs.totalDocs ? (
+                    <LoadMoreDataBtn
+                      state={blogs}
+                      fetchDataFun={
+                        pageState == "feed"
+                          ? fetchLatestBlogs
+                          : pageState == translations.savedBlogs
+                            ? fetchSavedBlogs
+                            : fetchBlogsByCategory
+                      }
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center py-12 mt-8 border-t border-slate-100">
+                      <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mb-5 text-emerald-500 shadow-sm">
+                        <i className="fi fi-rr-check text-2xl mt-1"></i>
+                      </div>
+                      <p className="text-slate-800 font-bold text-lg mb-2">
+                        Bạn đã xem hết tin bài rồi! 🎉
+                      </p>
+                      <p className="text-slate-500 text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
+                        Hãy quay lại sau để cập nhật thêm những kiến thức bổ ích
+                        nhé.
+                      </p>
+                      <button
+                        onClick={() =>
+                          window.scrollTo({ top: 0, behavior: "smooth" })
+                        }
+                        className="bg-[#111113] text-white px-10 py-3.5 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.15)] active:scale-95 flex items-center gap-2 group"
+                      >
+                        <i className="fi fi-rr-arrow-small-up text-xl group-hover:-translate-y-0.5 transition-transform"></i>
+                        Quay về đầu trang
+                      </button>
+                    </div>
+                  )
+                ) : null}
+              </div>
 
-            <div>
-              {trendingBlogs == null ? (
-                <>
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                </>
-              ) : trendingBlogs.length ? (
-                <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-                  {trendingBlogs.map((blog, i) => (
-                    <AnimationWrapper
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      key={i}
-                    >
-                      <MinimalBlogPost blog={blog} index={i} />
-                    </AnimationWrapper>
-                  ))}
-                </div>
-              ) : (
-                <NoDataMessage message={translations.noTrendingBlogs} />
-              )}
-            </div>
+              <div>
+                {trendingBlogs == null ? (
+                  <>
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                  </>
+                ) : trendingBlogs.length ? (
+                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                    {trendingBlogs.map((blog, i) => (
+                      <AnimationWrapper
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        key={i}
+                      >
+                        <MinimalBlogPost blog={blog} index={i} />
+                      </AnimationWrapper>
+                    ))}
+                  </div>
+                ) : (
+                  <NoDataMessage message={translations.noTrendingBlogs} />
+                )}
+              </div>
 
-            <div>
-              {adminBlogs == null ? (
-                <>
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                </>
-              ) : adminBlogs.length ? (
-                <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
-                  {adminBlogs.map((blog, i) => (
-                    <AnimationWrapper
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      key={i}
-                    >
-                      <MinimalBlogPost blog={blog} index={i} />
-                    </AnimationWrapper>
-                  ))}
-                </div>
-              ) : (
-                <NoDataMessage message="No admin posts available" />
-              )}
-            </div>
-          </InPageNavigation>
+              <div>
+                {adminBlogs == null ? (
+                  <>
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                  </>
+                ) : adminBlogs.length ? (
+                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                    {adminBlogs.map((blog, i) => (
+                      <AnimationWrapper
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        key={i}
+                      >
+                        <MinimalBlogPost blog={blog} index={i} />
+                      </AnimationWrapper>
+                    ))}
+                  </div>
+                ) : (
+                  <NoDataMessage message="No admin posts available" />
+                )}
+              </div>
+            </InPageNavigation>
           </div>
         </main>
 
@@ -472,32 +537,53 @@ const HomePage = () => {
         <aside className="home-sidebar hidden lg:flex w-72 flex-shrink-0 h-[calc(100vh-80px)] sticky right-0 top-[80px] bg-white border-l border-slate-200 flex-col overflow-y-auto scrollbar-hide">
           {/* Trending Topics */}
           <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">🔥 Trending Topics</p>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">
+              🔥 Trending Topics
+            </p>
             <div className="space-y-3">
               {tags.slice(0, 4).map((tag, index) => (
-                <div key={index} className="group cursor-pointer" onClick={() => {
-                  setPageState(tag.tag_name);
-                  activeTabRef.current.click();
-                }}>
-                  <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">Subject • Trending</div>
-                  <div className="font-semibold text-slate-700 text-sm capitalize group-hover:text-indigo-600 transition-colors">#{tag.tag_name}</div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">{Math.floor(Math.random() * 900 + 100)} posts</div>
+                <div
+                  key={index}
+                  className="group cursor-pointer"
+                  onClick={() => {
+                    setPageState(tag.tag_name);
+                    activeTabRef.current.click();
+                  }}
+                >
+                  <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
+                    Subject • Trending
+                  </div>
+                  <div className="font-semibold text-slate-700 text-sm capitalize group-hover:text-indigo-600 transition-colors">
+                    #{tag.tag_name}
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    {Math.floor(Math.random() * 900 + 100)} posts
+                  </div>
                 </div>
               ))}
               {tags.length === 0 && (
-                <div className="text-slate-400 text-sm normal-case">Loading topics...</div>
+                <div className="text-slate-400 text-sm normal-case">
+                  Loading topics...
+                </div>
               )}
             </div>
           </div>
 
           {/* Top Contributors */}
           <div className="px-5 py-4 border-b border-slate-100">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">🏆 Top Contributors</p>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">
+              🏆 Top Contributors
+            </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3 group cursor-pointer">
-                <img src="https://i.pravatar.cc/150?img=11" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                <img
+                  src="https://i.pravatar.cc/150?img=11"
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">Prof. E. Vance</div>
+                  <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                    Prof. E. Vance
+                  </div>
                   <div className="text-[11px] text-slate-400">12.4K REP</div>
                 </div>
                 <button className="w-7 h-7 bg-slate-50 border border-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors">
@@ -505,9 +591,14 @@ const HomePage = () => {
                 </button>
               </div>
               <div className="flex items-center gap-3 group cursor-pointer">
-                <img src="https://i.pravatar.cc/150?img=33" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                <img
+                  src="https://i.pravatar.cc/150?img=33"
+                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">Alex Rider</div>
+                  <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                    Alex Rider
+                  </div>
                   <div className="text-[11px] text-slate-400">8.9K REP</div>
                 </div>
                 <button className="w-7 h-7 bg-slate-50 border border-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors">
@@ -519,18 +610,28 @@ const HomePage = () => {
 
           {/* Admin Posts */}
           <div className="px-5 py-4 border-b border-slate-100">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">📌 Admin Posts</p>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">
+              📌 Admin Posts
+            </p>
             <div className="space-y-3">
               {adminBlogs == null ? (
-                <><MinimalBlogSkeleton /><MinimalBlogSkeleton /></>
+                <>
+                  <MinimalBlogSkeleton />
+                  <MinimalBlogSkeleton />
+                </>
               ) : adminBlogs.length ? (
                 adminBlogs.slice(0, 3).map((blog, i) => (
-                  <AnimationWrapper transition={{ duration: 1, delay: i * 0.1 }} key={i}>
+                  <AnimationWrapper
+                    transition={{ duration: 1, delay: i * 0.1 }}
+                    key={i}
+                  >
                     <MinimalBlogPost blog={blog} />
                   </AnimationWrapper>
                 ))
               ) : (
-                <div className="text-slate-400 normal-case text-sm">No admin posts found.</div>
+                <div className="text-slate-400 normal-case text-sm">
+                  No admin posts found.
+                </div>
               )}
             </div>
           </div>
@@ -538,14 +639,26 @@ const HomePage = () => {
           {/* Footer Links */}
           <div className="mt-auto px-5 py-4">
             <nav className="flex flex-col space-y-2.5">
-              <a className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case" href="#">
-                <i className="fi fi-rr-shield text-sm leading-none"></i> Community Guidelines
+              <a
+                className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case"
+                href="#"
+              >
+                <i className="fi fi-rr-shield text-sm leading-none"></i>{" "}
+                Community Guidelines
               </a>
-              <a className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case" href="#">
-                <i className="fi fi-rr-interrogation text-sm leading-none"></i> Support
+              <a
+                className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case"
+                href="#"
+              >
+                <i className="fi fi-rr-interrogation text-sm leading-none"></i>{" "}
+                Support
               </a>
-              <a className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case" href="#">
-                <i className="fi fi-rr-comment-alt text-sm leading-none"></i> Feedback
+              <a
+                className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case"
+                href="#"
+              >
+                <i className="fi fi-rr-comment-alt text-sm leading-none"></i>{" "}
+                Feedback
               </a>
             </nav>
           </div>

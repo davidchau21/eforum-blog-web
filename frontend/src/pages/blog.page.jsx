@@ -36,6 +36,7 @@ const BlogPage = () => {
   const [similarBlogs, setSimilrBlogs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [islikedByUser, setLikedByUser] = useState(false);
+  const [isSavedByUser, setSavedByUser] = useState(false);
   const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
   const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
@@ -192,7 +193,7 @@ const BlogPage = () => {
     setSimilrBlogs(null);
     setLoading(true);
     setLikedByUser(false);
-    setLikedByUser(false);
+    setSavedByUser(false);
     setTotalParentCommentsLoaded(0);
     setReadingProgress(0);
     setIsFollowingAuthor(false);
@@ -217,6 +218,8 @@ const BlogPage = () => {
             setBlog,
             islikedByUser,
             setLikedByUser,
+            isSavedByUser,
+            setSavedByUser,
             totalParentCommentsLoaded,
             setTotalParentCommentsLoaded,
             fullScreenImage,

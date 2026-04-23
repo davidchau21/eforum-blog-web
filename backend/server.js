@@ -1,26 +1,28 @@
 import express from "express";
-import mongoose from "mongoose";
 import "dotenv/config";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import { nanoid } from "nanoid";
 import jwt from "jsonwebtoken";
 import cors from "cors";
-import admin from "firebase-admin";
-import fs from "fs";
 import rateLimit from "express-rate-limit";
-const serviceAccountKey = JSON.parse(
-  fs.readFileSync("./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json", "utf8")
-);
-// import serviceAccountKey from "./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json" assert { type: "json" };
 import { getAuth } from "firebase-admin/auth";
 // import aws from "aws-sdk";
 // import crypto from "crypto";
 import { server, app } from "./socket/socket.js";
 import { generateUploadURL } from "./service/supabase.js";
 import EE from "./socket/eventManager.js";
+import { PORT, corsOptions, emailRegex, passwordRegex } from "./config/app.js";
+import { accessTokenSecret, verificationTokenSecret } from "./config/auth.js";
+import { connectDatabase } from "./config/database.js";
+import "./config/firebase.js";
+import { env } from "./config/env.js";
 
 // schema below
 import User from "./Schema/User.js";
+import UserAuth from "./Schema/UserAuth.js";
+import UserFollow from "./Schema/UserFollow.js";
+import UserInterest from "./Schema/UserInterest.js";
 import Blog from "./Schema/Blog.js";
 import Notification from "./Schema/Notification.js";
 import Comment from "./Schema/Comment.js";
@@ -34,26 +36,10 @@ import otpGenerator from "otp-generator";
 import otp from "./Mail/otp.js";
 import resetPasswordTemplate from "./Mail/resetPassword.js";
 
-// const server = express();
-let PORT = 3000;
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccountKey),
-});
-
-let emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // regex for email
-let passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/; // regex for password
-
 server.use(express.json());
-server.use(cors({
-  origin: [process.env.CLIENT_URL, process.env.ADMIN_URL], // Restrict to specific origin
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
+server.use(cors(corsOptions));
 
-mongoose.connect(process.env.DB_LOCATION, {
-  autoIndex: true,
-});
+connectDatabase();
 
 // import router
 import messageRouter from "./router/messageRouter.js";
@@ -108,7 +94,7 @@ const verifyJWT = (req, res, next) => {
     return res.status(401).json({ error: "No access token" });
   }
 
-  jwt.verify(token, process.env.SECRET_ACCESS_KEY, (err, user) => {
+  jwt.verify(token, accessTokenSecret, (err, user) => {
     if (err) {
       return res.status(403).json({ error: "Access token is invalid" });
     }
@@ -121,7 +107,7 @@ const verifyJWT = (req, res, next) => {
 const formatDatatoSend = (user) => {
   const access_token = jwt.sign(
     { id: user._id, role: user.personal_info.role },
-    process.env.SECRET_ACCESS_KEY,
+    accessTokenSecret,
     { expiresIn: "5h" }
   );
 
@@ -345,10 +331,17 @@ server.post("/signup", async (req, res) => {
       // Nếu tài khoản chưa được xác thực -> Cập nhật lại OTP và thông tin mới
       user.personal_info.fullname = fullname;
       user.personal_info.password = hashed_password;
-      user.otp = new_otp.toString();
-      user.otp_expiry_time = otp_expiry_time;
-
       await user.save({ new: true, validateModifiedOnly: true });
+      await UserAuth.findOneAndUpdate(
+        { user: user._id },
+        {
+          $set: {
+            otp: new_otp.toString(),
+            otp_expiry_time,
+          },
+        },
+        { upsert: true, new: true }
+      );
     } else {
       // Tạo tài khoản mới
       const username = await generateUsername(email);
@@ -361,12 +354,15 @@ server.post("/signup", async (req, res) => {
           username,
           role: "USER",
         },
-        otp_expiry_time,
-        otp: new_otp.toString(),
         verified: false,
       });
 
       await user.save({ new: true, validateModifiedOnly: true });
+      await UserAuth.create({
+        user: user._id,
+        otp: new_otp.toString(),
+        otp_expiry_time,
+      });
     }
 
     // Gửi OTP qua email
@@ -510,7 +506,6 @@ server.post("/verify", async (req, res) => {
     // Tìm kiếm người dùng với email và kiểm tra thời gian hết hạn của OTP
     const user = await User.findOne({
       "personal_info.email": email,
-      otp_expiry_time: { $gt: Date.now() }, // OTP chỉ hợp lệ nếu chưa hết hạn
     });
 
     if (!user) {
@@ -520,8 +515,20 @@ server.post("/verify", async (req, res) => {
       });
     }
 
+    const authRecord = await UserAuth.findOne({
+      user: user._id,
+      otp_expiry_time: { $gt: Date.now() },
+    });
+
+    if (!authRecord) {
+      return res.status(400).json({
+        status: "error",
+        message: "OTP is either invalid or expired",
+      });
+    }
+
     // So sánh OTP
-    if (user.otp !== otp) {
+    if (authRecord.otp !== otp) {
       return res.status(400).json({
         status: "error",
         message: "Invalid OTP",
@@ -538,18 +545,24 @@ server.post("/verify", async (req, res) => {
 
     // Nếu OTP hợp lệ, xác thực người dùng và xoá OTP sau khi thành công
     user.verified = true;
-    user.otp = undefined; // Xoá OTP để đảm bảo an toàn
-    user.otp_expiry_time = undefined;
-
     // Lưu lại thời gian người dùng được xác minh (tuỳ chọn)
     user.verification_date = new Date();
 
     await user.save({ new: true, validateModifiedOnly: true });
+    await UserAuth.findOneAndUpdate(
+      { user: user._id },
+      {
+        $unset: {
+          otp: 1,
+          otp_expiry_time: 1,
+        },
+      }
+    );
 
     // Tạo JWT token để người dùng có thể đăng nhập sau khi xác thực
     const token = jwt.sign(
       { id: user._id, email: user.personal_info.email }, // Lưu thêm thông tin cần thiết vào token
-      process.env.JWT_SECRET
+      verificationTokenSecret
     );
 
     // Trả về phản hồi thành công với token
@@ -652,12 +665,19 @@ server.post("/forgot-password", async (req, res) => {
       .digest("hex");
 
     // Cập nhật token và thời gian hết hạn (10 phút)
-    user.passwordResetToken = hashedToken;
-    user.passwordResetExpires = Date.now() + 10 * 60 * 1000; // Token hết hạn sau 10 phút
-    await user.save({ validateBeforeSave: false });
+    await UserAuth.findOneAndUpdate(
+      { user: user._id },
+      {
+        $set: {
+          passwordResetToken: hashedToken,
+          passwordResetExpires: Date.now() + 10 * 60 * 1000,
+        },
+      },
+      { upsert: true, new: true }
+    );
 
     // 3. Tạo URL reset password
-    const resetURL = `${process.env.CLIENT_URL}/new-password?token=${resetToken}`;
+    const resetURL = `${env.CLIENT_URL}/new-password?token=${resetToken}`;
     console.log("token", resetToken);
     // 4. Gửi email chứa URL cho người dùng
     mailService.sendEmail({
@@ -690,11 +710,19 @@ server.post("/reset-password", async (req, res) => {
       .digest("hex");
 
     // 2. Tìm người dùng dựa trên token và thời gian hết hạn
-    const user = await User.findOne({
+    const authRecord = await UserAuth.findOne({
       passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() }, // Kiểm tra token còn hiệu lực
+      passwordResetExpires: { $gt: Date.now() },
     });
 
+    if (!authRecord) {
+      return res.status(400).json({
+        status: "error",
+        message: "Token is invalid or has expired.",
+      });
+    }
+
+    const user = await User.findById(authRecord.user);
     if (!user) {
       return res.status(400).json({
         status: "error",
@@ -704,9 +732,19 @@ server.post("/reset-password", async (req, res) => {
 
     // 3. Cập nhật mật khẩu mới và xóa token reset
     user.personal_info.password = await bcrypt.hash(req.body.password, 10);
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
     await user.save();
+    await UserAuth.findOneAndUpdate(
+      { user: user._id },
+      {
+        $unset: {
+          passwordResetToken: 1,
+          passwordResetExpires: 1,
+        },
+        $set: {
+          passwordChangedAt: new Date(),
+        },
+      }
+    );
 
     // 4. Trả về phản hồi thành công
     res.status(200).json({
@@ -755,9 +793,11 @@ server.post("/latest-blogs", async (req, res) => {
 
     if (token) {
       try {
-        const decoded = jwt.verify(token, process.env.SECRET_ACCESS_KEY);
-        const user = await User.findById(decoded.id);
-        if (user) userInterests = user.interests || [];
+        const decoded = jwt.verify(token, accessTokenSecret);
+        const interests = await UserInterest.find({ user: decoded.id })
+          .sort({ score: -1, lastInteractedAt: -1 })
+          .select("tag -_id");
+        userInterests = interests.map((item) => item.tag);
       } catch (err) {
         // console.log("Invalid token detected, serving general feed");
       }
@@ -781,10 +821,17 @@ server.post("/latest-blogs", async (req, res) => {
 
     // Check following status for each author if user is logged in
     let currentUser = null;
+    let followingAuthorIds = new Set();
     if (token) {
       try {
-        const decoded = jwt.verify(token, process.env.SECRET_ACCESS_KEY);
-        currentUser = await User.findById(decoded.id);
+        const decoded = jwt.verify(token, accessTokenSecret);
+        currentUser = { _id: decoded.id };
+        const followingDocs = await UserFollow.find({ follower: decoded.id }).select(
+          "following -_id"
+        );
+        followingAuthorIds = new Set(
+          followingDocs.map((item) => item.following.toString())
+        );
       } catch (err) {
         // ignore
       }
@@ -792,7 +839,7 @@ server.post("/latest-blogs", async (req, res) => {
 
     const filteredBlogs = nonAdminBlogs.slice((page - 1) * maxLimit, page * maxLimit).map(blog => {
       let isFollowingAuthor = false;
-      if (currentUser && currentUser.following.includes(blog.author._id)) {
+      if (currentUser && followingAuthorIds.has(blog.author._id.toString())) {
         isFollowingAuthor = true;
       }
       return { ...blog.toObject(), isFollowingAuthor };
@@ -919,13 +966,9 @@ server.post("/get-profile", (req, res) => {
   let { username } = req.body;
 
   User.findOne({ "personal_info.username": username })
-    .select("-personal_info.password -google_auth -updatedAt -blogs")
+    .select("-personal_info.password -google_auth -updatedAt")
     .then((user) => {
       if (!user) return res.status(404).json({ error: "User not found" });
-
-      // Recalculate counts based on actual array lengths to ensure accuracy
-      user.account_info.total_followers = user.followers ? user.followers.length : 0;
-      user.account_info.total_following = user.following ? user.following.length : 0;
 
       return res.status(200).json(user);
     })
@@ -1120,7 +1163,6 @@ server.post("/create-blog", verifyJWT, (req, res) => {
           { _id: authorId },
           {
             $inc: { "account_info.total_posts": incrementVal },
-            $push: { blogs: blog._id },
           }
         )
           .then((user) => {
@@ -1182,9 +1224,19 @@ server.post("/track-interest", verifyJWT, (req, res) => {
   let { tags } = req.body;
 
   if (tags && tags.length) {
-    User.findOneAndUpdate(
-      { _id: user_id },
-      { $addToSet: { interests: { $each: tags } } }
+    const normalizedTags = [...new Set(tags.map((tag) => tag?.trim()?.toLowerCase()).filter(Boolean))];
+
+    Promise.all(
+      normalizedTags.map((tag) =>
+        UserInterest.findOneAndUpdate(
+          { user: user_id, tag },
+          {
+            $inc: { score: 1 },
+            $set: { lastInteractedAt: new Date() },
+          },
+          { upsert: true, new: true }
+        )
+      )
     )
       .then(() => {
         return res.status(200).json({ status: "done" });
@@ -1836,7 +1888,7 @@ server.post("/delete-blog", verifyJWT, (req, res) => {
 
       Comment.deleteMany({ blog_id: blog._id }).then(data => console.log('comments deleted'));
 
-      User.findOneAndUpdate({ _id: user_id }, { $pull: { blogs: blog._id }, $inc: { "account_info.total_posts": -1 } })
+      User.findOneAndUpdate({ _id: user_id }, { $inc: { "account_info.total_posts": -1 } })
         .then(user => console.log('Blog deleted'));
 
       return res.status(200).json({ status: 'done' });

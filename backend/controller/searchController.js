@@ -1,12 +1,16 @@
 import axios from 'axios';
 import { search } from 'duck-duck-scrape';
+import {
+    googleSearchConfig,
+    scholarSearchConfig,
+} from "../config/search.js";
 
-const googleSearchUrl = process.env.GOOGLE_SEARCH_URL;
-const googleApiKey = process.env.GOOGLE_API_KEY;
-const googleCx = process.env.GOOGLE_CX;
+const googleSearchUrl = googleSearchConfig.url;
+const googleApiKey = googleSearchConfig.apiKey;
+const googleCx = googleSearchConfig.cx;
 
-const api_key = '673059586bacfc160ce4192e';
-const url = 'https://api.scrapingdog.com/google_scholar/';
+const api_key = scholarSearchConfig.apiKey;
+const url = scholarSearchConfig.url;
 
 
 // search one keyword 
@@ -78,9 +82,9 @@ export const googleScholarSearchOne = async (req, res) => {
             params: {
                 api_key: api_key,
                 query: query,
-                language: 'vi',
+                language: scholarSearchConfig.language,
                 page: 0,
-                results: 10,
+                results: scholarSearchConfig.results,
             },
         });
         res.status(200).json(response.data);

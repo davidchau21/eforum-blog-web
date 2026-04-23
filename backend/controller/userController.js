@@ -1,5 +1,6 @@
 import User from "../Schema/User.js";
 import Notification from "../Schema/Notification.js";
+import UserFollow from "../Schema/UserFollow.js";
 import { setSocketId } from "../socket/socket.js";
 import EventEmitter from "eventemitter3";
 import bcrypt from "bcrypt";
@@ -237,17 +238,20 @@ export const followUser = async (req, res) => {
   }
 
   try {
-    let user = await User.findById(user_id);
-    let isFollowing = user.following.includes(target_id);
+    const isFollowing = await UserFollow.exists({
+      follower: user_id,
+      following: target_id,
+    });
 
     if (isFollowing) {
-      // Unfollow
+      await UserFollow.findOneAndDelete({
+        follower: user_id,
+        following: target_id,
+      });
       await User.findByIdAndUpdate(user_id, {
-        $pull: { following: target_id },
         $inc: { "account_info.total_following": -1 },
       });
       await User.findByIdAndUpdate(target_id, {
-        $pull: { followers: user_id },
         $inc: { "account_info.total_followers": -1 },
       });
 
@@ -260,13 +264,19 @@ export const followUser = async (req, res) => {
 
       return res.status(200).json({ followed_status: false });
     } else {
-      // Follow
+      const targetUser = await User.exists({ _id: target_id });
+      if (!targetUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      await UserFollow.create({
+        follower: user_id,
+        following: target_id,
+      });
       await User.findByIdAndUpdate(user_id, {
-        $addToSet: { following: target_id },
         $inc: { "account_info.total_following": 1 },
       });
       await User.findByIdAndUpdate(target_id, {
-        $addToSet: { followers: user_id },
         $inc: { "account_info.total_followers": 1 },
       });
 
@@ -288,9 +298,11 @@ export const getFollowingStatus = async (req, res) => {
   let { target_id } = req.body;
 
   try {
-    let user = await User.findById(user_id);
-    let isFollowing = user.following.includes(target_id);
-    return res.status(200).json({ followed_status: isFollowing });
+    const isFollowing = await UserFollow.exists({
+      follower: user_id,
+      following: target_id,
+    });
+    return res.status(200).json({ followed_status: !!isFollowing });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -302,13 +314,19 @@ export const getFollowers = async (req, res) => {
   limit = parseInt(limit);
 
   try {
-    const user = await User.findById(user_id);
+    const user = await User.exists({ _id: user_id });
     if (!user) return res.status(404).json({ error: "User not found" });
 
+    const followerDocs = await UserFollow.find({ following: user_id })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("follower -_id");
+
+    const followerIds = followerDocs.map((item) => item.follower);
+
     const followers = await User.aggregate([
-      { $match: { _id: { $in: user.followers } } },
-      { $skip: (page - 1) * limit },
-      { $limit: limit },
+      { $match: { _id: { $in: followerIds } } },
       {
         $project: {
           "personal_info.fullname": 1,
@@ -319,7 +337,14 @@ export const getFollowers = async (req, res) => {
       }
     ]);
 
-    return res.status(200).json({ followers });
+    const followerMap = new Map(
+      followers.map((item) => [item._id.toString(), item])
+    );
+    const orderedFollowers = followerIds
+      .map((id) => followerMap.get(id.toString()))
+      .filter(Boolean);
+
+    return res.status(200).json({ followers: orderedFollowers });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
@@ -331,13 +356,19 @@ export const getFollowing = async (req, res) => {
   limit = parseInt(limit);
 
   try {
-    const user = await User.findById(user_id);
+    const user = await User.exists({ _id: user_id });
     if (!user) return res.status(404).json({ error: "User not found" });
 
+    const followingDocs = await UserFollow.find({ follower: user_id })
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("following -_id");
+
+    const followingIds = followingDocs.map((item) => item.following);
+
     const following = await User.aggregate([
-      { $match: { _id: { $in: user.following } } },
-      { $skip: (page - 1) * limit },
-      { $limit: limit },
+      { $match: { _id: { $in: followingIds } } },
       {
         $project: {
           "personal_info.fullname": 1,
@@ -348,8 +379,14 @@ export const getFollowing = async (req, res) => {
       }
     ]);
 
+    const followingMap = new Map(
+      following.map((item) => [item._id.toString(), item])
+    );
+    const orderedFollowing = followingIds
+      .map((id) => followingMap.get(id.toString()))
+      .filter(Boolean);
 
-    return res.status(200).json({ following });
+    return res.status(200).json({ following: orderedFollowing });
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }

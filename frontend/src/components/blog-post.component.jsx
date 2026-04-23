@@ -84,6 +84,7 @@ const BlogPostCard = ({ content, author }) => {
   const [localLikes, setLocalLikes] = useState(total_likes);
   const [localShares, setLocalShares] = useState(total_share);
   const [isLikedByUser, setLikedByUser] = useState(false);
+  const [isSavedByUser, setSavedByUser] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
 
   let urlShare = window.location.origin + `/blog/${id}`;
@@ -100,8 +101,19 @@ const BlogPostCard = ({ content, author }) => {
         )
         .then(({ data: { result } }) => setLikedByUser(Boolean(result)))
         .catch((err) => console.log(err));
+
+      axios
+        .post(
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/is-saved-by-user",
+          { blog_id: id },
+          {
+            headers: { Authorization: `Bearer ${access_token}` },
+          },
+        )
+        .then(({ data: { result } }) => setSavedByUser(Boolean(result)))
+        .catch((err) => console.log(err));
     }
-  }, [access_token, content._id]);
+  }, [access_token, content._id, id]);
 
   const handleLike = (e) => {
     e.preventDefault();
@@ -128,6 +140,34 @@ const BlogPostCard = ({ content, author }) => {
     e.preventDefault();
     e.stopPropagation();
     setShowShareOptions((prev) => !prev);
+  };
+
+  const handleSave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!access_token) {
+      return toast.error("Vui lòng đăng nhập để lưu bài viết");
+    }
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/save-blog",
+        { blog_id: id },
+        {
+          headers: { Authorization: `Bearer ${access_token}` },
+        },
+      )
+      .then(({ data }) => {
+        setSavedByUser(data.saved_status);
+        toast.success(
+          data.saved_status ? "Đã lưu bài viết" : "Đã bỏ lưu bài viết",
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Không thể lưu bài viết");
+      });
   };
 
   const handleShare = (shareType) => {
@@ -265,9 +305,22 @@ const BlogPostCard = ({ content, author }) => {
                 <span className="font-medium">{total_comments}</span>
               </button>
             </div>
-            <button className="hover:text-indigo-500 transition-colors" onClick={handleShareClick}>
-              <i className="fi fi-rr-share text-sm"></i>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                className={`transition-colors ${isSavedByUser ? "text-indigo-600" : "hover:text-indigo-500"}`}
+                onClick={handleSave}
+              >
+                <i
+                  className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-sm`}
+                ></i>
+              </button>
+              <button
+                className="hover:text-indigo-500 transition-colors"
+                onClick={handleShareClick}
+              >
+                <i className="fi fi-rr-share text-sm"></i>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -429,9 +482,12 @@ const BlogPostCard = ({ content, author }) => {
             )}
           </div>
 
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 transition-all ml-auto font-medium">
-            <i className="fi fi-rr-bookmark text-[15px] leading-none"></i>
-            <span className="hidden sm:inline">Save</span>
+          <button 
+            onClick={handleSave}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ml-auto font-medium ${isSavedByUser ? "bg-indigo-50 text-indigo-700" : "hover:bg-indigo-50 hover:text-indigo-600"}`}
+          >
+            <i className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-[15px] leading-none`}></i>
+            <span className="hidden sm:inline">{isSavedByUser ? "Saved" : "Save"}</span>
           </button>
         </div>
       </div>
