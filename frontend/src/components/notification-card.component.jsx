@@ -54,8 +54,8 @@ const NotificationCard = ({ data, index, notificationState }) => {
 
     const endpoint =
       type === "comment" || type === "reply"
-        ? "/delete-comment"
-        : "/delete-notification";
+        ? "/comments/delete"
+        : "/notifications/delete";
 
     axios
       .post(

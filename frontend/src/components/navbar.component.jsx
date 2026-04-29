@@ -57,7 +57,7 @@ const Navbar = () => {
   useEffect(() => {
     if (access_token) {
       axios
-        .get(import.meta.env.VITE_SERVER_DOMAIN + "/new-notification", {
+        .get(import.meta.env.VITE_SERVER_DOMAIN + "/notifications/new", {
           headers: {
             Authorization: `Bearer ${access_token}`,
           },
@@ -70,7 +70,7 @@ const Navbar = () => {
         });
 
       axios
-        .get(import.meta.env.VITE_SERVER_DOMAIN + "/new-messages", {
+        .get(import.meta.env.VITE_SERVER_DOMAIN + "/message/new-messages", {
           headers: {
             Authorization: `Bearer ${access_token}`,
           },

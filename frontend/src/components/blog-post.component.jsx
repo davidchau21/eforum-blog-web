@@ -93,7 +93,7 @@ const BlogPostCard = ({ content, author }) => {
     if (access_token && content._id) {
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/isliked-by-user",
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/isliked-by-user",
           { _id: content._id },
           {
             headers: { Authorization: `Bearer ${access_token}` },
@@ -124,7 +124,7 @@ const BlogPostCard = ({ content, author }) => {
       setLocalLikes((prev) => (newStatus ? prev + 1 : prev - 1));
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/like-blog",
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/like-blog",
           { _id: content._id, islikedByUser: isLikedByUser },
           {
             headers: { Authorization: `Bearer ${access_token}` },
@@ -182,7 +182,7 @@ const BlogPostCard = ({ content, author }) => {
       share_img: banner || "",
     };
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/share-blog", payload, {
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/share-blog", payload, {
         headers: { Authorization: `Bearer ${access_token}` },
       })
       .then(({ data }) => {

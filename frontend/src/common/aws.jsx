@@ -10,13 +10,13 @@ export const uploadImage = async (img) => {
   try {
     // Bước 1: Gọi API để lấy URL ký từ backend (hỗ trợ Supabase)
     const { data } = await axios.get(
-      import.meta.env.VITE_SERVER_DOMAIN + "/get-upload-url",
+      import.meta.env.VITE_SERVER_DOMAIN + "/files/get-upload-url",
     );
     const { uploadURL, publicURL } = data;
 
     /* 
         // --- Logic cũ của AWS S3 (Đã comment lại) ---
-        // const { data: { uploadURL: s3UploadURL } } = await axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/get-upload-url");
+        // const { data: { uploadURL: s3UploadURL } } = await axios.get(import.meta.env.VITE_SERVER_DOMAIN + "/files/get-upload-url");
         // await axios.put(s3UploadURL, img, {
         //     headers: { 'Content-Type': 'image/jpeg' }
         // });

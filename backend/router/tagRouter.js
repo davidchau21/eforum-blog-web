@@ -1,19 +1,11 @@
 import express from "express";
-import { isAdmin, isAuthenticate } from "../middleware/verifyToken.js";
-import {
-  createTag,
-  deleteTag,
-  getAllTags,
-  getTagById,
-  updateTag,
-} from "../controller/tagController.js";
+import { isAuthenticate } from "../middleware/verifyToken.js";
+import tagController from "../controller/tag.controller.js";
 
 const tagRouter = express.Router();
 
-tagRouter.get("/", getAllTags);
-tagRouter.get("/:id", isAuthenticate, getTagById);
-tagRouter.post("/", createTag);
-tagRouter.put("/:id", isAdmin, updateTag);
-tagRouter.delete("/:id", isAdmin, deleteTag);
+tagRouter.get("/", (req, res) => tagController.getAllTags(req, res));
+tagRouter.get("/:id", isAuthenticate, (req, res) => tagController.getTagById(req, res));
+tagRouter.post("/", (req, res) => tagController.createTag(req, res));
 
 export default tagRouter;

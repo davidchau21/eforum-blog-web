@@ -24,14 +24,14 @@ const SearchPage = () => {
 
     const searchBlogs = ({ page = 1, create_new_arr = false }) => {
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", { query, page })
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/search-blogs", { query, page })
         .then( async ({ data }) => {
 
             let formatedData = await filterPaginationData({
                 state: blogs,
                 data: data.blogs,
                 page,
-                countRoute: "/search-blogs-count",
+                countRoute: "/blogs/search-blogs-count",
                 data_to_send: { query },
                 create_new_arr
             })
@@ -45,7 +45,7 @@ const SearchPage = () => {
     }
 
     const fetchUsers = () => {
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/search-users", { query })
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/users/search-users", { query })
         .then(({ data : { users } } ) => {
             setUsers(users);
         })

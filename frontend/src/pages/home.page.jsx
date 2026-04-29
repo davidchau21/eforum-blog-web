@@ -1,8 +1,10 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import axios from "axios";
 import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
 import { useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Loader from "../components/loader.component";
 import {
   BlogCardSkeleton,
@@ -27,10 +29,20 @@ const HomePage = () => {
   const [followingBlogs, setFollowingBlogs] = useState(null);
   const [trendingBlogs, setTrendingBlogs] = useState(null);
   const [adminBlogs, setAdminBlogs] = useState(null);
-  const [pageState, setPageState] = useState("feed");
   const { userAuth } = useContext(UserContext);
   const { language, access_token } = userAuth;
   const translations = getTranslations(language);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Determine pageState from URL
+  const getPageStateFromURL = () => {
+    if (location.pathname === "/feed/following") return translations.following;
+    if (location.pathname === "/feed/saved") return translations.savedBlogs;
+    return "feed";
+  };
+
+  const [pageState, setPageState] = useState(getPageStateFromURL());
   const [tags, setTags] = useState([]);
   const [adminAlert, setAdminAlert] = useState(null);
   const [showWriteModal, setShowWriteModal] = useState(false);
@@ -66,7 +78,7 @@ const HomePage = () => {
 
   const fetchAdminBlogs = () => {
     axios
-      .get(import.meta.env.VITE_SERVER_DOMAIN + "/admin-blogs")
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/admin-blogs")
       .then(({ data }) => setAdminBlogs(data.blogs))
       .catch(console.log);
   };
@@ -74,7 +86,7 @@ const HomePage = () => {
   const fetchLatestBlogs = ({ page = 1 }) => {
     axios
       .post(
-        import.meta.env.VITE_SERVER_DOMAIN + "/latest-blogs",
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/latest-blogs",
         { page },
         {
           headers: {
@@ -87,8 +99,8 @@ const HomePage = () => {
           state: blogs,
           data: data.blogs,
           page,
-          countRoute: "/all-latest-blogs-count",
-          data_to_send: access_token ? { access_token } : {}, // Ensure count route also has access to token if needed
+          countRoute: "/blogs/all-latest-blogs-count",
+          user: access_token,
         });
         setBlogs(formattedData);
       })
@@ -98,7 +110,7 @@ const HomePage = () => {
   const fetchFollowingBlogs = ({ page = 1 }) => {
     axios
       .post(
-        import.meta.env.VITE_SERVER_DOMAIN + "/following-blogs",
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-user-blogs",
         { page },
         {
           headers: {
@@ -111,7 +123,8 @@ const HomePage = () => {
           state: followingBlogs,
           data: data.blogs,
           page,
-          countRoute: "/following-blogs-count",
+          countRoute: "/blogs/get-user-blogs-count",
+          user: access_token,
         });
         setFollowingBlogs(formattedData);
       })
@@ -120,7 +133,7 @@ const HomePage = () => {
 
   const fetchBlogsByCategory = ({ page = 1 }) => {
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/search-blogs", {
         tag: pageState,
         page,
       })
@@ -129,7 +142,7 @@ const HomePage = () => {
           state: blogs,
           data: data.blogs,
           page,
-          countRoute: "/search-blogs-count",
+          countRoute: "/blogs/search-blogs-count",
           data_to_send: { tag: pageState },
         });
         setBlogs(formattedData);
@@ -139,31 +152,29 @@ const HomePage = () => {
 
   const fetchSavedBlogs = ({ page = 1 }) => {
     axios
-      .get(
-        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-saved-blogs",
-        { page },
-        {
-          headers: {
-            Authorization: `Bearer ${access_token}`,
-          },
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-saved-blogs", {
+        params: { page },
+        headers: {
+          Authorization: `Bearer ${access_token}`,
         },
-      )
+      })
       .then(async ({ data }) => {
         const formattedData = await filterPaginationData({
           state: blogs,
           data: data.blogs,
           page,
           countRoute: "/blogs/get-saved-blogs-count",
-          data_to_send: { access_token },
+          user: access_token,
         });
         setBlogs(formattedData);
+        console.log("blogs", formattedData);
       })
       .catch(console.log);
   };
 
   const fetchTrendingBlogs = () => {
     axios
-      .get(import.meta.env.VITE_SERVER_DOMAIN + "/trending-blogs")
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/trending-blogs")
       .then(({ data }) => setTrendingBlogs(data.blogs))
       .catch(console.log);
   };
@@ -174,14 +185,13 @@ const HomePage = () => {
     setPageState(pageState === category ? "feed" : category);
   };
 
-  const loadBlogByTag = (e) => {
-    const tag = e.target.value;
-    setBlogs(null);
-    setPageState(pageState === tag ? "feed" : tag);
-  };
+  useEffect(() => {
+    setPageState(getPageStateFromURL());
+  }, [location.pathname]);
 
   useEffect(() => {
     activeTabRef.current.click();
+    setBlogs(null); // Reset blogs for the new tab
     if (pageState === "feed") {
       fetchLatestBlogs({ page: 1 });
     } else if (pageState === translations.following) {
@@ -226,7 +236,7 @@ const HomePage = () => {
 
     if (!hasShownAlert) {
       axios
-        .get(import.meta.env.VITE_SERVER_DOMAIN + "/alert", {
+        .get(import.meta.env.VITE_SERVER_DOMAIN + "/notifications/alert", {
           headers: { Authorization: `Bearer ${access_token}` },
         })
         .then(({ data }) => {
@@ -315,8 +325,7 @@ const HomePage = () => {
           <nav className="px-3 py-3 space-y-0.5">
             <button
               onClick={() => {
-                setPageState("feed");
-                activeTabRef.current.click();
+                navigate("/feed");
               }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === "feed" ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
             >
@@ -342,9 +351,8 @@ const HomePage = () => {
             </button>
             <button
               onClick={() => {
-                if (!access_token) return setPageState("feed");
-                setBlogs(null);
-                setPageState(translations.savedBlogs);
+                if (!access_token) return navigate("/signin");
+                navigate("/feed/saved");
               }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === translations.savedBlogs ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
             >

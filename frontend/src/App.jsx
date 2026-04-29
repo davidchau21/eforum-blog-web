@@ -153,7 +153,10 @@ const App = () => {
                   }
                 />
                 <Route path="/" element={<Navbar />}>
-                  <Route path="feed" element={<HomePage />} />
+                  <Route path="feed" element={<HomePage />}>
+                    <Route path="following" element={<HomePage />} />
+                    <Route path="saved" element={<HomePage />} />
+                  </Route>
                   <Route
                     path="dashboard"
                     element={

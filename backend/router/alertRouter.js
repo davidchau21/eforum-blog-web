@@ -1,17 +1,10 @@
 import express from "express";
-import { isAdmin, isAuthenticate } from "../middleware/verifyToken.js";
-import {
-  createAlert,
-  deleteAlert,
-  getAlertById,
-  getAllAlert,
-} from "../controller/alertController.js";
+import { isAuthenticate } from "../middleware/verifyToken.js";
+import alertController from "../controller/alert.controller.js";
 
 const alerRouter = express.Router();
 
-alerRouter.get("/", isAuthenticate, getAllAlert);
-alerRouter.get("/:id", isAuthenticate, getAlertById);
-alerRouter.post("/", isAdmin, createAlert);
-alerRouter.delete("/:id", isAdmin, deleteAlert);
+alerRouter.get("/", isAuthenticate, (req, res) => alertController.getAllAlerts(req, res));
+alerRouter.get("/:id", isAuthenticate, (req, res) => alertController.getAlertById(req, res));
 
 export default alerRouter;

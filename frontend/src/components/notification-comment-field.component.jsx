@@ -17,7 +17,7 @@ const NotificationCommentField = ({ _id, blog_author, index = undefined, replyin
             return toast.error("Write something to leave a comment....")
         }
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/add-comment", {
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/comments/add", {
             _id, blog_author: user_id, comment, replying_to: replyingTo, notification_id, image: null
         }, {
             headers: {

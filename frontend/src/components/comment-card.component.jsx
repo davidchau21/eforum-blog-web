@@ -106,7 +106,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     if (commentsArr[currentIndex].children.length) {
       hideReplies();
       axios
-        .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-replies", {
+        .post(import.meta.env.VITE_SERVER_DOMAIN + "/comments/get-replies", {
           _id: commentsArr[currentIndex]._id,
           skip,
         })
@@ -126,7 +126,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
   const deleteComment = () => {
     axios
       .post(
-        import.meta.env.VITE_SERVER_DOMAIN + "/delete-comment",
+        import.meta.env.VITE_SERVER_DOMAIN + "/comments/delete",
         { _id },
         {
           headers: { Authorization: `Bearer ${access_token}` },
@@ -142,7 +142,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
   const toggleHideComment = () => {
     axios
       .post(
-        import.meta.env.VITE_SERVER_DOMAIN + "/hide-comment",
+        import.meta.env.VITE_SERVER_DOMAIN + "/comments/hide",
         { _id },
         {
           headers: { Authorization: `Bearer ${access_token}` },

@@ -50,7 +50,7 @@ const BlogPage = () => {
     if (access_token && tags && tags.length) {
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/track-interest",
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/track-interest",
           { tags },
           {
             headers: {
@@ -101,7 +101,7 @@ const BlogPage = () => {
 
   const fetchBlog = () => {
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id })
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-blog", { blog_id })
       .then(async ({ data: { blog } }) => {
         blog.comments = await fetchComments({
           blog_id: blog._id,
@@ -113,7 +113,7 @@ const BlogPage = () => {
         trackInterest(blog.tags);
 
         axios
-          .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
+          .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/search-blogs", {
             tag: blog.tags[0],
             limit: 3,
             eliminate_blog: blog_id,

@@ -50,7 +50,7 @@ const CommentField = ({
       return new Promise((resolve, reject) => {
         if (!image) return resolve(null);
         axios
-          .get(import.meta.env.VITE_SERVER_DOMAIN + "/get-upload-url")
+          .get(import.meta.env.VITE_SERVER_DOMAIN + "/files/get-upload-url")
           .then((response) => {
             const uploadURL = response.data.uploadURL;
             axios
@@ -74,7 +74,7 @@ const CommentField = ({
       .then((imageUrl) => {
         axios
           .post(
-            import.meta.env.VITE_SERVER_DOMAIN + "/add-comment",
+            import.meta.env.VITE_SERVER_DOMAIN + "/comments/add",
             {
               _id,
               blog_author,

@@ -1,10 +1,10 @@
 import express from "express";
-import { googleSearchOne, duckduckgoSearchOne, googleScholarSearchOne} from "../controller/searchController.js";
+import searchController from "../controller/search.controller.js";
 
 const router = express.Router();
 
-router.get('/google', googleSearchOne);
-router.get('/duckduckgo', duckduckgoSearchOne);
-router.get('/scholar', googleScholarSearchOne);
+router.get('/google', (req, res) => searchController.googleSearch(req, res));
+router.get('/duckduckgo', (req, res) => searchController.duckduckgoSearch(req, res));
+router.get('/scholar', (req, res) => searchController.googleScholarSearch(req, res));
 
 export default router;

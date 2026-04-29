@@ -56,7 +56,7 @@ const BlogInteraction = () => {
     if (access_token) {
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/isliked-by-user",
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/isliked-by-user",
           { _id },
           {
             headers: { Authorization: `Bearer ${access_token}` },
@@ -85,7 +85,7 @@ const BlogInteraction = () => {
       setBlog({ ...blog, activity: { ...activity, total_likes } });
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/like-blog",
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/like-blog",
           { _id, islikedByUser },
           {
             headers: { Authorization: `Bearer ${access_token}` },
@@ -134,7 +134,7 @@ const BlogInteraction = () => {
       share_img: blog.banner || "",
     };
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/share-blog", payload, {
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/share-blog", payload, {
         headers: { Authorization: `Bearer ${access_token}` },
       })
       .then(({ data }) => {
