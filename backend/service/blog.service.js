@@ -194,16 +194,45 @@ class BlogService {
   }
 
   async getAdminBlogs() {
-    const blogs = await Blog.find({ draft: false, isActive: true })
-      .populate({
-        path: "author",
-        match: { "personal_info.role": "ADMIN" },
-        select: "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role",
-      })
-      .select("title des content banner activity publishedAt blog_id tags")
-      .sort({ publishedAt: -1 });
+    const admins = await User.find({ "personal_info.role": "ADMIN" }).select("_id");
+    const adminIds = admins.map((admin) => admin._id);
 
-    return { blogs: blogs.filter((blog) => blog.author !== null) };
+    const blogs = await Blog.find({
+      author: { $in: adminIds },
+      draft: false,
+      isActive: true,
+    })
+      .populate(
+        "author",
+        "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role"
+      )
+      .select("title des banner activity publishedAt blog_id tags")
+      .sort({ publishedAt: -1 })
+      .limit(10);
+
+    return { blogs };
+  }
+
+  async getTrendingTopics() {
+    const topics = await Blog.aggregate([
+      { $match: { draft: false, isActive: true } },
+      { $unwind: "$tags" },
+      { $group: { _id: "$tags", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+    ]);
+    return topics.map((topic) => topic._id);
+  }
+
+  async getTopContributors() {
+    const contributors = await User.find({ "personal_info.role": { $ne: "ADMIN" } })
+      .select(
+        "personal_info.fullname personal_info.username personal_info.profile_img account_info.total_posts account_info.total_reads"
+      )
+      .sort({ "account_info.total_reads": -1, "account_info.total_posts": -1 })
+      .limit(5);
+
+    return contributors;
   }
 
   async getAllLatestBlogsCount() {
@@ -489,7 +518,7 @@ class BlogService {
 
   async createCollection(userId, name) {
     if (!name || !name.trim()) throw new Error("Tên bộ sưu tập không được để trống");
-    
+
     const existing = await Collection.findOne({ user: userId, name: name.trim() });
     if (existing) throw new Error("Tên bộ sưu tập đã tồn tại");
 
@@ -534,7 +563,7 @@ class BlogService {
 
     // "default" means null
     const targetCollectionId = collection_id === "default" ? null : collection_id;
-    
+
     if (targetCollectionId) {
       const collectionExists = await Collection.findOne({ _id: targetCollectionId, user: userId });
       if (!collectionExists) throw new Error("Bộ sưu tập không tồn tại");

@@ -29,6 +29,8 @@ const HomePage = () => {
   const [followingBlogs, setFollowingBlogs] = useState(null);
   const [trendingBlogs, setTrendingBlogs] = useState(null);
   const [adminBlogs, setAdminBlogs] = useState(null);
+  const [trendingTopics, setTrendingTopics] = useState([]);
+  const [topContributors, setTopContributors] = useState([]);
   const { userAuth } = useContext(UserContext);
   const { language, access_token } = userAuth;
   const translations = getTranslations(language);
@@ -159,6 +161,20 @@ const HomePage = () => {
       .catch(console.log);
   };
 
+  const fetchTrendingTopics = () => {
+    axios
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/trending-topics")
+      .then(({ data }) => setTrendingTopics(data.topics))
+      .catch(console.log);
+  };
+
+  const fetchTopContributors = () => {
+    axios
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/top-contributors")
+      .then(({ data }) => setTopContributors(data.contributors))
+      .catch(console.log);
+  };
+
   const loadBlogByCategory = (e) => {
     const category = e.target.innerText;
     setBlogs(null);
@@ -185,6 +201,8 @@ const HomePage = () => {
     }
     if (!trendingBlogs) fetchTrendingBlogs();
     if (!adminBlogs) fetchAdminBlogs();
+    fetchTrendingTopics();
+    fetchTopContributors();
   }, [pageState, access_token]);
 
   useEffect(() => {
@@ -521,27 +539,25 @@ const HomePage = () => {
               🔥 Trending Topics
             </p>
             <div className="space-y-3">
-              {tags.slice(0, 4).map((tag, index) => (
-                <div
-                  key={index}
-                  className="group cursor-pointer"
-                  onClick={() => {
-                    setPageState(tag.tag_name);
-                    activeTabRef.current.click();
-                  }}
-                >
-                  <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
-                    Subject • Trending
+              {trendingTopics.length ? (
+                trendingTopics.map((tag, index) => (
+                  <div
+                    key={index}
+                    className="group cursor-pointer"
+                    onClick={() => {
+                      setPageState(tag);
+                      activeTabRef.current.click();
+                    }}
+                  >
+                    <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
+                      Subject • Trending
+                    </div>
+                    <div className="font-semibold text-slate-700 text-sm capitalize group-hover:text-indigo-600 transition-colors">
+                      #{tag}
+                    </div>
                   </div>
-                  <div className="font-semibold text-slate-700 text-sm capitalize group-hover:text-indigo-600 transition-colors">
-                    #{tag.tag_name}
-                  </div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">
-                    {Math.floor(Math.random() * 900 + 100)} posts
-                  </div>
-                </div>
-              ))}
-              {tags.length === 0 && (
+                ))
+              ) : (
                 <div className="text-slate-400 text-sm normal-case">
                   Loading topics...
                 </div>
@@ -555,43 +571,45 @@ const HomePage = () => {
               🏆 Top Contributors
             </p>
             <div className="space-y-3">
-              <div className="flex items-center gap-3 group cursor-pointer">
-                <img
-                  src="https://i.pravatar.cc/150?img=11"
-                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">
-                    Prof. E. Vance
+              {topContributors.length ? (
+                topContributors.map((user, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 group cursor-pointer"
+                    onClick={() => navigate(`/user/${user.personal_info.username}`)}
+                  >
+                    <img
+                      src={user.personal_info.profile_img}
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                        {user.personal_info.fullname}
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        {user.account_info.total_reads > 1000
+                          ? (user.account_info.total_reads / 1000).toFixed(1) + "K"
+                          : user.account_info.total_reads}{" "}
+                        REP
+                      </div>
+                    </div>
+                    <button className="w-7 h-7 bg-slate-50 border border-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors">
+                      <i className="fi fi-rr-user-add text-xs mt-0.5"></i>
+                    </button>
                   </div>
-                  <div className="text-[11px] text-slate-400">12.4K REP</div>
+                ))
+              ) : (
+                <div className="text-slate-400 text-sm normal-case">
+                  Loading contributors...
                 </div>
-                <button className="w-7 h-7 bg-slate-50 border border-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors">
-                  <i className="fi fi-rr-user-add text-xs mt-0.5"></i>
-                </button>
-              </div>
-              <div className="flex items-center gap-3 group cursor-pointer">
-                <img
-                  src="https://i.pravatar.cc/150?img=33"
-                  className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">
-                    Alex Rider
-                  </div>
-                  <div className="text-[11px] text-slate-400">8.9K REP</div>
-                </div>
-                <button className="w-7 h-7 bg-slate-50 border border-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors">
-                  <i className="fi fi-rr-user-add text-xs mt-0.5"></i>
-                </button>
-              </div>
+              )}
             </div>
           </div>
 
           {/* Admin Posts */}
           <div className="px-5 py-4 border-b border-slate-100">
             <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">
-              📌 Admin Posts
+              📌 {translations.adminPosts}
             </p>
             <div className="space-y-3">
               {adminBlogs == null ? (

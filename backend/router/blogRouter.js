@@ -13,6 +13,8 @@ blogRouter.post("/search-blogs", (req, res) => userBlogController.searchBlogs(re
 blogRouter.post("/search-blogs-count", (req, res) => userBlogController.searchBlogsCount(req, res));
 blogRouter.post("/get-blog", (req, res) => userBlogController.getBlog(req, res));
 blogRouter.get("/admin-blogs", (req, res) => userBlogController.getAdminBlogs(req, res));
+blogRouter.get("/trending-topics", (req, res) => userBlogController.getTrendingTopics(req, res));
+blogRouter.get("/top-contributors", (req, res) => userBlogController.getTopContributors(req, res));
 
 // Authenticated user routes
 blogRouter.get("/list", isAuthenticate, (req, res) => adminBlogController.listBlogs(req, res));

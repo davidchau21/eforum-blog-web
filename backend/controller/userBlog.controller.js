@@ -293,6 +293,24 @@ class UserBlogController extends BaseController {
       return this.sendError(res, error.message);
     }
   }
+
+  async getTrendingTopics(req, res) {
+    try {
+      const topics = await blogService.getTrendingTopics();
+      return this.sendSuccess(res, { topics });
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async getTopContributors(req, res) {
+    try {
+      const contributors = await blogService.getTopContributors();
+      return this.sendSuccess(res, { contributors });
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
 }
 
 export default new UserBlogController();
