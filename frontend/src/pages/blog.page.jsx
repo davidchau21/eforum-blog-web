@@ -43,7 +43,7 @@ const BlogPage = () => {
   const {
     fullScreenImage,
     setFullScreenImage,
-    userAuth: { language, access_token } = {},
+    userAuth: { language, access_token, username } = {},
   } = useContext(UserContext);
 
   const trackInterest = (tags) => {
@@ -382,13 +382,17 @@ const BlogPage = () => {
                   </div>
 
                   {/* Follow Button */}
-                  <button 
-                    onClick={handleFollowAuthor}
-                    className={`w-full font-medium text-sm py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${isFollowingAuthor ? "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200" : "bg-[#111113] text-white hover:bg-slate-800 shadow-lg shadow-black/5"}`}
-                  >
-                    <i className={`fi ${isFollowingAuthor ? "fi-rr-user-check" : "fi-rr-user-add"} text-sm`}></i>
-                    {isFollowingAuthor ? "Following" : "Follow"}
-                  </button>
+                  {username !== author_username && (
+                    <button
+                      onClick={handleFollowAuthor}
+                      className={`w-full font-medium text-sm py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${isFollowingAuthor ? "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200" : "bg-[#111113] text-white hover:bg-slate-800 shadow-lg shadow-black/5"}`}
+                    >
+                      <i
+                        className={`fi ${isFollowingAuthor ? "fi-rr-user-check" : "fi-rr-user-add"} text-sm`}
+                      ></i>
+                      {isFollowingAuthor ? "Following" : "Follow"}
+                    </button>
+                  )}
                 </div>
 
                 {/* Related Stream Placeholder */}

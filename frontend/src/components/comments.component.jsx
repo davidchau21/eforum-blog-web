@@ -22,7 +22,7 @@ export const fetchComments = async ({
     })
     .then(({ data }) => {
       data.map((comment) => {
-        comment.childrenLevel = 0;
+        if (!comment.level) comment.level = 0;
       });
 
       setParentCommentCountFun((preVal) => preVal + data.length);
@@ -82,7 +82,7 @@ const CommentsContainer = () => {
               <AnimationWrapper key={i}>
                 <CommentCard
                   index={i}
-                  leftVal={comment.childrenLevel * 4}
+                  leftVal={comment.level * 4}
                   commentData={comment}
                   fetchComments={fetchComments}
                 />

@@ -16,7 +16,8 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     commentedAt,
     comment,
     _id,
-    children,
+    repliesCount,
+    level,
     isReport,
     image,
     isHidden,
@@ -50,9 +51,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
   const getParentIndex = () => {
     let startingPoint = index - 1;
     try {
-      while (
-        commentsArr[startingPoint].childrenLevel >= commentData.childrenLevel
-      ) {
+      while (commentsArr[startingPoint].level >= commentData.level) {
         startingPoint--;
       }
     } catch {
@@ -63,9 +62,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
   const removeCommentsCards = (startingPoint, isDelete = false) => {
     if (commentsArr[startingPoint]) {
-      while (
-        commentsArr[startingPoint].childrenLevel > commentData.childrenLevel
-      ) {
+      while (commentsArr[startingPoint].level > commentData.level) {
         commentsArr.splice(startingPoint, 1);
         if (!commentsArr[startingPoint]) break;
       }
@@ -74,17 +71,15 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     if (isDelete) {
       let parentIndex = getParentIndex();
       if (parentIndex != undefined) {
-        commentsArr[parentIndex].children = commentsArr[
-          parentIndex
-        ].children.filter((child) => child != _id);
-        if (!commentsArr[parentIndex].children.length) {
+        commentsArr[parentIndex].repliesCount--;
+        if (commentsArr[parentIndex].repliesCount <= 0) {
           commentsArr[parentIndex].isReplyLoaded = false;
         }
       }
       commentsArr.splice(index, 1);
     }
 
-    if (commentData.childrenLevel == 0 && isDelete) {
+    if (commentData.level == 0 && isDelete) {
       setTotalParentCommentsLoaded((preVal) => Math.max(0, preVal - 1));
     }
 
@@ -93,28 +88,26 @@ const CommentCard = ({ index, leftVal, commentData }) => {
       comments: { results: commentsArr },
       activity: {
         ...activity,
+        total_comments: activity.total_comments - (isDelete ? 1 : 0),
         total_parent_comments: Math.max(
           0,
-          total_parent_comments -
-            (commentData.childrenLevel == 0 && isDelete ? 1 : 0),
+          total_parent_comments - (commentData.level == 0 && isDelete ? 1 : 0)
         ),
       },
     });
   };
 
   const loadReplies = ({ skip = 0, currentIndex = index }) => {
-    if (commentsArr[currentIndex].children.length) {
+    if (commentsArr[currentIndex].repliesCount > 0) {
       hideReplies();
       axios
         .post(import.meta.env.VITE_SERVER_DOMAIN + "/comments/get-replies", {
           _id: commentsArr[currentIndex]._id,
           skip,
         })
-        .then(({ data: { replies } }) => {
+        .then(({ data: replies }) => {
           commentsArr[currentIndex].isReplyLoaded = true;
           for (let i = 0; i < replies.length; i++) {
-            replies[i].childrenLevel =
-              commentsArr[currentIndex].childrenLevel + 1;
             commentsArr.splice(currentIndex + 1 + i + skip, 0, replies[i]);
           }
           setBlog({ ...blog, comments: { ...comments, results: commentsArr } });
@@ -184,15 +177,13 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     );
 
     if (commentsArr[index + 1]) {
-      if (
-        commentsArr[index + 1].childrenLevel < commentsArr[index].childrenLevel
-      ) {
-        if (index - parentIndex < commentsArr[parentIndex].children.length)
+      if (commentsArr[index + 1].level < commentsArr[index].level) {
+        if (index - parentIndex < commentsArr[parentIndex].repliesCount)
           return button;
       }
     } else {
-      if (parentIndex) {
-        if (index - parentIndex < commentsArr[parentIndex].children.length)
+      if (parentIndex !== undefined) {
+        if (index - parentIndex < commentsArr[parentIndex].repliesCount)
           return button;
       }
     }
@@ -230,7 +221,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     else return publishedDate.toLocaleDateString("en-GB");
   };
 
-  const isReply = commentData.childrenLevel > 0;
+  const isReply = commentData.level > 0;
 
   const canDelete =
     username === commented_by_username || username === blog_author;
@@ -385,7 +376,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         <div className="flex items-center gap-4 mt-1">
           <button className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-rose-500 transition-colors">
             <i className="fi fi-rr-heart text-sm"></i>
-            {children.length * 7 || 0} {/* Dummy likes count */}
+            {0} {/* Placeholder for likes */}
           </button>
 
           <button
@@ -404,12 +395,12 @@ const CommentCard = ({ index, leftVal, commentData }) => {
               Hide Replies
             </button>
           ) : (
-            children.length > 0 && (
+            repliesCount > 0 && (
               <button
                 className="text-[13px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
                 onClick={loadReplies}
               >
-                {children.length} replies
+                {repliesCount} replies
               </button>
             )
           )}

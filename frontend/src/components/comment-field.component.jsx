@@ -52,12 +52,12 @@ const CommentField = ({
         axios
           .get(import.meta.env.VITE_SERVER_DOMAIN + "/files/get-upload-url")
           .then((response) => {
-            const uploadURL = response.data.uploadURL;
+            const { uploadURL, publicURL } = response.data;
             axios
               .put(uploadURL, image, {
                 headers: { "Content-Type": image.type },
               })
-              .then(() => resolve(uploadURL.split("?")[0]))
+              .then(() => resolve(publicURL))
               .catch((err) => {
                 console.error(err);
                 reject("Image upload failed");
@@ -99,10 +99,7 @@ const CommentField = ({
             let newCommentArr;
 
             if (replyingTo) {
-              if (!commentsArr[index].children)
-                commentsArr[index].children = [];
-              commentsArr[index].children.push(data._id);
-              data.childrenLevel = commentsArr[index].childrenLevel + 1;
+              commentsArr[index].repliesCount++;
               data.parentIndex = index;
               data.image = imageUrl;
               commentsArr[index].isReplyLoaded = true;
@@ -110,7 +107,6 @@ const CommentField = ({
               newCommentArr = commentsArr;
               setReplying(false);
             } else {
-              data.childrenLevel = 0;
               newCommentArr = [data, ...commentsArr];
             }
 

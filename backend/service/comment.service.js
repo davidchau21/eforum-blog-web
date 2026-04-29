@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import Comment from "../Schema/Comment.js";
 import Blog from "../Schema/Blog.js";
 import User from "../Schema/User.js";
 import Notification from "../Schema/Notification.js";
+import File from "../Schema/File.js";
 import EE from "../socket/eventManager.js";
 
 class CommentService {
@@ -9,24 +11,21 @@ class CommentService {
     const comment = await Comment.findOneAndDelete({ _id });
     if (!comment) return;
 
-    if (comment.parent) {
-      await Comment.findOneAndUpdate({ _id: comment.parent }, { $pull: { children: _id } });
-    }
-
     await Notification.findOneAndDelete({ comment: _id });
     await Notification.findOneAndUpdate({ reply: _id }, { $unset: { reply: 1 } });
 
     await Blog.findOneAndUpdate(
       { _id: comment.blog_id },
       {
-        $pull: { comments: _id },
         $inc: { "activity.total_comments": -1 },
         "activity.total_parent_comments": comment.parent ? 0 : -1,
       }
     );
 
-    if (comment.children.length) {
-      await Promise.all(comment.children.map((childId) => this.deleteCommentsRecursive(childId)));
+    // Find children using parent ID instead of children array
+    const children = await Comment.find({ parent: _id });
+    if (children.length) {
+      await Promise.all(children.map((child) => this.deleteCommentsRecursive(child._id)));
     }
   }
 
@@ -44,17 +43,34 @@ class CommentService {
       image,
     };
 
+    let level = 0;
+    let replyingToCommentDoc = null;
+
     if (replying_to) {
+      replyingToCommentDoc = await Comment.findById(replying_to);
+      if (!replyingToCommentDoc) throw new Error("Parent comment not found");
+
+      level = replyingToCommentDoc.level + 1;
+      if (level > 2) throw new Error("Chỉ cho phép trả lời bình luận tối đa 3 cấp");
+
       commentObj.parent = replying_to;
       commentObj.isReply = true;
+      commentObj.level = level;
     }
 
     const commentFile = await new Comment(commentObj).save();
 
+    if (image) {
+      await new File({
+        type: "image/comment",
+        user: userId,
+        location: image,
+      }).save();
+    }
+
     await Blog.findOneAndUpdate(
       { _id },
       {
-        $push: { comments: commentFile._id },
         $inc: {
           "activity.total_comments": 1,
           "activity.total_parent_comments": replying_to ? 0 : 1,
@@ -72,10 +88,6 @@ class CommentService {
 
     if (replying_to) {
       notificationObj.replied_on_comment = replying_to;
-      const replyingToCommentDoc = await Comment.findOneAndUpdate(
-        { _id: replying_to },
-        { $push: { children: commentFile._id } }
-      );
       notificationObj.notification_for = replyingToCommentDoc.commented_by;
     }
 
@@ -92,32 +104,37 @@ class CommentService {
       commentedAt: commentFile.commentedAt,
       _id: commentFile._id,
       user_id: userId,
-      children: commentFile.children,
       image: commentFile.image,
+      level: commentFile.level,
+      repliesCount: 0,
     };
   }
 
   async getBlogComments({ blog_id, skip }) {
-    return await Comment.find({ blog_id, isReply: false })
+    const comments = await Comment.find({ blog_id, isReply: false })
       .populate("commented_by", "personal_info.username personal_info.fullname personal_info.profile_img")
       .skip(skip)
       .limit(5)
       .sort({ commentedAt: -1 });
+
+    return await Promise.all(comments.map(async (comment) => {
+      const repliesCount = await Comment.countDocuments({ parent: comment._id });
+      return { ...comment.toObject(), repliesCount };
+    }));
   }
 
   async getReplies({ _id, skip }) {
-    const doc = await Comment.findOne({ _id })
-      .populate({
-        path: "children",
-        options: { limit: 5, skip: skip, sort: { commentedAt: -1 } },
-        populate: {
-          path: "commented_by",
-          select: "personal_info.profile_img personal_info.fullname personal_info.username",
-        },
-        select: "-blog_id -updatedAt",
-      })
-      .select("children");
-    return doc.children;
+    const replies = await Comment.find({ parent: _id })
+      .populate("commented_by", "personal_info.profile_img personal_info.fullname personal_info.username")
+      .skip(skip)
+      .limit(5)
+      .sort({ commentedAt: -1 })
+      .select("-blog_id -updatedAt");
+
+    return await Promise.all(replies.map(async (reply) => {
+      const repliesCount = await Comment.countDocuments({ parent: reply._id });
+      return { ...reply.toObject(), repliesCount };
+    }));
   }
 
   async deleteComment(userId, { _id }) {
