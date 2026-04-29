@@ -35,10 +35,8 @@ const HomePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Determine pageState from URL
   const getPageStateFromURL = () => {
     if (location.pathname === "/feed/following") return translations.following;
-    if (location.pathname === "/feed/saved") return translations.savedBlogs;
     return "feed";
   };
 
@@ -150,27 +148,9 @@ const HomePage = () => {
       .catch(console.log);
   };
 
-  const fetchSavedBlogs = ({ page = 1 }) => {
-    axios
-      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-saved-blogs", {
-        params: { page },
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      })
-      .then(async ({ data }) => {
-        const formattedData = await filterPaginationData({
-          state: blogs,
-          data: data.blogs,
-          page,
-          countRoute: "/blogs/get-saved-blogs-count",
-          user: access_token,
-        });
-        setBlogs(formattedData);
-        console.log("blogs", formattedData);
-      })
-      .catch(console.log);
-  };
+
+
+
 
   const fetchTrendingBlogs = () => {
     axios
@@ -199,12 +179,6 @@ const HomePage = () => {
         setPageState("feed");
       } else {
         fetchFollowingBlogs({ page: 1 });
-      }
-    } else if (pageState === translations.savedBlogs) {
-      if (!access_token) {
-        setPageState("feed");
-      } else {
-        fetchSavedBlogs({ page: 1 });
       }
     } else {
       fetchBlogsByCategory({ page: 1 });
@@ -461,9 +435,7 @@ const HomePage = () => {
                       fetchDataFun={
                         pageState == "feed"
                           ? fetchLatestBlogs
-                          : pageState == translations.savedBlogs
-                            ? fetchSavedBlogs
-                            : fetchBlogsByCategory
+                          : fetchBlogsByCategory
                       }
                     />
                   ) : (

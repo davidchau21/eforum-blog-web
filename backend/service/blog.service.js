@@ -1,9 +1,11 @@
+import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 import Blog from "../Schema/Blog.js";
 import User from "../Schema/User.js";
 import Notification from "../Schema/Notification.js";
 import Comment from "../Schema/Comment.js";
 import SavedBlog from "../Schema/SavedBlog.js";
+import Collection from "../Schema/Collection.js";
 import UserFollow from "../Schema/UserFollow.js";
 import UserInterest from "../Schema/UserInterest.js";
 import EE from "../socket/eventManager.js";
@@ -346,44 +348,202 @@ class BlogService {
     return await Blog.countDocuments(findQuery);
   }
 
-  async saveBlog(userId, blog_id) {
+  async saveBlog(userId, blog_id, collection_id = null) {
     const blog = await Blog.findOne({ blog_id });
     if (!blog) throw new Error("Blog not found");
 
     const existingSave = await SavedBlog.findOne({ user: userId, blog: blog._id });
     if (existingSave) {
-      await SavedBlog.findOneAndDelete({ _id: existingSave._id });
-      return { saved_status: false };
+      if (collection_id !== undefined && String(existingSave.collection_id) !== String(collection_id)) {
+        // If it's already saved but user wants to move it to a different collection
+        existingSave.collection_id = collection_id;
+        await existingSave.save();
+        return { saved_status: true, moved: true };
+      } else {
+        // Toggle save
+        await SavedBlog.findOneAndDelete({ _id: existingSave._id });
+        return { saved_status: false };
+      }
     } else {
-      await new SavedBlog({ user: userId, blog: blog._id }).save();
+      await new SavedBlog({ user: userId, blog: blog._id, collection_id }).save();
       return { saved_status: true };
     }
   }
 
-  async getSavedBlogs(userId, page = 1) {
-    let maxLimit = 5;
-    const savedBlogs = await SavedBlog.find({ user: userId })
-      .skip((page - 1) * maxLimit)
-      .limit(maxLimit)
-      .sort({ createdAt: -1 });
+  async getSavedBlogs(userId, page = 1, limit = 5, collection_id = null, type = "all", sort = "desc") {
+    const maxLimit = parseInt(limit) || 5;
+    const pageNumber = parseInt(page) || 1;
+    const skipDocs = (pageNumber - 1) * maxLimit;
 
-    if (!savedBlogs.length) return { blogs: [] };
+    const matchQuery = { user: new mongoose.Types.ObjectId(userId) };
+    if (collection_id) {
+      if (collection_id === "default") {
+        matchQuery.collection_id = null;
+      } else {
+        matchQuery.collection_id = new mongoose.Types.ObjectId(collection_id);
+      }
+    }
 
-    const blogIds = savedBlogs.map((item) => item.blog).filter((id) => id);
-    const blogs = await Blog.find({ _id: { $in: blogIds }, draft: false, isActive: true })
-      .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")
-      .select("blog_id title des banner activity tags publishedAt -_id");
+    const sortOrder = sort === "asc" ? 1 : -1;
 
-    // Preserve order
-    const sortedBlogs = blogIds
-      .map((id) => blogs.find((blog) => blog && blog._id.toString() === id.toString()))
-      .filter(Boolean);
+    const pipeline = [
+      {
+        $match: matchQuery
+      },
+      {
+        $lookup: {
+          from: "blogs",
+          localField: "blog",
+          foreignField: "_id",
+          as: "blogData"
+        }
+      },
+      {
+        $unwind: "$blogData"
+      },
+      {
+        $match: {
+          "blogData.draft": false,
+          "blogData.isActive": true
+        }
+      }
+    ];
 
-    return { blogs: sortedBlogs };
+    if (type !== "all") {
+      if (type === "image") {
+        pipeline.push({
+          $match: {
+            $or: [
+              { "blogData.banner": { $nin: ["", "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg", null] } },
+              { "blogData.content.blocks.type": "image" }
+            ]
+          }
+        });
+      } else if (type === "video") {
+        pipeline.push({
+          $match: { "blogData.content.blocks.type": "embed" }
+        });
+      } else if (type === "link") {
+        pipeline.push({
+          $match: { "blogData.content.blocks.type": "linkTool" }
+        });
+      }
+    }
+
+    pipeline.push(
+      {
+        $lookup: {
+          from: "users",
+          localField: "blogData.author",
+          foreignField: "_id",
+          as: "authorData"
+        }
+      },
+      {
+        $unwind: "$authorData"
+      },
+      {
+        $sort: { createdAt: sortOrder }
+      },
+      {
+        $project: {
+          _id: "$blogData._id",
+          blog_id: "$blogData.blog_id",
+          title: "$blogData.title",
+          des: "$blogData.des",
+          banner: "$blogData.banner",
+          activity: "$blogData.activity",
+          tags: "$blogData.tags",
+          publishedAt: "$blogData.publishedAt",
+          collection_id: 1,
+          author: {
+            _id: "$authorData._id",
+            personal_info: {
+              profile_img: "$authorData.personal_info.profile_img",
+              username: "$authorData.personal_info.username",
+              fullname: "$authorData.personal_info.fullname"
+            }
+          }
+        }
+      },
+      {
+        $facet: {
+          metadata: [{ $count: "totalDocs" }],
+          data: [{ $skip: skipDocs }, { $limit: maxLimit }]
+        }
+      }
+    );
+
+    const result = await SavedBlog.aggregate(pipeline);
+    const totalDocs = result[0].metadata[0]?.totalDocs || 0;
+    const blogs = result[0].data;
+
+    return { blogs, total: totalDocs, limit: maxLimit, page: pageNumber };
   }
 
-  async getSavedBlogsCount(userId) {
-    return await SavedBlog.countDocuments({ user: userId });
+  // --- Collection Methods ---
+  async getCollections(userId) {
+    const collections = await Collection.find({ user: userId }).sort({ createdAt: -1 });
+    return { collections };
+  }
+
+  async createCollection(userId, name) {
+    if (!name || !name.trim()) throw new Error("Tên bộ sưu tập không được để trống");
+    
+    const existing = await Collection.findOne({ user: userId, name: name.trim() });
+    if (existing) throw new Error("Tên bộ sưu tập đã tồn tại");
+
+    const newCollection = await new Collection({ user: userId, name: name.trim() }).save();
+    return { collection: newCollection, message: "Tạo bộ sưu tập thành công" };
+  }
+
+  async updateCollection(userId, collection_id, name) {
+    if (!name || !name.trim()) throw new Error("Tên bộ sưu tập không được để trống");
+
+    const existing = await Collection.findOne({ user: userId, name: name.trim(), _id: { $ne: collection_id } });
+    if (existing) throw new Error("Tên bộ sưu tập đã tồn tại");
+
+    const updated = await Collection.findOneAndUpdate(
+      { _id: collection_id, user: userId },
+      { $set: { name: name.trim() } },
+      { new: true }
+    );
+    if (!updated) throw new Error("Bộ sưu tập không tồn tại");
+    return { collection: updated, message: "Cập nhật thành công" };
+  }
+
+  async deleteCollection(userId, collection_id) {
+    const deleted = await Collection.findOneAndDelete({ _id: collection_id, user: userId });
+    if (!deleted) throw new Error("Bộ sưu tập không tồn tại");
+
+    // Move all saved blogs in this collection back to default (null)
+    await SavedBlog.updateMany(
+      { user: userId, collection_id: collection_id },
+      { $set: { collection_id: null } }
+    );
+
+    return { message: "Xóa bộ sưu tập thành công" };
+  }
+
+  async moveSavedBlog(userId, blog_id, collection_id) {
+    const blog = await Blog.findOne({ blog_id });
+    if (!blog) throw new Error("Blog not found");
+
+    const savedBlog = await SavedBlog.findOne({ user: userId, blog: blog._id });
+    if (!savedBlog) throw new Error("Chưa lưu bài viết này");
+
+    // "default" means null
+    const targetCollectionId = collection_id === "default" ? null : collection_id;
+    
+    if (targetCollectionId) {
+      const collectionExists = await Collection.findOne({ _id: targetCollectionId, user: userId });
+      if (!collectionExists) throw new Error("Bộ sưu tập không tồn tại");
+    }
+
+    savedBlog.collection_id = targetCollectionId;
+    await savedBlog.save();
+
+    return { message: "Chuyển bài viết thành công", moved: true };
   }
 
   async isSavedByUser(userId, blog_id) {

@@ -25,8 +25,19 @@ blogRouter.post("/track-interest", isAuthenticate, (req, res) => userBlogControl
 blogRouter.post("/share-blog", isAuthenticate, (req, res) => userBlogController.shareBlog(req, res));
 blogRouter.post("/like-blog", isAuthenticate, (req, res) => userBlogController.likeBlog(req, res));
 blogRouter.post("/isliked-by-user", isAuthenticate, (req, res) => userBlogController.isLikedByUser(req, res));
+
+// --- Saved Blogs and Collections ---
 blogRouter.post("/save-blog", isAuthenticate, (req, res) => userBlogController.saveBlog(req, res));
 blogRouter.post("/is-saved-by-user", isAuthenticate, (req, res) => userBlogController.isSavedByUser(req, res));
+blogRouter.get("/get-saved-blogs", isAuthenticate, (req, res) => userBlogController.getSavedBlogs(req, res));
+blogRouter.put("/save-blog/move", isAuthenticate, (req, res) => userBlogController.moveSavedBlog(req, res));
+
+blogRouter.get("/collections", isAuthenticate, (req, res) => userBlogController.getCollections(req, res));
+blogRouter.post("/collections", isAuthenticate, (req, res) => userBlogController.createCollection(req, res));
+blogRouter.put("/collections/:collection_id", isAuthenticate, (req, res) => userBlogController.updateCollection(req, res));
+blogRouter.delete("/collections/:collection_id", isAuthenticate, (req, res) => userBlogController.deleteCollection(req, res));
+// ------------------------------------
+
 blogRouter.post("/user-written-blogs", isAuthenticate, (req, res) => userBlogController.getUserWrittenBlogs(req, res));
 blogRouter.post("/user-written-blogs-count", isAuthenticate, (req, res) => userBlogController.getUserWrittenBlogsCount(req, res));
 blogRouter.post("/delete-blog", isAuthenticate, (req, res) => userBlogController.deleteBlog(req, res));

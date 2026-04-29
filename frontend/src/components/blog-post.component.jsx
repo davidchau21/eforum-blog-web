@@ -3,7 +3,7 @@
 import { getDay } from "../common/date";
 import bannerDefault from "../imgs/banner-default.png";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useRef } from "react";
 import { SocketContext } from "../socket/SocketContext";
 import { UserContext } from "../App";
 import axios from "axios";
@@ -86,6 +86,14 @@ const BlogPostCard = ({ content, author }) => {
   const [isLikedByUser, setLikedByUser] = useState(false);
   const [isSavedByUser, setSavedByUser] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
+  const [showSaveMenu, setShowSaveMenu] = useState(false);
+  const [collections, setCollections] = useState([]);
+  const [selectedCollectionId, setSelectedCollectionId] = useState(null);
+  const [showNewCollectionInput, setShowNewCollectionInput] = useState(false);
+  const [newColName, setNewColName] = useState("");
+
+  const shareMenuRef = useRef(null);
+  const saveMenuRef = useRef(null);
 
   let urlShare = window.location.origin + `/blog/${id}`;
 
@@ -142,7 +150,7 @@ const BlogPostCard = ({ content, author }) => {
     setShowShareOptions((prev) => !prev);
   };
 
-  const handleSave = (e) => {
+  const handleSaveClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -150,24 +158,54 @@ const BlogPostCard = ({ content, author }) => {
       return toast.error("Vui lòng đăng nhập để lưu bài viết");
     }
 
+    if (isSavedByUser) {
+      axios
+        .post(
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/save-blog",
+          { blog_id: id },
+          { headers: { Authorization: `Bearer ${access_token}` } }
+        )
+        .then(({ data }) => {
+          setSavedByUser(false);
+          toast.success("Đã bỏ lưu bài viết");
+        })
+        .catch((err) => console.log(err));
+    } else {
+      try {
+        const { data } = await axios.get(
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/collections",
+          { headers: { Authorization: `Bearer ${access_token}` } }
+        );
+        if (data.collections) {
+          setCollections(data.collections);
+          setShowSaveMenu(true);
+          setSelectedCollectionId(null); // default to "Mục mặc định"
+        } else {
+          saveToCollection(null, e);
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    }
+  };
+
+  const saveToCollection = (collection_id, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     axios
       .post(
         import.meta.env.VITE_SERVER_DOMAIN + "/blogs/save-blog",
-        { blog_id: id },
-        {
-          headers: { Authorization: `Bearer ${access_token}` },
-        },
+        { blog_id: id, collection_id },
+        { headers: { Authorization: `Bearer ${access_token}` } }
       )
       .then(({ data }) => {
-        setSavedByUser(data.saved_status);
-        toast.success(
-          data.saved_status ? "Đã lưu bài viết" : "Đã bỏ lưu bài viết",
-        );
+        setSavedByUser(true);
+        setShowSaveMenu(false);
+        toast.success("Đã lưu bài viết");
       })
-      .catch((err) => {
-        console.log(err);
-        toast.error("Không thể lưu bài viết");
-      });
+      .catch((err) => console.log(err));
   };
 
   const handleShare = (shareType) => {
@@ -196,16 +234,43 @@ const BlogPostCard = ({ content, author }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (showShareOptions && !event.target.closest(".share-options-feed")) {
+      if (
+        showShareOptions &&
+        shareMenuRef.current &&
+        !shareMenuRef.current.contains(event.target)
+      ) {
         setShowShareOptions(false);
+      }
+      if (
+        showSaveMenu &&
+        saveMenuRef.current &&
+        !saveMenuRef.current.contains(event.target)
+      ) {
+        setShowSaveMenu(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showShareOptions]);
+  }, [showShareOptions, showSaveMenu]);
 
-  const handleBannerError = (e) => {
-    e.target.src = bannerDefault;
+  const handleCreateAndSave = async (e) => {
+    e.preventDefault();
+    if (!newColName.trim()) return toast.error("Tên bộ sưu tập không được để trống");
+    
+    try {
+      const { data } = await axios.post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/collections",
+        { name: newColName },
+        { headers: { Authorization: `Bearer ${access_token}` } }
+      );
+      
+      const newColId = data.collection._id;
+      saveToCollection(newColId);
+      setShowNewCollectionInput(false);
+      setNewColName("");
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Lỗi khi tạo bộ sưu tập");
+    }
   };
 
   const isDefaultBanner =
@@ -244,7 +309,6 @@ const BlogPostCard = ({ content, author }) => {
   if (layout === "grid") {
     return (
       <div className="blog-post-card bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 flex flex-col relative overflow-hidden h-full">
-        {/* Top Banner */}
         {banner && !isDefaultBanner ? (
           <Link to={`/blog/${id}`} className="block h-48 w-full overflow-hidden shrink-0 border-b border-slate-100">
             <img src={banner} alt={title} className="w-full h-full object-cover hover:scale-[1.03] transition-transform duration-500" />
@@ -255,9 +319,7 @@ const BlogPostCard = ({ content, author }) => {
           </Link>
         )}
 
-        {/* Content Body */}
         <div className="p-5 flex flex-col flex-1">
-          {/* Author Row */}
           <div className="flex items-center justify-between mb-3">
             <Link to={`/user/${username}`} className="flex items-center gap-2 group/author">
               <img src={profile_img} className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200" />
@@ -268,21 +330,18 @@ const BlogPostCard = ({ content, author }) => {
             </div>
           </div>
 
-          {/* Title */}
           <Link to={`/blog/${id}`} className="block group/title mb-2">
             <h3 className="font-bold text-[15.5px] text-slate-800 leading-[1.4] group-hover/title:text-indigo-600 transition-colors duration-200 line-clamp-2">
               {title}
             </h3>
           </Link>
 
-          {/* Description */}
           <Link to={`/blog/${id}`} className="block mb-4">
             <p className="text-[13.5px] text-slate-500 line-clamp-2 leading-[1.6]">
               {des}
             </p>
           </Link>
 
-          {/* Tags */}
           {tags && tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-5 mt-auto">
               {tags.slice(0, 2).map((tag, index) => (
@@ -293,7 +352,6 @@ const BlogPostCard = ({ content, author }) => {
             </div>
           )}
 
-          {/* Footer Actions */}
           <div className="flex items-center justify-between text-slate-400 text-[12px] pt-4 border-t border-slate-100 mt-auto">
             <div className="flex gap-4">
               <button className={`flex items-center gap-1.5 hover:text-rose-500 transition-colors ${isLikedByUser ? "text-rose-500" : ""}`} onClick={handleLike}>
@@ -308,10 +366,10 @@ const BlogPostCard = ({ content, author }) => {
             <div className="flex items-center gap-2">
               <button
                 className={`transition-colors ${isSavedByUser ? "text-indigo-600" : "hover:text-indigo-500"}`}
-                onClick={handleSave}
+                onClick={handleSaveClick}
               >
                 <i
-                  className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-sm`}
+                  className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-[15px]`}
                 ></i>
               </button>
               <button
@@ -483,7 +541,7 @@ const BlogPostCard = ({ content, author }) => {
           </div>
 
           <button 
-            onClick={handleSave}
+            onClick={handleSaveClick}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ml-auto font-medium ${isSavedByUser ? "bg-indigo-50 text-indigo-700" : "hover:bg-indigo-50 hover:text-indigo-600"}`}
           >
             <i className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-[15px] leading-none`}></i>
@@ -491,6 +549,129 @@ const BlogPostCard = ({ content, author }) => {
           </button>
         </div>
       </div>
+
+      {/* Save Modal (Facebook Style) */}
+      {showSaveMenu && (
+        <div 
+          className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in"
+          onClick={() => setShowSaveMenu(false)}
+        >
+          <div 
+            className="bg-white text-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="w-10"></div> {/* Spacer */}
+              <h3 className="text-lg font-bold text-slate-900">Lưu vào</h3>
+              <button 
+                onClick={() => setShowSaveMenu(false)}
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+              >
+                <i className="fi fi-rr-cross-small text-2xl"></i>
+              </button>
+            </div>
+
+            {/* List */}
+            <div className="max-h-[400px] overflow-y-auto p-2 custom-scrollbar">
+              {/* Default Collection */}
+              <div 
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group"
+                onClick={() => setSelectedCollectionId(null)}
+              >
+                <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden border border-slate-50">
+                  <i className="fi fi-sr-bookmark text-2xl text-indigo-500"></i>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-bold text-slate-800">Mục mặc định</h4>
+                  <p className="text-sm text-slate-500 flex items-center gap-1">
+                    <i className="fi fi-rr-lock text-xs"></i> Chỉ mình tôi
+                  </p>
+                </div>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedCollectionId === null ? 'border-indigo-500' : 'border-slate-200'}`}>
+                  {selectedCollectionId === null && <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>}
+                </div>
+              </div>
+
+              {/* User Collections */}
+              {collections.map((col, idx) => {
+                const colors = ["bg-blue-50 text-blue-500", "bg-emerald-50 text-emerald-500", "bg-pink-50 text-pink-500", "bg-amber-50 text-amber-500"];
+                const colBg = colors[idx % colors.length];
+                
+                return (
+                  <div 
+                    key={col._id}
+                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
+                    onClick={() => setSelectedCollectionId(col._id)}
+                  >
+                    <div className={`w-14 h-14 rounded-lg flex items-center justify-center border border-slate-50 ${colBg}`}>
+                      <i className="fi fi-rr-folder text-2xl"></i>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-slate-800 truncate">{col.name}</h4>
+                      <p className="text-sm text-slate-500 flex items-center gap-1">
+                        <i className="fi fi-rr-lock text-xs"></i> Chỉ mình tôi
+                      </p>
+                    </div>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedCollectionId === col._id ? 'border-indigo-500' : 'border-slate-200'}`}>
+                      {selectedCollectionId === col._id && <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* New Collection Row */}
+              {showNewCollectionInput ? (
+                <div className="p-3 animate-fade-in">
+                  <div className="flex items-center gap-2 bg-slate-50 rounded-xl p-2 px-3 border border-slate-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+                    <input 
+                      autoFocus
+                      type="text" 
+                      placeholder="Tên bộ sưu tập..."
+                      className="bg-transparent border-none outline-none flex-1 text-sm py-1 text-slate-800"
+                      value={newColName}
+                      onChange={e => setNewColName(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleCreateAndSave(e)}
+                    />
+                    <button 
+                      onClick={handleCreateAndSave}
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                    >
+                      Tạo
+                    </button>
+                    <button 
+                      onClick={() => setShowNewCollectionInput(false)}
+                      className="text-slate-400 hover:text-slate-600"
+                    >
+                      <i className="fi fi-rr-cross-small"></i>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setShowNewCollectionInput(true)}
+                  className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left"
+                >
+                  <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-50">
+                    <i className="fi fi-rr-plus text-2xl"></i>
+                  </div>
+                  <span className="font-bold text-slate-700">Bộ sưu tập mới</span>
+                </button>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => saveToCollection(selectedCollectionId)}
+                className="px-10 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all shadow-md active:scale-95"
+              >
+                Xong
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

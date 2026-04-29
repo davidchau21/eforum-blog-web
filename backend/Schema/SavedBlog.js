@@ -12,6 +12,11 @@ const savedBlogSchema = mongoose.Schema(
       required: true,
       ref: "blogs",
     },
+    collection_id: {
+      type: Schema.Types.ObjectId,
+      ref: "collections",
+      default: null,
+    },
   },
   {
     timestamps: true,

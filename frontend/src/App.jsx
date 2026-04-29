@@ -29,6 +29,7 @@ import ContactPage from "./pages/contact.page";
 import TermsOfServicePage from "./pages/terms-of-service.page";
 import SearchGooglePage from "./pages/search-google.page.jsx";
 import LandingPage from "./pages/landing.page.jsx";
+import SavedBlogsPage from "./pages/saved-blogs.page.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -155,8 +156,15 @@ const App = () => {
                 <Route path="/" element={<Navbar />}>
                   <Route path="feed" element={<HomePage />}>
                     <Route path="following" element={<HomePage />} />
-                    <Route path="saved" element={<HomePage />} />
                   </Route>
+                  <Route
+                    path="feed/saved"
+                    element={
+                      <ProtectedRoute access_token={userAuth.access_token}>
+                        <SavedBlogsPage />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route
                     path="dashboard"
                     element={

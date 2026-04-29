@@ -28,9 +28,72 @@ class UserBlogController extends BaseController {
 
   async deleteBlog(req, res) {
     try {
-      const userId = req.user.id || req.user;
+      const userId = req.user.id;
       const { blog_id } = req.body;
+      const isAdmin = req.user.admin;
+
+      const blog = await blogService.getBlogById(blog_id);
+      if (userId !== blog.author && !isAdmin) {
+        return this.sendError(res, "You can't delete this blog");
+      }
+
       const result = await blogService.deleteBlog(blog_id, userId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  // --- Collection Endpoints ---
+  async getCollections(req, res) {
+    try {
+      const userId = req.user.id;
+      const result = await blogService.getCollections(userId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async createCollection(req, res) {
+    try {
+      const userId = req.user.id;
+      const { name } = req.body;
+      const result = await blogService.createCollection(userId, name);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async updateCollection(req, res) {
+    try {
+      const userId = req.user.id;
+      const { collection_id } = req.params;
+      const { name } = req.body;
+      const result = await blogService.updateCollection(userId, collection_id, name);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async deleteCollection(req, res) {
+    try {
+      const userId = req.user.id;
+      const { collection_id } = req.params;
+      const result = await blogService.deleteCollection(userId, collection_id);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async moveSavedBlog(req, res) {
+    try {
+      const userId = req.user.id;
+      const { blog_id, collection_id } = req.body;
+      const result = await blogService.moveSavedBlog(userId, blog_id, collection_id);
       return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, error.message);
@@ -161,19 +224,9 @@ class UserBlogController extends BaseController {
   async getSavedBlogs(req, res) {
     try {
       const userId = req.user.id;
-      const { page } = req.query;
-      const result = await blogService.getSavedBlogs(userId, page);
+      const { page, limit, collection_id, type, sort } = req.query;
+      const result = await blogService.getSavedBlogs(userId, page, limit, collection_id, type, sort);
       return this.sendSuccess(res, result);
-    } catch (error) {
-      return this.sendError(res, error.message);
-    }
-  }
-
-  async getSavedBlogsCount(req, res) {
-    try {
-      const userId = req.user.id;
-      const count = await blogService.getSavedBlogsCount(userId);
-      return this.sendSuccess(res, { totalDocs: count });
     } catch (error) {
       return this.sendError(res, error.message);
     }
