@@ -30,6 +30,8 @@ import TermsOfServicePage from "./pages/terms-of-service.page";
 import SearchGooglePage from "./pages/search-google.page.jsx";
 import LandingPage from "./pages/landing.page.jsx";
 import SavedBlogsPage from "./pages/saved-blogs.page.jsx";
+import AboutPage from "./pages/about.page.jsx";
+import TrendingPage from "./pages/trending.page.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -218,6 +220,8 @@ const App = () => {
                   <Route path="privacy" element={<PrivacyPage />} />
                   <Route path="policy" element={<PolicyPage />} />
                   <Route path="contact" element={<ContactPage />} />
+                  <Route path="about" element={<AboutPage />} />
+                  <Route path="trending" element={<TrendingPage />} />
                   <Route
                     path="terms-of-service"
                     element={<TermsOfServicePage />}

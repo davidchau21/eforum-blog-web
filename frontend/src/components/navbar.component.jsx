@@ -19,7 +19,7 @@ const Navbar = () => {
   const [userNavPanel, setUserNavPanel] = useState(false);
   const [notifPanel, setNotifPanel] = useState(false);
   const [mobileMenuVisible, setMobileMenuVisible] = useState(false); // state for mobile menu visibility
-  
+
   const notifRef = useRef(null);
   const userNavRef = useRef(null);
   const handleMenuClose = () => {
@@ -147,11 +147,14 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white w-full h-[80px] flex items-center justify-between px-4 lg:px-8 border-b border-slate-200 sticky top-0 z-50">
-        
+      <nav className="bg-white dark:bg-[#09090B] w-full h-[80px] flex items-center justify-between px-4 lg:px-8 border-b border-slate-200 dark:border-white/5 sticky top-0 z-50 transition-colors duration-300">
         {/* Left Section: Logo & Search */}
         <div className="flex items-center gap-6 lg:gap-10">
-          <Link to="/feed" onClick={handleExploreClick} className="flex items-center">
+          <Link
+            to="/feed"
+            onClick={handleExploreClick}
+            className="flex items-center"
+          >
             <img
               src={theme == "light" ? darkLogo : lightLogo}
               className="h-9 w-auto object-contain"
@@ -159,12 +162,12 @@ const Navbar = () => {
             />
           </Link>
 
-          <div className="hidden md:flex items-center bg-slate-50 border border-slate-200 rounded-full px-4 py-2.5 w-64 lg:w-[400px] group focus-within:ring-2 focus-within:ring-indigo-100 focus-within:border-indigo-300 transition-all">
+          <div className="hidden md:flex items-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-full px-4 py-2.5 w-64 lg:w-[400px] group focus-within:ring-2 focus-within:ring-indigo-100 dark:focus-within:ring-indigo-500/20 focus-within:border-indigo-300 dark:focus-within:border-indigo-500/40 transition-all">
             <i className="fi fi-rr-search text-slate-400 text-sm"></i>
             <input
               type="search"
               placeholder="Search ⌘K"
-              className="bg-transparent border-none outline-none w-full ml-3 text-sm placeholder:text-slate-400 text-slate-700"
+              className="bg-transparent border-none outline-none w-full ml-3 text-sm placeholder:text-slate-400 text-slate-700 dark:text-slate-200"
               onKeyDown={handleSearch}
             />
           </div>
@@ -172,14 +175,33 @@ const Navbar = () => {
 
         {/* Center Section: Navigation Links */}
         <div className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2 h-full">
-          <Link to="/feed" onClick={handleExploreClick} className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all ${location.pathname === "/feed" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}>
+          <Link
+            to="/feed"
+            onClick={handleExploreClick}
+            className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all ${location.pathname === "/feed" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}
+          >
             Explore
           </Link>
-          <Link to="/search-google" className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all gap-2 ${location.pathname === "/search-google" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}>
-            Academic Search
-            <span className="bg-indigo-100 text-indigo-600 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter border border-indigo-200">New</span>
+          <Link
+            to="/trending"
+            className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all ${location.pathname === "/trending" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}
+          >
+            Trending
           </Link>
-          <Link to="/feed" onClick={handleExploreClick} className="h-full flex items-center text-slate-500 hover:text-slate-900 font-medium text-sm px-1 transition-colors">
+          <Link
+            to="/search-google"
+            className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all gap-2 ${location.pathname === "/search-google" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}
+          >
+            Academic Search
+            <span className="bg-indigo-100 text-indigo-600 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter border border-indigo-200">
+              New
+            </span>
+          </Link>
+          <Link
+            to="/feed"
+            onClick={handleExploreClick}
+            className="h-full flex items-center text-slate-500 hover:text-slate-900 font-medium text-sm px-1 transition-colors"
+          >
             Directory
           </Link>
         </div>
@@ -187,7 +209,6 @@ const Navbar = () => {
         {/* <button className="flex right-0 items-center justify-center hover:text-emerald-500" onClick={() => setSearchBoxVisibility(prev => !prev)}>
                     <i className="fi fi-rr-search text-xl"></i>
                 </button> */}
-
 
         <div className="flex items-center gap-4 md:gap-6 ml-auto">
           {/* Search in mobile */}
@@ -331,9 +352,11 @@ const Navbar = () => {
 
           {/* Desktop-Only Items */}
           <div className="hidden md:flex items-center gap-2">
-            
             {access_token && (
-              <Link to="/editor" className="bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors mr-2">
+              <Link
+                to="/editor"
+                className="bg-indigo-600 text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-indigo-700 transition-colors mr-2"
+              >
                 Write a Post
               </Link>
             )}
@@ -381,7 +404,9 @@ const Navbar = () => {
 
                   <AnimatePresence>
                     {notifPanel && (
-                      <NotificationPanel closePanel={() => setNotifPanel(false)} />
+                      <NotificationPanel
+                        closePanel={() => setNotifPanel(false)}
+                      />
                     )}
                   </AnimatePresence>
                 </div>
@@ -415,10 +440,16 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <Link className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors" to="/signin">
+                <Link
+                  className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                  to="/signin"
+                >
                   {currentTranslations.signIn}
                 </Link>
-                <Link className="px-5 py-2 text-sm font-medium bg-slate-900 text-white rounded-full hover:bg-slate-800 transition-colors hidden md:block" to="/signup">
+                <Link
+                  className="px-5 py-2 text-sm font-medium bg-slate-900 text-white rounded-full hover:bg-slate-800 transition-colors hidden md:block"
+                  to="/signup"
+                >
                   {currentTranslations.signUp}
                 </Link>
               </div>

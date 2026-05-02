@@ -20,7 +20,7 @@ const UserNavigationPanel = () => {
             className="absolute right-full top-2 z-50 px-3"
             transition={{ duration: 0.2 }}
         >
-            <div className="bg-white absolute right-0 border border-grey w-60 duration-200 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm">
+            <div className="bg-white dark:bg-[#111113] absolute right-0 border border-grey dark:border-white/10 w-60 duration-200 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm">
                 <Link to={`/user/${username}`} className="link pl-8 py-4 border-b border-grey/50">
                     <i className="fi fi-rr-user mr-2 text-purple"></i>
                     {translations.profile}

@@ -308,7 +308,7 @@ const BlogPostCard = ({ content, author }) => {
 
   if (layout === "grid") {
     return (
-      <div className="blog-post-card bg-white rounded-2xl border border-slate-200 hover:border-indigo-200 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 flex flex-col relative overflow-hidden h-full">
+      <div className="blog-post-card bg-white dark:bg-[#111113] rounded-2xl border border-slate-200 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 flex flex-col relative overflow-hidden h-full">
         {banner && !isDefaultBanner ? (
           <Link to={`/blog/${id}`} className="block h-48 w-full overflow-hidden shrink-0 border-b border-slate-100">
             <img src={banner} alt={title} className="w-full h-full object-cover hover:scale-[1.03] transition-transform duration-500" />
@@ -387,7 +387,7 @@ const BlogPostCard = ({ content, author }) => {
 
   // DEFAULT LIST LAYOUT
   return (
-    <div className="blog-post-card bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 hover:border-indigo-200 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 relative mb-4">
+    <div className="blog-post-card bg-white dark:bg-[#111113] rounded-2xl border border-slate-200 dark:border-white/5 p-5 sm:p-6 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 relative mb-4">
       {/* Content */}
       <div className="w-full">
         {/* Author Row */}

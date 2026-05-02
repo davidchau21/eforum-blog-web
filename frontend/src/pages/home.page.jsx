@@ -150,10 +150,6 @@ const HomePage = () => {
       .catch(console.log);
   };
 
-
-
-
-
   const fetchTrendingBlogs = () => {
     axios
       .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/trending-blogs")
@@ -179,6 +175,16 @@ const HomePage = () => {
     const category = e.target.innerText;
     setBlogs(null);
     setPageState(pageState === category ? "feed" : category);
+  };
+
+  const loadBlogByTag = (e) => {
+    const tag = e.target.value;
+    setBlogs(null);
+    if (tag === translations.allSubjects) {
+      setPageState("feed");
+    } else {
+      setPageState(tag);
+    }
   };
 
   useEffect(() => {
@@ -328,12 +334,12 @@ const HomePage = () => {
             </button>
             <button
               onClick={() => {
-                setPageState(translations.trending);
+                navigate("/trending");
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === translations.trending ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${location.pathname === "/trending" ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
             >
               <i
-                className={`fi fi-rr-arrow-trend-up text-base mt-0.5 ${pageState === translations.trending ? "text-indigo-600" : ""}`}
+                className={`fi fi-rr-arrow-trend-up text-base mt-0.5 ${location.pathname === "/trending" ? "text-indigo-600" : ""}`}
               ></i>
               Popular
             </button>
@@ -576,7 +582,9 @@ const HomePage = () => {
                   <div
                     key={index}
                     className="flex items-center gap-3 group cursor-pointer"
-                    onClick={() => navigate(`/user/${user.personal_info.username}`)}
+                    onClick={() =>
+                      navigate(`/user/${user.personal_info.username}`)
+                    }
                   >
                     <img
                       src={user.personal_info.profile_img}
@@ -588,7 +596,8 @@ const HomePage = () => {
                       </div>
                       <div className="text-[11px] text-slate-400">
                         {user.account_info.total_reads > 1000
-                          ? (user.account_info.total_reads / 1000).toFixed(1) + "K"
+                          ? (user.account_info.total_reads / 1000).toFixed(1) +
+                            "K"
                           : user.account_info.total_reads}{" "}
                         REP
                       </div>
