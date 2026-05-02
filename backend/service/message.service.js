@@ -15,16 +15,16 @@ class MessageService {
     }
 
     const newMessage = new Message({
+      conversationId: conversation._id,
       senderId,
       receiverId,
       message,
       type,
     });
 
-    conversation.messages.push(newMessage._id);
-    await Promise.all([conversation.save(), newMessage.save()]);
+    await newMessage.save();
 
-    EE.emit('new-message', conversation.participants, newMessage);
+    EE.emit("new-message", conversation.participants, newMessage);
 
     return newMessage;
   }
@@ -32,11 +32,14 @@ class MessageService {
   async getMessages(senderId, userToMessage, { limit = 10, page = 1 }) {
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
+    const conversation = await Conversation.findOne({
+      participants: { $all: [senderId, userToMessage] },
+    });
+
+    if (!conversation) return [];
+
     const messages = await Message.find({
-      $or: [
-        { senderId, receiverId: userToMessage },
-        { senderId: userToMessage, receiverId: senderId },
-      ],
+      conversationId: conversation._id,
     })
       .sort({ createdAt: -1 })
       .skip(skip)

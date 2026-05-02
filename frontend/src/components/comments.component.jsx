@@ -8,7 +8,7 @@ import AnimationWrapper from "../common/page-animation";
 import CommentCard from "./comment-card.component";
 
 export const fetchComments = async ({
-  skip = 0,
+  page = 1,
   blog_id,
   setParentCommentCountFun,
   comment_array = null,
@@ -18,7 +18,7 @@ export const fetchComments = async ({
   await axios
     .post(import.meta.env.VITE_SERVER_DOMAIN + "/comments/get-blog-comments", {
       blog_id,
-      skip,
+      page,
     })
     .then(({ data }) => {
       data.map((comment) => {
@@ -56,7 +56,7 @@ const CommentsContainer = () => {
   const loadMoreComments = async () => {
     try {
       let newCommentsArr = await fetchComments({
-        skip: totalParentCommentsLoaded,
+        page: Math.floor(totalParentCommentsLoaded / 5) + 1,
         blog_id: _id,
         setParentCommentCountFun: setTotalParentCommentsLoaded,
         comment_array: commentsArr,

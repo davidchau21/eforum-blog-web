@@ -106,15 +106,17 @@ class CommentService {
       user_id: userId,
       image: commentFile.image,
       level: commentFile.level,
+      parent: commentFile.parent,
       repliesCount: 0,
     };
   }
 
-  async getBlogComments({ blog_id, skip }) {
+  async getBlogComments({ blog_id, page = 1, limit = 5 }) {
+    const skip = (page - 1) * limit;
     const comments = await Comment.find({ blog_id, isReply: false })
       .populate("commented_by", "personal_info.username personal_info.fullname personal_info.profile_img")
       .skip(skip)
-      .limit(5)
+      .limit(limit)
       .sort({ commentedAt: -1 });
 
     return await Promise.all(comments.map(async (comment) => {
@@ -123,11 +125,12 @@ class CommentService {
     }));
   }
 
-  async getReplies({ _id, skip }) {
+  async getReplies({ _id, page = 1, limit = 5 }) {
+    const skip = (page - 1) * limit;
     const replies = await Comment.find({ parent: _id })
       .populate("commented_by", "personal_info.profile_img personal_info.fullname personal_info.username")
       .skip(skip)
-      .limit(5)
+      .limit(limit)
       .sort({ commentedAt: -1 })
       .select("-blog_id -updatedAt");
 

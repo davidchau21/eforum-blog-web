@@ -160,19 +160,26 @@ class UserService {
         let unread_count = 0;
         let last_message = null;
         let last_message_time = null;
+        let last_message_sender = null;
 
-        if (conversation && conversation.messages && conversation.messages.length > 0) {
+        if (conversation) {
           unread_count = await Message.countDocuments({
-            _id: { $in: conversation.messages },
+            conversationId: conversation._id,
             receiverId: loggedInUserId,
             seen: false,
           });
 
-          const lastMsgDoc = await Message.findOne({ _id: { $in: conversation.messages } }).sort({ createdAt: -1 });
+          const lastMsgDoc = await Message.findOne({
+            conversationId: conversation._id,
+          }).sort({ createdAt: -1 });
+
           if (lastMsgDoc) {
-            const isImage = lastMsgDoc.type === "img" || /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(lastMsgDoc.message);
+            const isImage =
+              lastMsgDoc.type === "img" ||
+              /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(lastMsgDoc.message);
             last_message = isImage ? "[Ảnh]" : lastMsgDoc.message;
             last_message_time = lastMsgDoc.createdAt;
+            last_message_sender = lastMsgDoc.senderId;
           }
         }
 
@@ -182,6 +189,7 @@ class UserService {
           unread_count,
           last_message,
           last_message_time,
+          last_message_sender,
         };
       })
     );

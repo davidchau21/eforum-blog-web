@@ -91,26 +91,37 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         total_comments: activity.total_comments - (isDelete ? 1 : 0),
         total_parent_comments: Math.max(
           0,
-          total_parent_comments - (commentData.level == 0 && isDelete ? 1 : 0)
+          total_parent_comments - (commentData.level == 0 && isDelete ? 1 : 0),
         ),
       },
     });
   };
 
-  const loadReplies = ({ skip = 0, currentIndex = index }) => {
+  const loadReplies = ({ page = 1, currentIndex = index, appending = false }) => {
     if (commentsArr[currentIndex].repliesCount > 0) {
-      hideReplies();
+      if (!appending) {
+        hideReplies();
+      }
+
       axios
         .post(import.meta.env.VITE_SERVER_DOMAIN + "/comments/get-replies", {
           _id: commentsArr[currentIndex]._id,
-          skip,
+          page,
         })
-        .then(({ data: replies }) => {
+        .then(({ data: { replies } }) => {
           commentsArr[currentIndex].isReplyLoaded = true;
+
+          // Create a copy to avoid direct mutation
+          let newCommentsArr = [...commentsArr];
+          let skip = (page - 1) * 5;
+
           for (let i = 0; i < replies.length; i++) {
-            commentsArr.splice(currentIndex + 1 + i + skip, 0, replies[i]);
+            newCommentsArr.splice(currentIndex + 1 + i + skip, 0, replies[i]);
           }
-          setBlog({ ...blog, comments: { ...comments, results: commentsArr } });
+          setBlog({
+            ...blog,
+            comments: { ...comments, results: newCommentsArr },
+          });
         })
         .catch((err) => console.log(err));
     }
@@ -159,34 +170,56 @@ const CommentCard = ({ index, leftVal, commentData }) => {
   const handleReplyClick = () => {
     if (!access_token)
       return toast.error("Vui lòng đăng nhập để trả lời bình luận");
+
+    if (level >= 2) return;
+
     setReplying((preVal) => !preVal);
   };
 
   const LoadMoreRepliesButton = () => {
     let parentIndex = getParentIndex();
-    let button = (
-      <button
-        onClick={() =>
-          loadReplies({ skip: index - parentIndex, currentIndex: parentIndex })
-        }
-        className="text-xs text-purple hover:text-purple/70 flex items-center gap-1 ml-4 mt-1"
-      >
-        <i className="fi fi-rr-angle-down text-xs leading-none"></i>
-        Tải thêm trả lời
-      </button>
-    );
 
-    if (commentsArr[index + 1]) {
-      if (commentsArr[index + 1].level < commentsArr[index].level) {
-        if (index - parentIndex < commentsArr[parentIndex].repliesCount)
-          return button;
+    if (parentIndex !== undefined) {
+      // Check if this is the last loaded reply for this parent
+      let isLastReply = true;
+      if (
+        commentsArr[index + 1] &&
+        commentsArr[index + 1].level > commentsArr[parentIndex].level
+      ) {
+        isLastReply = false;
       }
-    } else {
-      if (parentIndex !== undefined) {
-        if (index - parentIndex < commentsArr[parentIndex].repliesCount)
-          return button;
+
+      if (!isLastReply) return null;
+
+      // Calculate skip by counting ALL direct children of the parent currently loaded
+      let currentLoadedRepliesCount = 0;
+      for (let i = parentIndex + 1; i < commentsArr.length; i++) {
+        if (commentsArr[i].level <= commentsArr[parentIndex].level) break;
+        if (commentsArr[i].parent === commentsArr[parentIndex]._id) {
+          currentLoadedRepliesCount++;
+        }
+      }
+
+      if (currentLoadedRepliesCount < commentsArr[parentIndex].repliesCount) {
+        return (
+          <button
+            onClick={() =>
+              loadReplies({
+                page: Math.floor(currentLoadedRepliesCount / 5) + 1,
+                currentIndex: parentIndex,
+                appending: true,
+              })
+            }
+            className="text-xs text-indigo-600 hover:text-indigo-700 flex items-center gap-1 ml-4 mt-2 font-bold bg-indigo-50 px-3 py-1.5 rounded-lg transition-all"
+          >
+            <i className="fi fi-rr-angle-down text-xs leading-none"></i>
+            Tải thêm trả lời (
+            {commentsArr[parentIndex].repliesCount - currentLoadedRepliesCount})
+          </button>
+        );
       }
     }
+    return null;
   };
 
   const report = useCallback(async () => {
@@ -379,13 +412,15 @@ const CommentCard = ({ index, leftVal, commentData }) => {
             {0} {/* Placeholder for likes */}
           </button>
 
-          <button
-            className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-indigo-600 transition-colors"
-            onClick={handleReplyClick}
-          >
-            <i className="fi fi-rr-comment-dots text-sm"></i>
-            Reply
-          </button>
+          {level < 2 && (
+            <button
+              className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-indigo-600 transition-colors"
+              onClick={handleReplyClick}
+            >
+              <i className="fi fi-rr-comment-dots text-sm"></i>
+              Reply
+            </button>
+          )}
 
           {commentData.isReplyLoaded ? (
             <button

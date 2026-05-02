@@ -13,7 +13,7 @@ dist-ssr
 *.local
 .env
 .env.local
-.agent/
+.agents/
 package-lock.json
 
 # Editor directories and files

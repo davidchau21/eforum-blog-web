@@ -175,6 +175,10 @@ const Navbar = () => {
           <Link to="/feed" onClick={handleExploreClick} className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all ${location.pathname === "/feed" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}>
             Explore
           </Link>
+          <Link to="/search-google" className={`h-full flex items-center border-b-2 font-semibold text-sm px-1 transition-all gap-2 ${location.pathname === "/search-google" ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-900"}`}>
+            Academic Search
+            <span className="bg-indigo-100 text-indigo-600 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter border border-indigo-200">New</span>
+          </Link>
           <Link to="/feed" onClick={handleExploreClick} className="h-full flex items-center text-slate-500 hover:text-slate-900 font-medium text-sm px-1 transition-colors">
             Directory
           </Link>
@@ -268,16 +272,8 @@ const Navbar = () => {
                 className="flex items-center gap-2 text-black hover:text-emerald-500"
                 onClick={handleMenuClose}
               >
-                <i className="fi fi-rr-book text-xl"></i>
-                <span>{currentTranslations.searchGoogle}</span>
-              </Link>
-              <Link
-                to="/search-google"
-                className="flex items-center gap-2 text-black hover:text-emerald-500"
-                onClick={handleMenuClose}
-              >
-                <i className="fi fi-rr-book text-xl"></i>
-                <span>{currentTranslations.searchGoogle}</span>
+                <i className="fi fi-rr-search-alt text-xl"></i>
+                <span>Academic Search</span>
               </Link>
               <button
                 className="flex items-center gap-2 text-black hover:text-emerald-500"

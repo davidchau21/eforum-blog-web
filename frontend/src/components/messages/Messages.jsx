@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useContext } from "react";
+import { useEffect, useRef, useContext, useLayoutEffect } from "react";
 import Message from "./Message";
 import useGetMessages from "../../hook/useGetMessages";
 import useListenMessages from "../../hook/useListenMessages";
@@ -13,72 +13,73 @@ const Messages = () => {
   useListenMessages();
   const lastMessageRef = useRef();
   const scrollContainerRef = useRef();
-  const [prevScrollHeight, setPrevScrollHeight] = useState(0);
-  const [firstMessageId, setFirstMessageId] = useState(null);
+  const lastScrollHeight = useRef(0);
+  const lastFirstMessageId = useRef(null);
 
-  // Initial scroll to bottom
-  useEffect(() => {
-    if (messages.length > 0 && !loading && prevScrollHeight === 0) {
-      lastMessageRef.current?.scrollIntoView({ behavior: "auto" });
-      setPrevScrollHeight(scrollContainerRef.current.scrollHeight);
-      setFirstMessageId(messages[0]?._id);
+  // Initial scroll to bottom & Maintain scroll position
+  useLayoutEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || messages.length === 0) return;
+
+    // 1. Initial Load (First time messages appear for this conversation)
+    if (!lastFirstMessageId.current && !loading) {
+      container.scrollTop = container.scrollHeight;
+      lastFirstMessageId.current = messages[0]?._id;
+      lastScrollHeight.current = container.scrollHeight;
+      return;
     }
-  }, [messages, loading, prevScrollHeight]);
 
-  // Handle scroll to bottom for NEW messages
-  useEffect(() => {
-    if (messages.length > 0 && scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
+    // 2. Load More (Prepended messages)
+    if (
+      lastFirstMessageId.current &&
+      messages[0]?._id !== lastFirstMessageId.current
+    ) {
+      const heightDifference =
+        container.scrollHeight - lastScrollHeight.current;
+
+      // Adjust scroll position to "stay" at the current message
+      container.scrollTop += heightDifference;
+
+      lastFirstMessageId.current = messages[0]?._id;
+      lastScrollHeight.current = container.scrollHeight;
+      return;
+    }
+
+    // 3. New Message (Appended messages)
+    if (messages[0]?._id === lastFirstMessageId.current) {
+      // Avoid updating height reference while loading spinner is active
+      if (loading) return;
+
       const lastMessage = messages[messages.length - 1];
       const isFromMe = lastMessage.senderId === userAuth._id;
-      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 200;
+      const isNearBottom =
+        container.scrollHeight - container.scrollTop - container.clientHeight <
+        200;
 
-      // Only scroll down if it's a new message (not prepended old ones)
-      // We check if the first message ID hasn't changed to be sure
-      if (messages[0]?._id === firstMessageId) {
-        if (isFromMe || isNearBottom) {
-          setTimeout(() => {
-            lastMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-            setPrevScrollHeight(container.scrollHeight);
-          }, 100);
-        }
+      if (isFromMe || isNearBottom) {
+        container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
       }
+      lastScrollHeight.current = container.scrollHeight;
     }
-  }, [messages, userAuth._id, firstMessageId]);
-
-  // Maintain scroll position when loading MORE (older) messages
-  useEffect(() => {
-    if (scrollContainerRef.current && prevScrollHeight > 0 && messages.length > 0) {
-      const container = scrollContainerRef.current;
-      const newScrollHeight = container.scrollHeight;
-      
-      // If the first message ID changed, it means we prepended old messages
-      if (messages[0]?._id !== firstMessageId) {
-        const heightDifference = newScrollHeight - prevScrollHeight;
-        container.scrollTop = heightDifference;
-        setPrevScrollHeight(newScrollHeight);
-        setFirstMessageId(messages[0]?._id);
-      }
-    }
-  }, [messages, firstMessageId, prevScrollHeight]);
+  }, [messages, loading, userAuth._id]);
 
   // Reset states when changing conversation
   useEffect(() => {
-    setPrevScrollHeight(0);
-    setFirstMessageId(null);
+    lastScrollHeight.current = 0;
+    lastFirstMessageId.current = null;
   }, [selectedConversation?._id]);
 
   const handleScroll = () => {
     const container = scrollContainerRef.current;
     if (container && container.scrollTop <= 5 && hasMore && !loading) {
-      setPrevScrollHeight(container.scrollHeight);
+      lastScrollHeight.current = container.scrollHeight;
       loadMore();
     }
   };
 
   const renderMessagesWithDividers = () => {
     let lastDate = null;
-    
+
     return messages.map((message, index) => {
       const messageDate = getFullDay(message.createdAt);
       const showDivider = messageDate !== lastDate;
@@ -87,7 +88,7 @@ const Messages = () => {
       const today = getFullDay(new Date());
       const yesterday = getFullDay(new Date(Date.now() - 86400000));
       let dividerText = messageDate;
-      
+
       if (messageDate === today) dividerText = "Today";
       else if (messageDate === yesterday) dividerText = "Yesterday";
 
@@ -111,33 +112,38 @@ const Messages = () => {
   };
 
   return (
-    <div 
+    <div
       ref={scrollContainerRef}
       onScroll={handleScroll}
+      style={{ overflowAnchor: "none" }}
       className="px-4 flex-1 overflow-auto scrollbar-hide py-4 relative"
     >
       {loading && hasMore && messages.length > 0 && (
         <div className="flex flex-col items-center justify-center py-6 gap-3 animate-fadeIn">
           <div className="w-8 h-8 border-[3px] border-indigo-500 border-t-transparent rounded-full animate-spin shadow-sm"></div>
-          <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">Đang tải tin nhắn cũ</span>
+          <span className="text-[11px] font-semibold text-indigo-500 uppercase tracking-widest bg-indigo-50 px-3 py-1 rounded-full">
+            Đang tải tin nhắn cũ
+          </span>
         </div>
       )}
 
       {!loading && messages.length === 0 && (
         <div className="h-full flex flex-col items-center justify-center text-dark-grey/40 gap-4 opacity-60">
-           <i className="fi fi-rr-messages text-6xl"></i>
-           <p className="text-sm font-medium tracking-wide">Bắt đầu cuộc trò chuyện ngay</p>
+          <i className="fi fi-rr-messages text-6xl"></i>
+          <p className="text-sm font-medium tracking-wide">
+            Bắt đầu cuộc trò chuyện ngay
+          </p>
         </div>
       )}
 
       {messages.length > 0 && renderMessagesWithDividers()}
-      
+
       {loading && messages.length === 0 && (
         <div className="h-full flex items-center justify-center">
-            <div className="animate-pulse flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-grey/30"></div>
-                <div className="w-24 h-2 bg-grey/30 rounded"></div>
-            </div>
+          <div className="animate-pulse flex flex-col items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-grey/30"></div>
+            <div className="w-24 h-2 bg-grey/30 rounded"></div>
+          </div>
         </div>
       )}
     </div>
