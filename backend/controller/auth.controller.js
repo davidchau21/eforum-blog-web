@@ -22,7 +22,8 @@ class AuthController extends BaseController {
 
   async signin(req, res) {
     try {
-      const result = await authService.signin(req.body);
+      // Pass req so the service can extract ip & user-agent for the session
+      const result = await authService.signin(req.body, req);
       return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, error.message);
@@ -69,10 +70,36 @@ class AuthController extends BaseController {
   async googleAuth(req, res) {
     try {
       const { access_token } = req.body;
-      const result = await authService.googleAuth(access_token);
+      // Pass req so the service can extract ip & user-agent for the session
+      const result = await authService.googleAuth(access_token, req);
       return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, "Failed to authenticate you with google. Try with some other google account");
+    }
+  }
+
+  async logout(req, res) {
+    try {
+      const authHeader = req.headers["authorization"];
+      const token = authHeader && authHeader.split(" ")[1];
+      if (!token) return this.sendError(res, "No access token provided", 401);
+
+      const result = await authService.logout(token);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async refreshToken(req, res) {
+    try {
+      const { refresh_token } = req.body;
+      if (!refresh_token) return this.sendError(res, "No refresh token provided", 401);
+
+      const result = await authService.refreshToken(refresh_token, req);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 401);
     }
   }
 }

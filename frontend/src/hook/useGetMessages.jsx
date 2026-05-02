@@ -49,7 +49,11 @@ const useGetMessages = (limit = 10) => {
           }));
         }
       } else {
-        setMessages([...fetchedMessages, ...messages]);
+        const allMessages = [...fetchedMessages, ...messages];
+        const uniqueMessages = allMessages.filter(
+          (msg, index, self) => index === self.findIndex((t) => t._id === msg._id),
+        );
+        setMessages(uniqueMessages);
       }
 
       setPage(pageNum);
@@ -61,6 +65,7 @@ const useGetMessages = (limit = 10) => {
   };
 
   useEffect(() => {
+    setMessages([]); // Clear messages when switching conversation
     setPage(1);
     setHasMore(true);
     getMessages(1);
