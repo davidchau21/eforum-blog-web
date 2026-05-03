@@ -308,36 +308,36 @@ const BlogPostCard = ({ content, author }) => {
 
   if (layout === "grid") {
     return (
-      <div className="blog-post-card bg-white dark:bg-[#111113] rounded-2xl border border-slate-200 dark:border-white/5 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 flex flex-col relative overflow-hidden h-full">
+      <div className="blog-post-card bg-white rounded-2xl border border-grey hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 flex flex-col relative overflow-hidden h-full">
         {banner && !isDefaultBanner ? (
-          <Link to={`/blog/${id}`} className="block h-48 w-full overflow-hidden shrink-0 border-b border-slate-100">
+          <Link to={`/blog/${id}`} className="block h-48 w-full overflow-hidden shrink-0 border-b border-grey">
             <img src={banner} alt={title} className="w-full h-full object-cover hover:scale-[1.03] transition-transform duration-500" />
           </Link>
         ) : (
-          <Link to={`/blog/${id}`} className="block h-32 w-full bg-slate-50 border-b border-slate-100 shrink-0 flex items-center justify-center">
-            <i className="fi fi-rr-document text-3xl text-slate-200"></i>
+          <Link to={`/blog/${id}`} className="block h-32 w-full bg-grey border-b border-grey shrink-0 flex items-center justify-center">
+            <i className="fi fi-rr-document text-3xl text-dark-grey/20"></i>
           </Link>
         )}
 
         <div className="p-5 flex flex-col flex-1">
           <div className="flex items-center justify-between mb-3">
             <Link to={`/user/${username}`} className="flex items-center gap-2 group/author">
-              <img src={profile_img} className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200" />
-              <span className="text-[13px] font-semibold text-slate-600 group-hover/author:text-indigo-600 transition-colors line-clamp-1">{fullname}</span>
+              <img src={profile_img} className="w-6 h-6 rounded-full object-cover ring-1 ring-grey" />
+              <span className="text-[13px] font-bold text-black group-hover/author:text-indigo-500 transition-colors line-clamp-1">{fullname}</span>
             </Link>
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 text-xs whitespace-nowrap">{getDisplayDate(publishedAt)}</span>
+              <span className="text-dark-grey text-xs whitespace-nowrap opacity-60 font-medium">{getDisplayDate(publishedAt)}</span>
             </div>
           </div>
 
           <Link to={`/blog/${id}`} className="block group/title mb-2">
-            <h3 className="font-bold text-[15.5px] text-slate-800 leading-[1.4] group-hover/title:text-indigo-600 transition-colors duration-200 line-clamp-2">
+            <h3 className="font-bold text-[15.5px] text-black leading-[1.4] group-hover/title:text-indigo-500 transition-colors duration-200 line-clamp-2">
               {title}
             </h3>
           </Link>
 
           <Link to={`/blog/${id}`} className="block mb-4">
-            <p className="text-[13.5px] text-slate-500 line-clamp-2 leading-[1.6]">
+            <p className="text-[13.5px] text-dark-grey line-clamp-2 leading-[1.6]">
               {des}
             </p>
           </Link>
@@ -345,27 +345,27 @@ const BlogPostCard = ({ content, author }) => {
           {tags && tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-5 mt-auto">
               {tags.slice(0, 2).map((tag, index) => (
-                <span key={index} className="bg-slate-50 text-slate-500 text-[11px] px-2.5 py-1 rounded-md font-medium border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 transition-all cursor-pointer truncate max-w-[100px]">
+                <span key={index} className="bg-grey text-dark-grey text-[11px] px-2.5 py-1 rounded-md font-bold border border-grey hover:bg-indigo-500/10 hover:text-indigo-500 transition-all cursor-pointer truncate max-w-[100px] uppercase tracking-wider opacity-80">
                   {tag}
                 </span>
               ))}
             </div>
           )}
 
-          <div className="flex items-center justify-between text-slate-400 text-[12px] pt-4 border-t border-slate-100 mt-auto">
+          <div className="flex items-center justify-between text-dark-grey text-[12px] pt-4 border-t border-grey mt-auto">
             <div className="flex gap-4">
               <button className={`flex items-center gap-1.5 hover:text-rose-500 transition-colors ${isLikedByUser ? "text-rose-500" : ""}`} onClick={handleLike}>
                 <i className={isLikedByUser ? "fi fi-sr-heart text-sm" : "fi fi-rr-heart text-sm"}></i>
-                <span className="font-medium">{localLikes}</span>
+                <span className="font-bold">{localLikes}</span>
               </button>
               <button className="flex items-center gap-1.5 hover:text-indigo-500 transition-colors" onClick={handleCommentClick}>
                 <i className="fi fi-rr-comment-alt text-sm"></i>
-                <span className="font-medium">{total_comments}</span>
+                <span className="font-bold">{total_comments}</span>
               </button>
             </div>
             <div className="flex items-center gap-2">
               <button
-                className={`transition-colors ${isSavedByUser ? "text-indigo-600" : "hover:text-indigo-500"}`}
+                className={`transition-colors ${isSavedByUser ? "text-indigo-500" : "hover:text-indigo-500"}`}
                 onClick={handleSaveClick}
               >
                 <i
@@ -387,7 +387,7 @@ const BlogPostCard = ({ content, author }) => {
 
   // DEFAULT LIST LAYOUT
   return (
-    <div className="blog-post-card bg-white dark:bg-[#111113] rounded-2xl border border-slate-200 dark:border-white/5 p-5 sm:p-6 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 relative mb-4">
+    <div className="blog-post-card bg-white rounded-2xl border border-grey p-5 sm:p-6 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:shadow-[0_4px_24px_rgba(99,102,241,0.08)] transition-all duration-300 relative mb-4">
       {/* Content */}
       <div className="w-full">
         {/* Author Row */}
@@ -398,17 +398,17 @@ const BlogPostCard = ({ content, author }) => {
           >
             <img
               src={profile_img}
-              className="w-6 h-6 rounded-full object-cover ring-1 ring-slate-200"
+              className="w-6 h-6 rounded-full object-cover ring-1 ring-grey"
             />
-            <span className="text-[13px] font-semibold text-slate-600 group-hover/author:text-indigo-600 transition-colors">
+            <span className="text-[13px] font-bold text-black group-hover/author:text-indigo-500 transition-colors">
               {fullname}
             </span>
           </Link>
           <div className="flex items-center gap-2">
-            <span className="text-slate-400 text-xs">
+            <span className="text-dark-grey text-xs opacity-60 font-medium">
               {getDisplayDate(publishedAt)}
             </span>
-            <button className="text-slate-300 hover:text-slate-500 w-6 h-6 flex items-center justify-center rounded transition-colors">
+            <button className="text-dark-grey hover:text-black w-6 h-6 flex items-center justify-center rounded transition-colors opacity-40 hover:opacity-100">
               <i className="fi fi-rr-menu-dots text-sm"></i>
             </button>
           </div>
@@ -416,14 +416,14 @@ const BlogPostCard = ({ content, author }) => {
 
         {/* Title */}
         <Link to={`/blog/${id}`} className="block group/title mb-1.5">
-          <h3 className="font-bold text-[16px] text-slate-700 leading-snug group-hover/title:text-indigo-600 transition-colors duration-200">
+          <h3 className="font-bold text-[16px] text-black leading-snug group-hover/title:text-indigo-500 transition-colors duration-200">
             {title}
           </h3>
         </Link>
 
         {/* Description */}
         <Link to={`/blog/${id}`} className="block mb-4">
-          <p className="text-[14px] text-slate-500 line-clamp-2 leading-[1.6]">
+          <p className="text-[14px] text-dark-grey line-clamp-2 leading-[1.6]">
             {des}
           </p>
         </Link>
@@ -432,7 +432,7 @@ const BlogPostCard = ({ content, author }) => {
         {banner && !isDefaultBanner && (
           <Link
             to={`/blog/${id}`}
-            className="block mb-4 overflow-hidden rounded-xl border border-slate-100"
+            className="block mb-4 overflow-hidden rounded-xl border border-grey"
           >
             <img
               src={banner}
@@ -448,7 +448,7 @@ const BlogPostCard = ({ content, author }) => {
             {tags.slice(0, 3).map((tag, index) => (
               <span
                 key={index}
-                className="bg-slate-50 text-slate-500 text-[11.5px] px-2.5 py-1 rounded-md font-medium border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer"
+                className="bg-grey text-dark-grey text-[11.5px] px-2.5 py-1 rounded-md font-bold border border-grey hover:bg-indigo-500/10 hover:text-indigo-500 transition-all cursor-pointer uppercase tracking-wider opacity-80"
               >
                 {tag}
               </span>
@@ -457,34 +457,34 @@ const BlogPostCard = ({ content, author }) => {
         )}
 
         {/* Footer Actions */}
-        <div className="flex items-center gap-1 sm:gap-2 text-slate-500 text-[13px] pt-3 border-t border-slate-100">
+        <div className="flex items-center gap-1 sm:gap-2 text-dark-grey text-[13px] pt-3 border-t border-grey">
           <button
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${isLikedByUser ? "text-rose-500 bg-rose-50" : "hover:bg-slate-50 hover:text-rose-500"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${isLikedByUser ? "text-rose-500 bg-rose-500/10" : "hover:bg-grey hover:text-rose-500"}`}
             onClick={handleLike}
           >
             <i className={isLikedByUser ? "fi fi-sr-heart text-[15px] leading-none" : "fi fi-rr-heart text-[15px] leading-none"}></i>
-            <span className="font-medium">{localLikes} <span className="hidden sm:inline">Likes</span></span>
+            <span className="font-bold">{localLikes} <span className="hidden sm:inline">Likes</span></span>
           </button>
 
           <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-grey hover:text-indigo-500 transition-all"
             onClick={handleCommentClick}
           >
             <i className="fi fi-rr-comment-alt text-[15px] leading-none"></i>
-            <span className="font-medium">{total_comments} <span className="hidden sm:inline">Comments</span></span>
+            <span className="font-bold">{total_comments} <span className="hidden sm:inline">Comments</span></span>
           </button>
 
           <div className="relative">
             <button
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-slate-50 hover:text-slate-700 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-grey hover:text-black transition-all"
               onClick={handleShareClick}
             >
               <i className="fi fi-rr-share text-[15px] leading-none"></i>
-              <span className="font-medium">Share</span>
+              <span className="font-bold">Share</span>
             </button>
             {showShareOptions && (
               <div
-                className="absolute bottom-full mb-2 -left-10 bg-white border border-slate-200 rounded-xl shadow-xl p-2 flex gap-2 share-options-feed z-30 min-w-max"
+                className="absolute bottom-full mb-2 -left-10 bg-white border border-grey rounded-xl shadow-xl p-2 flex gap-2 share-options-feed z-30 min-w-max"
                 onClick={(e) => e.stopPropagation()}
               >
                 <button
@@ -494,7 +494,7 @@ const BlogPostCard = ({ content, author }) => {
                     handleShare("link");
                     setShowShareOptions(false);
                   }}
-                  className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors duration-200 text-slate-600"
+                  className="w-8 h-8 rounded-lg bg-grey flex items-center justify-center hover:bg-grey/50 transition-colors duration-200 text-black"
                 >
                   <i className="fi fi-rr-link text-sm leading-none mt-0.5"></i>
                 </button>
@@ -507,7 +507,7 @@ const BlogPostCard = ({ content, author }) => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center hover:bg-sky-100 transition-colors duration-200">
+                  <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center hover:bg-sky-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-twitter text-sky-500 text-sm leading-none mt-0.5"></i>
                   </div>
                 </TwitterShareButton>
@@ -519,7 +519,7 @@ const BlogPostCard = ({ content, author }) => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center hover:bg-blue-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-facebook text-blue-600 text-sm leading-none mt-0.5"></i>
                   </div>
                 </FacebookShareButton>
@@ -532,7 +532,7 @@ const BlogPostCard = ({ content, author }) => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center hover:bg-blue-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-linkedin text-blue-700 text-sm leading-none mt-0.5"></i>
                   </div>
                 </LinkedinShareButton>
@@ -542,7 +542,7 @@ const BlogPostCard = ({ content, author }) => {
 
           <button 
             onClick={handleSaveClick}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ml-auto font-medium ${isSavedByUser ? "bg-indigo-50 text-indigo-700" : "hover:bg-indigo-50 hover:text-indigo-600"}`}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ml-auto font-bold ${isSavedByUser ? "bg-indigo-500/10 text-indigo-500" : "hover:bg-indigo-500/10 hover:text-indigo-500"}`}
           >
             <i className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-[15px] leading-none`}></i>
             <span className="hidden sm:inline">{isSavedByUser ? "Saved" : "Save"}</span>
@@ -557,16 +557,16 @@ const BlogPostCard = ({ content, author }) => {
           onClick={() => setShowSaveMenu(false)}
         >
           <div 
-            className="bg-white text-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl"
+            className="bg-white text-black rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-grey"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="px-6 py-4 border-b border-grey flex items-center justify-between">
               <div className="w-10"></div> {/* Spacer */}
-              <h3 className="text-lg font-bold text-slate-900">Lưu vào</h3>
+              <h3 className="text-lg font-bold text-black">Lưu vào</h3>
               <button 
                 onClick={() => setShowSaveMenu(false)}
-                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-grey text-dark-grey transition-colors"
               >
                 <i className="fi fi-rr-cross-small text-2xl"></i>
               </button>
@@ -576,44 +576,44 @@ const BlogPostCard = ({ content, author }) => {
             <div className="max-h-[400px] overflow-y-auto p-2 custom-scrollbar">
               {/* Default Collection */}
               <div 
-                className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors group"
+                className="flex items-center gap-4 p-3 rounded-xl hover:bg-grey cursor-pointer transition-colors group"
                 onClick={() => setSelectedCollectionId(null)}
               >
-                <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden border border-slate-50">
+                <div className="w-14 h-14 bg-grey rounded-lg flex items-center justify-center overflow-hidden border border-grey">
                   <i className="fi fi-sr-bookmark text-2xl text-indigo-500"></i>
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-bold text-slate-800">Mục mặc định</h4>
-                  <p className="text-sm text-slate-500 flex items-center gap-1">
+                  <h4 className="font-bold text-black">Mục mặc định</h4>
+                  <p className="text-sm text-dark-grey flex items-center gap-1 font-medium opacity-60">
                     <i className="fi fi-rr-lock text-xs"></i> Chỉ mình tôi
                   </p>
                 </div>
-                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedCollectionId === null ? 'border-indigo-500' : 'border-slate-200'}`}>
+                <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedCollectionId === null ? 'border-indigo-500' : 'border-grey'}`}>
                   {selectedCollectionId === null && <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>}
                 </div>
               </div>
 
               {/* User Collections */}
               {collections.map((col, idx) => {
-                const colors = ["bg-blue-50 text-blue-500", "bg-emerald-50 text-emerald-500", "bg-pink-50 text-pink-500", "bg-amber-50 text-amber-500"];
+                const colors = ["bg-blue-500/10 text-blue-500", "bg-emerald-500/10 text-emerald-500", "bg-pink-500/10 text-pink-500", "bg-amber-500/10 text-amber-500"];
                 const colBg = colors[idx % colors.length];
                 
                 return (
                   <div 
                     key={col._id}
-                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
+                    className="flex items-center gap-4 p-3 rounded-xl hover:bg-grey cursor-pointer transition-colors"
                     onClick={() => setSelectedCollectionId(col._id)}
                   >
-                    <div className={`w-14 h-14 rounded-lg flex items-center justify-center border border-slate-50 ${colBg}`}>
+                    <div className={`w-14 h-14 rounded-lg flex items-center justify-center border border-grey ${colBg}`}>
                       <i className="fi fi-rr-folder text-2xl"></i>
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-bold text-slate-800 truncate">{col.name}</h4>
-                      <p className="text-sm text-slate-500 flex items-center gap-1">
+                      <h4 className="font-bold text-black truncate">{col.name}</h4>
+                      <p className="text-sm text-dark-grey flex items-center gap-1 font-medium opacity-60">
                         <i className="fi fi-rr-lock text-xs"></i> Chỉ mình tôi
                       </p>
                     </div>
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedCollectionId === col._id ? 'border-indigo-500' : 'border-slate-200'}`}>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedCollectionId === col._id ? 'border-indigo-500' : 'border-grey'}`}>
                       {selectedCollectionId === col._id && <div className="w-3 h-3 bg-indigo-500 rounded-full"></div>}
                     </div>
                   </div>
@@ -623,25 +623,25 @@ const BlogPostCard = ({ content, author }) => {
               {/* New Collection Row */}
               {showNewCollectionInput ? (
                 <div className="p-3 animate-fade-in">
-                  <div className="flex items-center gap-2 bg-slate-50 rounded-xl p-2 px-3 border border-slate-200 focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+                  <div className="flex items-center gap-2 bg-grey rounded-xl p-2 px-3 border border-grey focus-within:border-indigo-500/50 transition-all">
                     <input 
                       autoFocus
                       type="text" 
                       placeholder="Tên bộ sưu tập..."
-                      className="bg-transparent border-none outline-none flex-1 text-sm py-1 text-slate-800"
+                      className="bg-transparent border-none outline-none flex-1 text-sm py-1 text-black placeholder:text-dark-grey/50"
                       value={newColName}
                       onChange={e => setNewColName(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleCreateAndSave(e)}
                     />
                     <button 
                       onClick={handleCreateAndSave}
-                      className="text-xs font-bold text-indigo-600 hover:text-indigo-700"
+                      className="text-xs font-bold text-indigo-500 hover:text-indigo-600"
                     >
                       Tạo
                     </button>
                     <button 
                       onClick={() => setShowNewCollectionInput(false)}
-                      className="text-slate-400 hover:text-slate-600"
+                      className="text-dark-grey hover:text-black"
                     >
                       <i className="fi fi-rr-cross-small"></i>
                     </button>
@@ -650,21 +650,21 @@ const BlogPostCard = ({ content, author }) => {
               ) : (
                 <button 
                   onClick={() => setShowNewCollectionInput(true)}
-                  className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors text-left"
+                  className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-grey transition-colors text-left"
                 >
-                  <div className="w-14 h-14 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-50">
+                  <div className="w-14 h-14 bg-grey rounded-lg flex items-center justify-center text-dark-grey border border-grey">
                     <i className="fi fi-rr-plus text-2xl"></i>
                   </div>
-                  <span className="font-bold text-slate-700">Bộ sưu tập mới</span>
+                  <span className="font-bold text-black">Bộ sưu tập mới</span>
                 </button>
               )}
             </div>
 
             {/* Footer */}
-            <div className="p-4 border-t border-slate-100 flex justify-end">
+            <div className="p-4 border-t border-grey flex justify-end">
               <button 
                 onClick={() => saveToCollection(selectedCollectionId)}
-                className="px-10 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all shadow-md active:scale-95"
+                className="px-10 py-2.5 bg-black text-white font-bold rounded-lg transition-all shadow-md active:scale-95"
               >
                 Xong
               </button>

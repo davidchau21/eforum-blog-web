@@ -141,7 +141,7 @@ const CommentField = ({
   const imageInputId = replyingTo ? "ReplyImageInput" : "ImageInput";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm">
+    <div className="bg-white rounded-2xl border border-grey p-4 sm:p-6 shadow-sm">
       <Toaster />
 
       <div className="flex items-start gap-4">
@@ -149,11 +149,11 @@ const CommentField = ({
         {profile_img ? (
           <img
             src={profile_img}
-            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-slate-100"
+            className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-grey"
             alt={fullname}
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-slate-100 flex-shrink-0"></div>
+          <div className="w-10 h-10 rounded-full bg-grey flex-shrink-0"></div>
         )}
 
         <div className="flex-1 min-w-0">
@@ -166,7 +166,7 @@ const CommentField = ({
                 replyingTo ? "Write a reply..." : "Add to the comment..."
               }
               rows={replyingTo ? 2 : 3}
-              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 resize-none focus:outline-none focus:border-indigo-400 focus:bg-white transition-all duration-200"
+              className="w-full px-4 py-3 bg-grey border border-grey rounded-xl text-sm placeholder:text-dark-grey/40 resize-none focus:outline-none focus:border-indigo-400 focus:bg-white transition-all duration-300 font-medium text-black"
             />
           </div>
 
@@ -176,7 +176,7 @@ const CommentField = ({
               <img
                 src={URL.createObjectURL(image)}
                 alt="Selected"
-                className="h-32 w-auto object-cover rounded-xl border border-slate-200 shadow-sm"
+                className="h-32 w-auto object-cover rounded-xl border border-grey shadow-sm"
               />
               <button
                 className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center shadow-md hover:bg-rose-600 transition-colors"
@@ -192,7 +192,7 @@ const CommentField = ({
             <div className="flex items-center gap-3">
               <label
                 htmlFor={imageInputId}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+                className="text-dark-grey/40 hover:text-indigo-500 cursor-pointer transition-colors"
               >
                 <i className="fi fi-rr-picture text-lg leading-none"></i>
               </label>
@@ -204,10 +204,10 @@ const CommentField = ({
                 accept="image/*"
               />
 
-              <button className="text-slate-400 hover:text-slate-600 cursor-pointer transition-colors hidden sm:block">
+              <button className="text-dark-grey/40 hover:text-indigo-500 cursor-pointer transition-colors hidden sm:block">
                 <i className="fi fi-rr-code text-lg leading-none"></i>
               </button>
-              <button className="text-slate-400 hover:text-slate-600 cursor-pointer transition-colors hidden sm:block">
+              <button className="text-dark-grey/40 hover:text-indigo-500 cursor-pointer transition-colors hidden sm:block">
                 <i className="fi fi-rr-at text-lg leading-none"></i>
               </button>
             </div>
@@ -215,10 +215,10 @@ const CommentField = ({
             <button
               onClick={handleComment}
               disabled={isSubmitting}
-              className={`px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+              className={`px-6 py-2 rounded-full text-sm font-bold uppercase tracking-wider transition-all duration-300 ${
                 isSubmitting
                   ? "bg-indigo-300 text-white cursor-not-allowed"
-                  : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm"
+                  : "bg-indigo-600 text-white hover:opacity-90 shadow-lg shadow-indigo-600/20"
               }`}
             >
               {isSubmitting ? (

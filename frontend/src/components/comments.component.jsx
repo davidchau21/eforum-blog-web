@@ -77,7 +77,7 @@ const CommentsContainer = () => {
       {/* Comments List */}
       <div className="space-y-6">
         {commentsArr && commentsArr.length ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+          <div className="bg-white border border-grey rounded-2xl p-4 sm:p-6 shadow-sm">
             {commentsArr.map((comment, i) => (
               <AnimationWrapper key={i}>
                 <CommentCard
@@ -90,12 +90,12 @@ const CommentsContainer = () => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center bg-white rounded-2xl border border-slate-200 border-dashed">
-            <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-              <i className="fi fi-rr-comment-slash text-xl text-slate-400"></i>
+          <div className="flex flex-col items-center justify-center py-12 text-center bg-white rounded-2xl border border-grey border-dashed">
+            <div className="w-12 h-12 bg-grey rounded-full flex items-center justify-center mb-3">
+              <i className="fi fi-rr-comment-slash text-xl text-dark-grey opacity-40"></i>
             </div>
-            <p className="text-slate-600 font-medium">No comments yet</p>
-            <p className="text-[13px] text-slate-400 mt-1">
+            <p className="text-black font-bold">No comments yet</p>
+            <p className="text-[13px] text-dark-grey mt-1 font-medium opacity-60">
               Be the first to join the conversation!
             </p>
           </div>
@@ -104,7 +104,7 @@ const CommentsContainer = () => {
         {total_parent_comments > totalParentCommentsLoaded && (
           <button
             onClick={loadMoreComments}
-            className="w-full mt-4 py-3 text-[13px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 text-[13px] font-bold text-indigo-500 hover:text-white bg-indigo-500/10 hover:bg-indigo-500 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-indigo-500/20"
           >
             <i className="fi fi-rr-angle-down text-sm"></i>
             Load more comments

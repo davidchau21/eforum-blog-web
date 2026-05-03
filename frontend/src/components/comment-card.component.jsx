@@ -270,7 +270,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     >
       {/* Thread line for nested comments */}
       {isReply && (
-        <div className="absolute left-[2px] top-0 bottom-0 w-[2px] bg-slate-100 hidden sm:block"></div>
+        <div className="absolute left-[2px] top-0 bottom-0 w-[2px] bg-grey hidden sm:block"></div>
       )}
 
       {/* Header */}
@@ -280,7 +280,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         <Link to={`/user/${commented_by_username}`} className="flex-shrink-0">
           <img
             src={profile_img}
-            className={`${isReply ? "w-6 h-6" : "w-10 h-10 mt-1"} rounded-full object-cover shadow-sm border border-slate-100`}
+            className={`${isReply ? "w-6 h-6" : "w-10 h-10 mt-1"} rounded-full object-cover shadow-sm border border-grey`}
             alt={fullname}
           />
         </Link>
@@ -288,19 +288,19 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           <div className="flex items-center gap-2">
             <Link to={`/user/${commented_by_username}`}>
               <span
-                className={`font-bold text-slate-800 hover:text-indigo-600 transition-colors line-clamp-1 ${isReply ? "text-[13px]" : "text-[14.5px]"}`}
+                className={`font-bold text-black hover:text-indigo-500 transition-colors line-clamp-1 ${isReply ? "text-[13px]" : "text-[14.5px]"}`}
               >
                 {fullname}
               </span>
             </Link>
             {commented_by_username === blog_author && (
-              <span className="bg-emerald-50 text-emerald-600 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold">
+              <span className="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider font-bold">
                 Tác giả
               </span>
             )}
           </div>
           <span
-            className={`text-slate-500 whitespace-nowrap ${isReply ? "text-[12px]" : "text-[13px]"}`}
+            className={`text-dark-grey opacity-60 font-medium whitespace-nowrap ${isReply ? "text-[12px]" : "text-[13px]"}`}
           >
             {getDisplayDate(commentedAt)}
           </span>
@@ -312,13 +312,13 @@ const CommentCard = ({ index, leftVal, commentData }) => {
             <button
               onClick={() => setShowOptions(!showOptions)}
               onBlur={() => setTimeout(() => setShowOptions(false), 200)}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-dark-grey hover:text-black hover:bg-grey transition-all"
             >
               <i className="fi fi-br-menu-dots-vertical text-[13px]"></i>
             </button>
 
             {showOptions && (
-              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-slate-200 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] py-1.5 z-10 flex flex-col overflow-hidden">
+              <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-grey rounded-xl shadow-2xl py-1.5 z-10 flex flex-col overflow-hidden">
                 {/* Hide/Show for Blog Author */}
                 {canHide && (
                   <button
@@ -326,7 +326,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                       toggleHideComment();
                       setShowOptions(false);
                     }}
-                    className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-50 transition-colors w-full text-left"
+                    className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-bold text-dark-grey hover:bg-grey hover:text-black transition-colors w-full text-left"
                   >
                     <i
                       className={`fi ${isHidden ? "fi-rr-eye" : "fi-rr-eye-crossed"} w-4`}
@@ -342,7 +342,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                       setShowDeleteModal(true);
                       setShowOptions(false);
                     }}
-                    className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-medium text-rose-500 hover:bg-rose-50 transition-colors w-full text-left"
+                    className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-bold text-rose-500 hover:bg-rose-500/10 transition-colors w-full text-left"
                   >
                     <i className="fi fi-rr-trash w-4"></i>
                     Delete
@@ -356,7 +356,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                       setShowConfirmModal(true);
                       setShowOptions(false);
                     }}
-                    className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-medium text-slate-600 hover:bg-slate-50 transition-colors w-full text-left"
+                    className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-bold text-dark-grey hover:bg-grey hover:text-black transition-colors w-full text-left"
                   >
                     <i className="fi fi-rr-flag w-4"></i>
                     Report
@@ -373,11 +373,11 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         {/* Comment text */}
         {isHidden && username !== blog_author ? (
           <div className="relative group/hidden mb-4">
-            <div className="blur-md select-none opacity-40 pointer-events-none text-[14.5px] leading-relaxed text-slate-600">
+            <div className="blur-md select-none opacity-40 pointer-events-none text-[14.5px] leading-relaxed text-black">
               {comment}
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-[12px] font-medium text-slate-500 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-slate-200 shadow-sm flex items-center gap-1.5">
+              <p className="text-[12px] font-bold text-dark-grey bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-grey shadow-sm flex items-center gap-1.5">
                 <i className="fi fi-rr-eye-crossed"></i>
                 Hidden by author
               </p>
@@ -385,7 +385,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
           </div>
         ) : (
           <div
-            className={`whitespace-pre-wrap leading-relaxed text-slate-600 mb-4 ${isReply ? "text-[14px]" : "text-[15px]"}`}
+            className={`whitespace-pre-wrap leading-relaxed text-black/80 mb-4 font-medium ${isReply ? "text-[14px]" : "text-[15px]"}`}
           >
             {comment}
           </div>
@@ -394,7 +394,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         {/* Comment image */}
         {image && (!isHidden || username === blog_author) && (
           <div
-            className={`mb-4 rounded-xl overflow-hidden cursor-zoom-in transition-all border border-slate-100 ${isHidden && username !== blog_author ? "blur-xl grayscale opacity-20 pointer-events-none" : isHidden ? "opacity-50 grayscale" : ""}`}
+            className={`mb-4 rounded-xl overflow-hidden cursor-zoom-in transition-all border border-grey ${isHidden && username !== blog_author ? "blur-xl grayscale opacity-20 pointer-events-none" : isHidden ? "opacity-50 grayscale" : ""}`}
             onClick={() => setFullScreenImage(image)}
           >
             <img
@@ -407,14 +407,14 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
         {/* Footer Actions */}
         <div className="flex items-center gap-4 mt-1">
-          <button className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-rose-500 transition-colors">
+          <button className="flex items-center gap-1.5 text-[13px] font-bold text-dark-grey hover:text-rose-500 transition-colors">
             <i className="fi fi-rr-heart text-sm"></i>
             {0} {/* Placeholder for likes */}
           </button>
 
           {level < 2 && (
             <button
-              className="flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-indigo-600 transition-colors"
+              className="flex items-center gap-1.5 text-[13px] font-bold text-dark-grey hover:text-indigo-500 transition-colors"
               onClick={handleReplyClick}
             >
               <i className="fi fi-rr-comment-dots text-sm"></i>
@@ -424,7 +424,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
           {commentData.isReplyLoaded ? (
             <button
-              className="text-[13px] font-bold text-slate-500 hover:text-indigo-600 transition-colors"
+              className="text-[13px] font-bold text-dark-grey/60 hover:text-indigo-500 transition-colors"
               onClick={hideReplies}
             >
               Hide Replies
@@ -459,20 +459,20 @@ const CommentCard = ({ index, leftVal, commentData }) => {
       {/* Report Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[1001]">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-72 mx-4 border border-slate-100">
-            <div className="w-10 h-10 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-72 mx-4 border border-grey">
+            <div className="w-10 h-10 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
               <i className="fi fi-rr-flag text-rose-500 text-sm"></i>
             </div>
-            <p className="text-sm font-bold text-slate-900 text-center mb-1">
+            <p className="text-sm font-bold text-black text-center mb-1">
               Report Comment
             </p>
-            <p className="text-xs text-slate-500 text-center mb-5">
+            <p className="text-xs text-dark-grey font-medium text-center mb-5 opacity-60">
               Are you sure you want to report this comment?
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="flex-1 py-2 px-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
+                className="flex-1 py-2 px-3 bg-grey text-dark-grey rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-grey/80 transition-all"
               >
                 Cancel
               </button>
@@ -481,7 +481,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                   report();
                   setShowConfirmModal(false);
                 }}
-                className="flex-1 py-2 px-3 bg-rose-500 text-white rounded-xl text-xs font-bold hover:bg-rose-600 transition-all"
+                className="flex-1 py-2 px-3 bg-rose-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-all"
               >
                 Report
               </button>
@@ -493,20 +493,20 @@ const CommentCard = ({ index, leftVal, commentData }) => {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[1001]">
-          <div className="bg-white rounded-[2rem] shadow-2xl p-8 w-80 mx-4 border border-slate-100">
-            <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white border border-grey rounded-[2rem] shadow-2xl p-8 w-80 mx-4">
+            <div className="w-12 h-12 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <i className="fi fi-rr-trash text-rose-500 text-lg"></i>
             </div>
-            <h3 className="text-lg font-bold text-slate-900 text-center mb-2">
+            <h3 className="text-lg font-bold text-black text-center mb-2">
               Delete comment?
             </h3>
-            <p className="text-sm text-slate-500 text-center mb-8">
+            <p className="text-sm text-dark-grey font-medium text-center mb-8 opacity-60">
               This action cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="flex-1 py-3 px-4 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold transition-all"
+                className="flex-1 py-3 px-4 rounded-full bg-grey hover:bg-grey/80 text-dark-grey text-sm font-bold transition-all"
               >
                 Cancel
               </button>
@@ -515,7 +515,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
                   deleteComment();
                   setShowDeleteModal(false);
                 }}
-                className="flex-1 py-3 px-4 rounded-full bg-rose-500 text-white text-sm font-bold hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20"
+                className="flex-1 py-3 px-4 rounded-full bg-rose-500 text-white text-sm font-bold hover:opacity-90 transition-all shadow-lg shadow-rose-500/20"
               >
                 Delete
               </button>

@@ -87,7 +87,7 @@
     }
 
     .btn-dark{
-        @apply whitespace-nowrap bg-black text-white rounded-full py-3 px-6 text-xl capitalize hover:bg-opacity-80;
+        @apply whitespace-nowrap bg-black text-white rounded-full py-3 px-6 text-[15px] capitalize hover:bg-opacity-80 font-semibold transition-all duration-200;
     }
 
     .btn-light{
@@ -95,7 +95,7 @@
     }
 
     .input-box {
-        @apply w-[100%] rounded-xl p-4 bg-grey pl-12 border border-transparent focus:border-purple/30 focus:bg-transparent placeholder:text-dark-grey transition-all duration-200 outline-none;
+        @apply w-[100%] rounded-xl p-4 bg-grey pl-12 border border-transparent focus:border-purple/30 focus:bg-transparent placeholder:text-dark-grey transition-all duration-200 outline-none text-[15px];
     }
 
     input:disabled, input:disabled ~ .input-icon{
@@ -107,7 +107,7 @@
     }
 
     .link{
-        @apply text-dark-grey hover:text-black dark:hover:text-white hover:bg-purple/5 p-3 px-4 block transition-all duration-200;
+        @apply text-dark-grey hover:text-black dark:hover:text-white hover:bg-purple/5 p-3 px-4 block transition-all duration-200 text-[15px];
     }
 
     .hide{
@@ -119,11 +119,11 @@
     }
 
     .sidebar-link{
-        @apply flex gap-4 items-center py-5 text-dark-grey hover:text-black hover:pl-2 transition-all duration-200;
+        @apply flex gap-4 items-center py-3.5 px-4 text-dark-grey hover:text-black hover:bg-grey/50 rounded-xl transition-all duration-300 font-semibold text-[14px];
     }
 
     .sidebar-link.active{
-        @apply text-black border-r-2 border-purple pl-6 bg-purple/5 -ml-6 md:rounded-tl-lg md:rounded-bl-lg max-md:border-none;
+        @apply text-black bg-grey border-l-4 border-indigo-600 rounded-l-none rounded-r-xl shadow-sm;
     }
 
     #textEditor h2, h2{

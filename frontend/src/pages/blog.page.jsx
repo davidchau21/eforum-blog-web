@@ -236,19 +236,19 @@ const BlogPage = () => {
 
           <div
             ref={contentRef}
-            className="text-black min-h-screen bg-slate-50 py-8"
+            className="text-black min-h-screen bg-grey py-8 transition-colors duration-300"
           >
             <div className="max-w-[1200px] mx-auto px-4 lg:px-8 flex flex-col lg:flex-row gap-8 items-start">
               {/* ── LEFT COLUMN (Article + Comments) ── */}
               <div className="flex-1 min-w-0 w-full">
                 {/* Breadcrumbs */}
-                <div className="flex items-center gap-2 text-[13px] font-medium text-slate-500 mb-6 capitalize tracking-wide">
+                <div className="flex items-center gap-2 text-[13px] font-bold text-dark-grey mb-6 capitalize tracking-wide opacity-60 uppercase">
                   {tags && tags.length > 0 ? (
                     <>
                       <span>{tags[0]}</span>
                       {tags[1] && (
                         <>
-                          <i className="fi fi-rr-angle-small-right text-slate-400"></i>
+                          <i className="fi fi-rr-angle-small-right text-dark-grey"></i>
                           <span>{tags[1]}</span>
                         </>
                       )}
@@ -259,25 +259,25 @@ const BlogPage = () => {
                 </div>
 
                 {/* MAIN ARTICLE CARD */}
-                <article className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm mb-10">
+                <article className="bg-white rounded-2xl border border-grey p-6 md:p-8 shadow-sm mb-10">
                   {/* Card Header */}
                   <div className="flex items-center gap-3 mb-6">
-                    <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[11px] font-semibold tracking-wide">
+                    <span className="px-3 py-1 bg-grey text-dark-grey rounded-full text-[11px] font-bold tracking-widest uppercase">
                       {translations.post || "Post"}
                     </span>
-                    <span className="text-[13px] text-slate-400 font-medium">
+                    <span className="text-[13px] text-dark-grey font-medium opacity-60">
                       Posted {new Date(publishedAt).toLocaleDateString("en-GB")}
                     </span>
                   </div>
 
                   {/* Title */}
-                  <h1 className="text-3xl md:text-[40px] font-bold text-slate-900 leading-[1.15] mb-6 tracking-tight">
+                  <h1 className="text-3xl md:text-[40px] font-bold text-black leading-[1.15] mb-6 tracking-tight">
                     {title}
                   </h1>
 
                   {/* Description (Optional, since sometimes it's just content) */}
                   {des && (
-                    <p className="text-lg text-slate-600 leading-relaxed mb-8">
+                    <p className="text-lg text-dark-grey leading-relaxed mb-8 font-medium">
                       {des}
                     </p>
                   )}
@@ -285,7 +285,7 @@ const BlogPage = () => {
                   {/* Banner */}
                   {hasRealBanner && (
                     <div
-                      className="w-full aspect-video rounded-xl overflow-hidden shadow-md cursor-zoom-in mb-8 border border-slate-100"
+                      className="w-full aspect-video rounded-xl overflow-hidden shadow-md cursor-zoom-in mb-8 border border-grey"
                       onClick={() => setFullScreenImage(banner)}
                     >
                       <img
@@ -298,7 +298,7 @@ const BlogPage = () => {
                   )}
 
                   {/* Body Content */}
-                  <div className="blog-page-content font-inter leading-relaxed text-slate-800 text-[1.05rem]">
+                  <div className="blog-page-content font-inter leading-relaxed text-black text-[1.05rem] opacity-90">
                     {content[0].blocks.map((block, i) => (
                       <div key={i} className="my-5 md:my-7">
                         <BlogContent block={block} />
@@ -307,14 +307,14 @@ const BlogPage = () => {
                   </div>
 
                   {/* Card Footer (Tags + Interactions) */}
-                  <div className="flex items-center justify-between pt-6 mt-8 border-t border-slate-100 flex-wrap gap-4">
+                  <div className="flex items-center justify-between pt-6 mt-8 border-t border-grey flex-wrap gap-4">
                     {/* Left: Tags */}
                     <div className="flex flex-wrap gap-2">
                       {tags &&
                         tags.map((tag, i) => (
                           <span
                             key={i}
-                            className="bg-slate-50 text-slate-500 text-[12px] px-3 py-1.5 rounded-md font-medium border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all cursor-pointer"
+                            className="bg-grey text-dark-grey text-[12px] px-3 py-1.5 rounded-md font-bold border border-grey hover:bg-indigo-500/10 hover:text-indigo-500 hover:border-indigo-500/30 transition-all cursor-pointer uppercase tracking-wider"
                           >
                             {tag}
                           </span>
@@ -328,9 +328,9 @@ const BlogPage = () => {
 
                 {/* Comments */}
                 <div className="mb-10">
-                  <h4 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2 tracking-tight">
+                  <h4 className="text-2xl font-bold text-black mb-6 flex items-center gap-2 tracking-tight">
                     Comments{" "}
-                    <span className="text-slate-400 font-medium text-lg">
+                    <span className="text-dark-grey font-bold text-lg opacity-40">
                       ({activity?.total_comments || 0})
                     </span>
                   </h4>
@@ -341,41 +341,41 @@ const BlogPage = () => {
               {/* ── RIGHT SIDEBAR ── */}
               <aside className="w-full lg:w-[320px] flex-shrink-0 space-y-6 lg:sticky lg:top-[100px]">
                 {/* Author Card */}
-                <div className="bg-white rounded-2xl border border-slate-200 p-8 flex flex-col items-center text-center shadow-sm">
+                <div className="bg-white rounded-2xl border border-grey p-8 flex flex-col items-center text-center shadow-sm">
                   <Link to={`/user/${author_username}`} className="mb-4">
                     <img
                       src={profile_img}
-                      className="w-20 h-20 rounded-full object-cover border-4 border-slate-50 shadow-sm hover:scale-105 transition-transform"
+                      className="w-20 h-20 rounded-full object-cover border-4 border-grey shadow-sm hover:scale-105 transition-transform"
                       alt={fullname}
                     />
                   </Link>
                   <Link to={`/user/${author_username}`}>
-                    <h3 className="font-bold text-lg text-slate-900 hover:text-indigo-600 transition-colors">
+                    <h3 className="font-bold text-lg text-black hover:text-indigo-500 transition-colors">
                       {fullname}
                     </h3>
                   </Link>
-                  <p className="text-[13px] text-slate-500 mb-6">
+                  <p className="text-[13px] text-dark-grey mb-6 font-bold opacity-60">
                     @{author_username}
                   </p>
 
                   {/* Stats Grid */}
-                  <div className="flex items-center justify-center gap-8 w-full border-t border-slate-100 pt-5 mb-6">
+                  <div className="flex items-center justify-center gap-8 w-full border-t border-grey pt-5 mb-6">
                     <div className="text-center">
-                      <p className="font-bold text-indigo-600 text-lg leading-none mb-1">
+                      <p className="font-bold text-indigo-500 text-lg leading-none mb-1">
                         {activity?.total_likes > 1000
                           ? (activity.total_likes / 1000).toFixed(1) + "k"
                           : activity?.total_likes || 0}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest opacity-40">
                         Rep
                       </p>
                     </div>
-                    <div className="w-px h-8 bg-slate-100"></div>
+                    <div className="w-px h-8 bg-grey"></div>
                     <div className="text-center">
-                      <p className="font-bold text-slate-900 text-lg leading-none mb-1">
+                      <p className="font-bold text-black text-lg leading-none mb-1">
                         {activity?.total_comments || 0}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest opacity-40">
                         Posts
                       </p>
                     </div>
@@ -385,10 +385,10 @@ const BlogPage = () => {
                   {username !== author_username && (
                     <button
                       onClick={handleFollowAuthor}
-                      className={`w-full font-medium text-sm py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${isFollowingAuthor ? "bg-slate-100 text-slate-600 border border-slate-200 hover:bg-slate-200" : "bg-[#111113] text-white hover:bg-slate-800 shadow-lg shadow-black/5"}`}
+                      className={`w-full font-bold text-sm py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${isFollowingAuthor ? "bg-grey text-dark-grey border border-grey hover:bg-grey/80" : "bg-black text-white hover:opacity-90 shadow-lg shadow-black/5"}`}
                     >
                       <i
-                        className={`fi ${isFollowingAuthor ? "fi-rr-user-check" : "fi-rr-user-add"} text-sm`}
+                        className={`fi ${isFollowingAuthor ? "fi-rr-user-check" : "fi-rr-user-add"} text-sm mt-0.5`}
                       ></i>
                       {isFollowingAuthor ? "Following" : "Follow"}
                     </button>
@@ -397,8 +397,8 @@ const BlogPage = () => {
 
                 {/* Related Stream Placeholder */}
                 {similarBlogs && similarBlogs.length > 0 && (
-                  <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">
+                  <div className="bg-white rounded-2xl border border-grey p-6 shadow-sm">
+                    <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4 opacity-50">
                       Related Stream
                     </p>
                     <div className="space-y-4">
@@ -408,10 +408,10 @@ const BlogPage = () => {
                           key={i}
                           className="block group"
                         >
-                          <h4 className="font-bold text-sm text-slate-800 group-hover:text-indigo-600 transition-colors mb-1 line-clamp-2 leading-tight">
+                          <h4 className="font-bold text-sm text-black group-hover:text-indigo-500 transition-colors mb-1 line-clamp-2 leading-tight">
                             {b.title}
                           </h4>
-                          <p className="text-[11px] text-slate-400">
+                          <p className="text-[11px] text-dark-grey font-medium opacity-60 uppercase tracking-tighter">
                             {b.activity?.total_comments || 0} replies •{" "}
                             {new Date(b.publishedAt).toLocaleDateString(
                               "en-GB",
@@ -429,10 +429,10 @@ const BlogPage = () => {
             {/* ═══════════ SIMILAR BLOGS ═══════════ */}
             {similarBlogs != null && similarBlogs.length > 0 && (
               <div className="max-w-[1200px] mx-auto mt-16 mb-24 px-4 sm:px-6">
-                <div className="border-t border-slate-200 pt-12">
+                <div className="border-t border-grey pt-12">
                   <div className="flex items-center gap-3 mb-8">
                     <div className="w-1.5 h-6 bg-indigo-500 rounded-full flex-shrink-0"></div>
-                    <h3 className="text-xl font-bold text-slate-800">
+                    <h3 className="text-xl font-bold text-black">
                       {translations.similarPosts}
                     </h3>
                   </div>

@@ -8,20 +8,20 @@ import axios from "axios";
 
 const BlogStats = ({ stats }) => {
   return (
-    <div className="flex gap-2 max-lg:mb-6 max-lg:pb-6 border-grey max-lg:border-b">
+    <div className="flex gap-4 max-lg:mb-6 max-lg:pb-6 border-grey max-lg:border-b">
       {Object.keys(stats).map((key, i) => {
         return !key.includes("parent") ? (
           <div
             key={i}
             className={
-              "flex flex-col items-center w-full h-full justify-center p-4 px-6 " +
-              (i !== 0 ? " border-grey border-l " : "")
+              "flex flex-col items-center min-w-[80px] p-4 rounded-2xl bg-grey/30 border border-grey/50 " +
+              (i !== 0 ? "" : "")
             }
           >
-            <h1 className="text-xl lg:text-2xl mb-2">
+            <h1 className="text-[18px] font-bold text-black">
               {stats[key].toLocaleString()}
             </h1>
-            <p className="max-lg:text-dark-grey capitalize">
+            <p className="text-[12px] text-dark-grey mt-1 capitalize">
               {key.split("_")[1]}
             </p>
           </div>
@@ -42,8 +42,8 @@ export const ManagePublishedBlogCard = ({ blog }) => {
   let [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const deleteBlogHandler = () => {
-    deleteBlog(blog, access_token); // Call the deleteBlog function
-    setShowConfirmModal(false); // Close the modal after calling delete
+    deleteBlog(blog, access_token);
+    setShowConfirmModal(false);
   };
 
   const getDisplayDate = (date) => {
@@ -56,16 +56,16 @@ export const ManagePublishedBlogCard = ({ blog }) => {
 
     if (now.toDateString() === publishedDate.toDateString()) {
       if (diffHours < 1) {
-        return `${diffMinutes} phút trước`;
+        return `${diffMinutes} minutes ago`;
       } else {
-        return `${diffHours} giờ trước`;
+        return `${diffHours} hours ago`;
       }
     }
 
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays <= 7) {
-      return `${diffDays} ngày trước`;
+      return `${diffDays} days ago`;
     } else {
       return publishedDate.toLocaleDateString("en-GB");
     }
@@ -73,70 +73,76 @@ export const ManagePublishedBlogCard = ({ blog }) => {
 
   return (
     <>
-      <div className="flex gap-10 border-b mb-6 max-md:px-4 border-grey pb-6 items-center">
+      <div className="flex gap-6 border-b border-grey py-6 items-start group transition-all duration-300">
         <img
           src={banner}
-          className="max-md:hidden lg:hidden xl:block w-28 h-28 flex-none bg-grey object-cover"
+          className="max-md:hidden lg:hidden xl:block w-32 h-32 flex-none rounded-2xl bg-grey object-cover border border-grey shadow-sm group-hover:shadow-md transition-shadow"
         />
-        <div className="flex flex-col justify-between py-2 w-full min-w-[300px]">
+        <div className="flex flex-col justify-between py-1 w-full">
           <div>
             <Link
               to={`/blog/${blog_id}`}
-              className="blog-title mb-4 hover:underline"
+              className="text-[17px] font-semibold text-black leading-snug hover:text-indigo-600 transition-colors line-clamp-2 mb-2"
             >
               {title}
             </Link>
-            <p className="line-clamp-1">
-              Đã đăng {getDisplayDate(publishedAt)}
+            <p className="text-[13px] text-dark-grey">
+              Published {getDisplayDate(publishedAt)}
             </p>
           </div>
-          <div className="flex gap-6 mt-3">
-            <Link to={`/editor/${blog_id}`} className="pr-4 py-2 underline">
+          <div className="flex items-center gap-2 mt-5">
+            <Link 
+              to={`/editor/${blog_id}`} 
+              className="text-[13px] font-medium text-indigo-600 hover:bg-indigo-500/10 px-3 py-1.5 rounded-lg transition-all"
+            >
               Edit
             </Link>
             <button
-              className="lg:hidden pr-4 py-2 underline"
+              className="lg:hidden text-[13px] font-medium text-dark-grey hover:bg-black/5 px-3 py-1.5 rounded-lg transition-all"
               onClick={() => setShowStat((prevVal) => !prevVal)}
             >
               Stats
             </button>
             <button
-              className="pr-4 py-2 underline text-red"
+              className="text-[13px] font-medium text-rose-500 hover:bg-rose-500/10 px-3 py-1.5 rounded-lg transition-all"
               onClick={() => setShowConfirmModal(true)}
             >
               Delete
             </button>
           </div>
         </div>
-        <div className="max-lg:hidden">
+        <div className="max-lg:hidden flex-shrink-0">
           <BlogStats stats={activity} />
         </div>
       </div>
 
       {showStat && (
-        <div className="lg:hidden">
+        <div className="lg:hidden mt-4 animate-in">
           <BlogStats stats={activity} />
         </div>
       )}
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-            <p className="text-lg font-semibold text-black">Confirm Deletion</p>
-            <p className="text-sm text-black mt-2">
-              Are you sure you want to delete this blog post?
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full border border-grey animate-in">
+            <div className="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center mb-6 mx-auto">
+               <i className="fi fi-rr-trash text-rose-500 text-2xl"></i>
+            </div>
+            <h3 className="text-xl font-bold text-black text-center mb-2">Delete Blog Post?</h3>
+            <p className="text-sm text-dark-grey text-center leading-relaxed mb-8">
+              This action cannot be undone. All engagement data and comments will be permanently lost.
             </p>
-            <div className="mt-4 flex justify-center gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                className="flex-1 py-3 px-6 bg-grey text-black font-bold rounded-2xl hover:bg-black/5 transition-all active:scale-95"
               >
                 Cancel
               </button>
               <button
-                onClick={deleteBlogHandler} // Call the deleteBlogHandler
-                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                onClick={deleteBlogHandler}
+                className="flex-1 py-3 px-6 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 active:scale-95"
               >
                 Delete
               </button>
@@ -154,34 +160,39 @@ export const ManageDraftBlogPost = ({ blog }) => {
     userAuth: { access_token },
   } = useContext(UserContext);
 
-  const [showConfirmModal, setShowConfirmModal] = useState(false); // Added state for modal
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   index++;
 
   const deleteBlogHandler = () => {
-    deleteBlog(blog, access_token); // Call the deleteBlog function
-    setShowConfirmModal(false); // Close the modal after deletion
+    deleteBlog(blog, access_token);
+    setShowConfirmModal(false);
   };
 
   return (
     <>
-      <div className="flex gap-5 lg:gap-10 pb-6 border-b mb-6 border-grey">
-        {/* <h1 className="blog-index text-center pl-4 md:pl-6 flex-none">{ index < 10 ? "0" + index : index }</h1> */}
+      <div className="flex gap-5 lg:gap-10 py-6 border-b border-grey group transition-all duration-300">
+        <div className="flex flex-col justify-between py-1 w-full">
+          <div>
+            <h1 className="text-[17px] font-semibold text-black leading-snug hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
+               {title.length ? title : "Untitled Draft"}
+            </h1>
+            <p className="line-clamp-2 font-gelasio text-[16px] text-black/60 italic leading-relaxed">
+              {des.length ? des : "No description provided for this draft."}
+            </p>
+          </div>
 
-        <div>
-          <h1 className="blog-title mb-3">{title}</h1>
-          <p className="line-clamp-2 font-gelasio">
-            {des.length ? des : "No Description"}
-          </p>
-
-          <div className="flex gap-6 mt-3">
-            <Link to={`/editor/${blog_id}`} className="pr-4 py-2 underline">
+          <div className="flex items-center gap-2 mt-5">
+            <Link 
+              to={`/editor/${blog_id}`} 
+              className="text-[13px] font-medium text-indigo-600 hover:bg-indigo-500/10 px-3 py-1.5 rounded-lg transition-all"
+            >
               Edit
             </Link>
 
             <button
-              className="pr-4 py-2 underline text-red"
-              onClick={() => setShowConfirmModal(true)} // Show modal
+              className="text-[13px] font-medium text-rose-500 hover:bg-rose-500/10 px-3 py-1.5 rounded-lg transition-all"
+              onClick={() => setShowConfirmModal(true)}
             >
               Delete
             </button>
@@ -191,22 +202,25 @@ export const ManageDraftBlogPost = ({ blog }) => {
 
       {/* Modal for confirmation */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-80">
-            <p className="text-lg font-semibold text-black">Confirm Deletion</p>
-            <p className="text-sm text-black mt-2">
-              Are you sure you want to delete this blog post?
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-6">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full border border-grey animate-in">
+            <div className="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center mb-6 mx-auto">
+               <i className="fi fi-rr-trash text-rose-500 text-2xl"></i>
+            </div>
+            <h3 className="text-xl font-bold text-black text-center mb-2">Delete Draft?</h3>
+            <p className="text-sm text-dark-grey text-center leading-relaxed mb-8">
+               Are you sure you want to delete this draft? This action is permanent and cannot be reversed.
             </p>
-            <div className="mt-4 flex justify-center gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                className="flex-1 py-3 px-6 bg-grey text-black font-bold rounded-2xl hover:bg-black/5 transition-all active:scale-95"
               >
                 Cancel
               </button>
               <button
-                onClick={deleteBlogHandler} // Call deleteBlogHandler
-                className="py-2 px-4 bg-black rounded hover:bg-gray-300 text-white transition-all"
+                onClick={deleteBlogHandler}
+                className="flex-1 py-3 px-6 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 active:scale-95"
               >
                 Delete
               </button>

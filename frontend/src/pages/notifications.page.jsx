@@ -9,114 +9,136 @@ import NotificationCard from "../components/notification-card.component";
 import { getTranslations } from "../../translations";
 
 const Notifications = () => {
-    const { userAuth, userAuth: { access_token, new_notification_available }, setUserAuth } = useContext(UserContext);
-    const [filter, setFilter] = useState("all");
-    const [notifications, setNotifications] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const { language } = userAuth;
-    const translations = getTranslations(language);
+  const {
+    userAuth,
+    userAuth: { access_token, new_notification_available },
+    setUserAuth,
+  } = useContext(UserContext);
+  const [filter, setFilter] = useState("all");
+  const [notifications, setNotifications] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { language } = userAuth;
+  const translations = getTranslations(language);
 
-    const filters = ["all", "like", "comment", "reply", "share"];
+  const filters = ["all", "like", "comment", "reply", "share"];
 
-    const fetchNotifications = ({ page, deletedDocCount = 0 }) => {
-        setIsLoading(true);
-        axios.post(
-            import.meta.env.VITE_SERVER_DOMAIN + "/notifications/list",
-            { page, filter, deletedDocCount },
-            {
-                headers: { Authorization: `Bearer ${access_token}` },
-            }
-        )
-            .then(async ({ data: { notifications: data, totalDocs } }) => {
-                if (new_notification_available > 0) {
-                    setUserAuth({ ...userAuth, new_notification_available: 0 });
-                }
-
-                const formatedData = await filterPaginationData({
-                    state: notifications,
-                    data,
-                    page,
-                    countRoute: "/notifications/count",
-                    data_to_send: { filter },
-                    user: access_token,
-                });
-
-                setNotifications({ ...formatedData, totalDocs });
-                setIsLoading(false);
-            })
-            .catch((err) => {
-                console.error(err);
-                setIsLoading(false);
-            });
-    };
-
-    useEffect(() => {
-        if (access_token) {
-            fetchNotifications({ page: 1 });
+  const fetchNotifications = ({ page, deletedDocCount = 0 }) => {
+    setIsLoading(true);
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/notifications/list",
+        { page, filter, deletedDocCount },
+        {
+          headers: { Authorization: `Bearer ${access_token}` },
+        },
+      )
+      .then(async ({ data: { notifications: data, totalDocs } }) => {
+        if (new_notification_available > 0) {
+          setUserAuth({ ...userAuth, new_notification_available: 0 });
         }
-    }, [access_token, filter]);
 
-    useEffect(() => {
-        const handleScroll = () => {
-            if (
-                window.innerHeight + document.documentElement.scrollTop >=
-                document.documentElement.offsetHeight - 200 &&
-                notifications &&
-                notifications.totalDocs > notifications.results.length &&
-                !isLoading
-            ) {
-                fetchNotifications({ page: notifications.page + 1, deletedDocCount: notifications.deletedDocCount });
-            }
-        };
+        const formatedData = await filterPaginationData({
+          state: notifications,
+          data,
+          page,
+          countRoute: "/notifications/count",
+          data_to_send: { filter },
+          user: access_token,
+        });
 
-        window.addEventListener("scroll", handleScroll);
+        setNotifications({ ...formatedData, totalDocs });
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setIsLoading(false);
+      });
+  };
 
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, [notifications, isLoading]);
+  useEffect(() => {
+    if (access_token) {
+      fetchNotifications({ page: 1 });
+    }
+  }, [access_token, filter]);
 
-    const handleFilter = (filterName) => {
-        setFilter(filterName); // Cập nhật bộ lọc
-        setNotifications(null); // Xóa thông báo cũ
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop >=
+          document.documentElement.offsetHeight - 200 &&
+        notifications &&
+        notifications.totalDocs > notifications.results.length &&
+        !isLoading
+      ) {
+        fetchNotifications({
+          page: notifications.page + 1,
+          deletedDocCount: notifications.deletedDocCount,
+        });
+      }
     };
 
-    return (
-        <div>
-            <h1 className="max-md:hidden">{translations.recentNotifications}</h1>
+    window.addEventListener("scroll", handleScroll);
 
-            <div className="my-8 flex gap-6 overflow-x-auto scrollbar-hide">
-                {filters.map((filterName, i) => (
-                    <button
-                        key={i}
-                        className={`py-2 ${filter === filterName ? "btn-dark" : "btn-light"}`}
-                        onClick={() => handleFilter(filterName)} // Truyền filterName trực tiếp
-                    >
-                        {translations[filterName] || filterName} {/* Hiển thị bản dịch */}
-                    </button>
-                ))}
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [notifications, isLoading]);
+
+  const handleFilter = (filterName) => {
+    setFilter(filterName); // Cập nhật bộ lọc
+    setNotifications(null); // Xóa thông báo cũ
+  };
+
+  return (
+    <div className="max-w-4xl">
+      <div className="flex items-center justify-between mb-8 pb-4 border-b border-grey">
+        <h1 className="text-2xl font-bold text-black tracking-tight">
+          {translations.recentNotifications}
+        </h1>
+      </div>
+
+      <div className="my-8 flex gap-3 overflow-x-auto scrollbar-hide py-1">
+        {filters.map((filterName, i) => (
+          <button
+            key={i}
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm capitalize transition-all duration-300 whitespace-nowrap ${
+              filter === filterName
+                ? "bg-black text-white shadow-lg shadow-black/10 scale-105"
+                : "bg-grey text-black hover:bg-black/5"
+            }`}
+            onClick={() => handleFilter(filterName)}
+          >
+            {translations[filterName] || filterName}
+          </button>
+        ))}
+      </div>
+
+      {notifications == null ? (
+        <Loader />
+      ) : (
+        <div className="space-y-4">
+          {notifications.results.length ? (
+            notifications.results.map((notification, i) => (
+              <AnimationWrapper key={i} transition={{ delay: i * 0.05 }}>
+                <NotificationCard
+                  data={notification}
+                  index={i}
+                  notificationState={{ notifications, setNotifications }}
+                />
+              </AnimationWrapper>
+            ))
+          ) : (
+            <div className="py-12 bg-grey/30 rounded-3xl border border-dashed border-grey flex items-center justify-center">
+              <NoDataMessage message={translations.noDataMessage} />
             </div>
-
-            {notifications == null ? (
-                <Loader />
-            ) : (
-                <>
-                    {notifications.results.length ? (
-                        notifications.results.map((notification, i) => (
-                            <AnimationWrapper key={i} transition={{ delay: i * 0.08 }}>
-                                <NotificationCard
-                                    data={notification}
-                                    index={i}
-                                    notificationState={{ notifications, setNotifications }}
-                                />
-                            </AnimationWrapper>
-                        ))
-                    ) : (
-                        <NoDataMessage message={translations.noDataMessage} />
-                    )}
-                    {isLoading && <Loader />}
-                </>
-            )}
+          )}
+          {isLoading && (
+            <div className="py-8 flex justify-center">
+              <Loader />
+            </div>
+          )}
         </div>
-    );
+      )}
+    </div>
+  );
 };
 
 export default Notifications;

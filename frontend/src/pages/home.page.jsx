@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 import axios from "axios";
 import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
@@ -18,7 +16,7 @@ import { filterPaginationData } from "../common/filter-pagination-data";
 import LoadMoreDataBtn from "../components/load-more.component";
 import SupportChat from "../components/support-chat.component";
 import { getTranslations } from "../../translations";
-import { UserContext } from "../App";
+import { UserContext, ThemeContext } from "../App";
 import { motion } from "framer-motion";
 import eduIcons from "../imgs/edu-icons.png";
 import WritePostCard from "../components/write-post-card.component";
@@ -32,6 +30,7 @@ const HomePage = () => {
   const [trendingTopics, setTrendingTopics] = useState([]);
   const [topContributors, setTopContributors] = useState([]);
   const { userAuth } = useContext(UserContext);
+  const { theme } = useContext(ThemeContext);
   const { language, access_token } = userAuth;
   const translations = getTranslations(language);
   const location = useLocation();
@@ -47,7 +46,6 @@ const HomePage = () => {
   const [adminAlert, setAdminAlert] = useState(null);
   const [showWriteModal, setShowWriteModal] = useState(false);
 
-  // ... (categories array stays the same)
   let categories = [
     "Toán",
     "Văn",
@@ -259,11 +257,11 @@ const HomePage = () => {
           className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 ease-in-out ${showAlert ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}`}
           id="alert-box"
         >
-          <div className="flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 shadow-xl rounded-2xl backdrop-blur-sm">
-            <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-3 px-5 py-3.5 bg-white/90 dark:bg-grey/90 border border-amber-200 dark:border-amber-900/30 shadow-xl rounded-2xl backdrop-blur-sm">
+            <div className="flex-shrink-0 w-8 h-8 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-amber-600"
+                className="h-4 w-4 text-amber-600 dark:text-amber-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -276,44 +274,33 @@ const HomePage = () => {
                 />
               </svg>
             </div>
-            <span className="text-amber-800 font-medium text-sm">
+            <span className="text-amber-800 dark:text-amber-200 font-medium text-sm">
               {adminAlert}
             </span>
             <button
-              className="ml-2 text-amber-400 hover:text-amber-700 transition-colors duration-200"
+              className="ml-2 text-amber-400 hover:text-amber-700 dark:hover:text-amber-200 transition-colors duration-200"
               onClick={() => setAdminAlert(null)}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <i className="fi fi-rr-cross-small text-xl"></i>
             </button>
           </div>
         </div>
       )}
 
-      <section className="home-section w-full flex flex-col md:flex-row min-h-[calc(100vh-80px)] bg-slate-50">
+      <section className="home-section w-full flex flex-col md:flex-row min-h-[calc(100vh-80px)] bg-grey transition-colors duration-300">
         {/* Left SideNavBar */}
-        <aside className="home-sidebar hidden md:flex w-64 flex-shrink-0 h-[calc(100vh-80px)] sticky left-0 top-[80px] bg-white border-r border-slate-200 flex-col overflow-y-auto scrollbar-hide">
+        <aside className="home-sidebar hidden md:flex w-64 flex-shrink-0 h-[calc(100vh-80px)] sticky left-0 top-[80px] bg-white border-r border-grey flex-col overflow-y-auto scrollbar-hide">
           {/* Brand Header */}
-          <div className="px-5 py-4 border-b border-slate-100">
+          <div className="px-5 py-4 border-b border-grey">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 flex-shrink-0">
+              <div className="w-8 h-8 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-500 flex-shrink-0">
                 <i className="fi fi-rr-graduation-cap text-base mt-0.5"></i>
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-900 leading-tight">
+                <p className="text-sm font-bold text-black leading-tight">
                   EForum
                 </p>
-                <p className="text-[10px] text-slate-400 tracking-wide">
+                <p className="text-[10px] text-dark-grey tracking-wide uppercase font-bold">
                   Academic Community
                 </p>
               </div>
@@ -325,10 +312,10 @@ const HomePage = () => {
               onClick={() => {
                 navigate("/feed");
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === "feed" ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === "feed" ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
             >
               <i
-                className={`fi fi-rr-home text-base mt-0.5 ${pageState === "feed" ? "text-indigo-600" : ""}`}
+                className={`fi fi-rr-home text-base mt-0.5 ${pageState === "feed" ? "text-indigo-500" : ""}`}
               ></i>
               Home
             </button>
@@ -336,14 +323,14 @@ const HomePage = () => {
               onClick={() => {
                 navigate("/trending");
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${location.pathname === "/trending" ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${location.pathname === "/trending" ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
             >
               <i
-                className={`fi fi-rr-arrow-trend-up text-base mt-0.5 ${location.pathname === "/trending" ? "text-indigo-600" : ""}`}
+                className={`fi fi-rr-arrow-trend-up text-base mt-0.5 ${location.pathname === "/trending" ? "text-indigo-500" : ""}`}
               ></i>
               Popular
             </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800">
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-dark-grey hover:bg-grey hover:text-black">
               <i className="fi fi-rr-users text-base mt-0.5"></i>
               {translations.myGroups}
             </button>
@@ -352,17 +339,17 @@ const HomePage = () => {
                 if (!access_token) return navigate("/signin");
                 navigate("/feed/saved");
               }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === translations.savedBlogs ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === translations.savedBlogs ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
             >
               <i
-                className={`fi fi-rr-bookmark text-base mt-0.5 ${pageState === translations.savedBlogs ? "text-indigo-600" : ""}`}
+                className={`fi fi-rr-bookmark text-base mt-0.5 ${pageState === translations.savedBlogs ? "text-indigo-500" : ""}`}
               ></i>
               {translations.savedBlogs}
             </button>
           </nav>
 
-          <div className="px-3 py-3 border-t border-slate-100">
-            <p className="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">
+          <div className="px-3 py-3 border-t border-grey">
+            <p className="px-3 text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-2">
               Subjects
             </p>
             <nav className="space-y-0.5">
@@ -370,7 +357,7 @@ const HomePage = () => {
                 <button
                   key={i}
                   onClick={loadBlogByCategory}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150 text-sm ${pageState === category ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"}`}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150 text-sm ${pageState === category ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
                 >
                   <span
                     className={`w-2 h-2 rounded-full flex-shrink-0 ${i % 3 === 0 ? "bg-blue-400" : i % 3 === 1 ? "bg-emerald-400" : "bg-amber-400"}`}
@@ -381,18 +368,18 @@ const HomePage = () => {
             </nav>
           </div>
 
-          <div className="mt-auto px-3 py-4 border-t border-slate-100 space-y-0.5">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors">
+          <div className="mt-auto px-3 py-4 border-t border-grey space-y-0.5">
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-dark-grey hover:bg-grey hover:text-black transition-colors">
               <i className="fi fi-rr-time-past text-base mt-0.5"></i>
               History
             </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-500 hover:bg-slate-50 hover:text-slate-800 transition-colors">
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-dark-grey hover:bg-grey hover:text-black transition-colors">
               <i className="fi fi-rr-settings text-base mt-0.5"></i>
               Settings
             </button>
             <div className="relative pt-3">
               <select
-                className="w-full appearance-none bg-slate-50 text-slate-600 border border-slate-200 rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
+                className="w-full appearance-none bg-grey text-black border border-grey rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 transition-all"
                 onChange={(e) => {
                   loadBlogByTag(e);
                   if (e.target.value === translations.allSubjects)
@@ -406,16 +393,16 @@ const HomePage = () => {
                   </option>
                 ))}
               </select>
-              <i className="fi fi-rr-angle-small-down absolute right-3 top-1/2 mt-1 text-slate-400 pointer-events-none text-sm"></i>
+              <i className="fi fi-rr-angle-small-down absolute right-3 top-1/2 mt-1 text-dark-grey pointer-events-none text-sm"></i>
             </div>
-            <button className="w-full bg-indigo-600 text-white font-medium text-sm py-2.5 rounded-lg hover:bg-indigo-700 transition-colors mt-1">
+            <button className="w-full bg-indigo-500 text-white font-bold text-sm py-2.5 rounded-lg hover:bg-indigo-600 transition-all mt-2 active:scale-95">
               Join Subject
             </button>
           </div>
         </aside>
 
         {/* Center Feed */}
-        <main className="home-feed-main flex-1 min-w-0 pb-12 bg-slate-50">
+        <main className="home-feed-main flex-1 min-w-0 pb-12 bg-grey">
           <div className="max-w-3xl mx-auto py-5 px-4 lg:px-8">
             <InPageNavigation
               routes={[
@@ -463,14 +450,14 @@ const HomePage = () => {
                       }
                     />
                   ) : (
-                    <div className="flex flex-col items-center py-12 mt-8 border-t border-slate-100">
-                      <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mb-5 text-emerald-500 shadow-sm">
+                    <div className="flex flex-col items-center py-12 mt-8 border-t border-grey">
+                      <div className="w-14 h-14 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mb-5 text-emerald-500 shadow-sm">
                         <i className="fi fi-rr-check text-2xl mt-1"></i>
                       </div>
-                      <p className="text-slate-800 font-bold text-lg mb-2">
+                      <p className="text-black font-bold text-lg mb-2">
                         Bạn đã xem hết tin bài rồi! 🎉
                       </p>
-                      <p className="text-slate-500 text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
+                      <p className="text-dark-grey text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
                         Hãy quay lại sau để cập nhật thêm những kiến thức bổ ích
                         nhé.
                       </p>
@@ -478,7 +465,7 @@ const HomePage = () => {
                         onClick={() =>
                           window.scrollTo({ top: 0, behavior: "smooth" })
                         }
-                        className="bg-[#111113] text-white px-10 py-3.5 rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.15)] active:scale-95 flex items-center gap-2 group"
+                        className="bg-black text-white px-10 py-3.5 rounded-2xl font-bold text-sm hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center gap-2 group"
                       >
                         <i className="fi fi-rr-arrow-small-up text-xl group-hover:-translate-y-0.5 transition-transform"></i>
                         Quay về đầu trang
@@ -496,7 +483,7 @@ const HomePage = () => {
                     <MinimalBlogSkeleton />
                   </>
                 ) : trendingBlogs.length ? (
-                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                  <div className="bg-white rounded-2xl border border-grey p-4 shadow-sm">
                     {trendingBlogs.map((blog, i) => (
                       <AnimationWrapper
                         transition={{ duration: 1, delay: i * 0.1 }}
@@ -519,7 +506,7 @@ const HomePage = () => {
                     <MinimalBlogSkeleton />
                   </>
                 ) : adminBlogs.length ? (
-                  <div className="bg-white rounded-2xl border border-slate-100 p-4 shadow-sm">
+                  <div className="bg-white rounded-2xl border border-grey p-4 shadow-sm">
                     {adminBlogs.map((blog, i) => (
                       <AnimationWrapper
                         transition={{ duration: 1, delay: i * 0.1 }}
@@ -538,10 +525,10 @@ const HomePage = () => {
         </main>
 
         {/* Right SideNavBar (Activity) */}
-        <aside className="home-sidebar hidden lg:flex w-72 flex-shrink-0 h-[calc(100vh-80px)] sticky right-0 top-[80px] bg-white border-l border-slate-200 flex-col overflow-y-auto scrollbar-hide">
+        <aside className="home-sidebar hidden lg:flex w-72 flex-shrink-0 h-[calc(100vh-80px)] sticky right-0 top-[80px] bg-white border-l border-grey flex-col overflow-y-auto scrollbar-hide">
           {/* Trending Topics */}
-          <div className="px-5 pt-5 pb-4 border-b border-slate-100">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">
+          <div className="px-5 pt-5 pb-4 border-b border-grey">
+            <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4">
               🔥 Trending Topics
             </p>
             <div className="space-y-3">
@@ -555,16 +542,16 @@ const HomePage = () => {
                       activeTabRef.current.click();
                     }}
                   >
-                    <div className="text-[10px] text-slate-400 uppercase tracking-wider mb-0.5">
+                    <div className="text-[10px] text-black uppercase tracking-wider mb-0.5 font-bold opacity-40">
                       Subject • Trending
                     </div>
-                    <div className="font-semibold text-slate-700 text-sm capitalize group-hover:text-indigo-600 transition-colors">
+                    <div className="font-bold text-black text-sm capitalize group-hover:text-indigo-500 transition-colors">
                       #{tag}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-slate-400 text-sm normal-case">
+                <div className="text-dark-grey text-sm normal-case">
                   Loading topics...
                 </div>
               )}
@@ -572,8 +559,8 @@ const HomePage = () => {
           </div>
 
           {/* Top Contributors */}
-          <div className="px-5 py-4 border-b border-slate-100">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">
+          <div className="px-5 py-4 border-b border-grey">
+            <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4">
               🏆 Top Contributors
             </p>
             <div className="space-y-3">
@@ -588,13 +575,13 @@ const HomePage = () => {
                   >
                     <img
                       src={user.personal_info.profile_img}
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-grey"
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-slate-700 text-sm truncate group-hover:text-indigo-600 transition-colors">
+                      <div className="font-bold text-black text-sm truncate group-hover:text-indigo-500 transition-colors">
                         {user.personal_info.fullname}
                       </div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-[11px] text-dark-grey font-medium">
                         {user.account_info.total_reads > 1000
                           ? (user.account_info.total_reads / 1000).toFixed(1) +
                             "K"
@@ -602,13 +589,13 @@ const HomePage = () => {
                         REP
                       </div>
                     </div>
-                    <button className="w-7 h-7 bg-slate-50 border border-slate-200 text-slate-500 rounded-full flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors">
-                      <i className="fi fi-rr-user-add text-xs mt-0.5"></i>
+                    <button className="w-7 h-7 bg-grey border border-grey text-dark-grey rounded-full flex items-center justify-center hover:bg-indigo-500/10 hover:text-indigo-500 hover:border-indigo-500/30 transition-all active:scale-90">
+                      <i className="fi fi-rr-user-add text-[10px] mt-0.5"></i>
                     </button>
                   </div>
                 ))
               ) : (
-                <div className="text-slate-400 text-sm normal-case">
+                <div className="text-dark-grey text-sm normal-case">
                   Loading contributors...
                 </div>
               )}
@@ -616,8 +603,8 @@ const HomePage = () => {
           </div>
 
           {/* Admin Posts */}
-          <div className="px-5 py-4 border-b border-slate-100">
-            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-4">
+          <div className="px-5 py-4 border-b border-grey">
+            <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4">
               📌 {translations.adminPosts}
             </p>
             <div className="space-y-3">
@@ -636,7 +623,7 @@ const HomePage = () => {
                   </AnimationWrapper>
                 ))
               ) : (
-                <div className="text-slate-400 normal-case text-sm">
+                <div className="text-dark-grey normal-case text-sm">
                   No admin posts found.
                 </div>
               )}
@@ -647,24 +634,24 @@ const HomePage = () => {
           <div className="mt-auto px-5 py-4">
             <nav className="flex flex-col space-y-2.5">
               <a
-                className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case"
+                className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
                 href="#"
               >
-                <i className="fi fi-rr-shield text-sm leading-none"></i>{" "}
+                <i className="fi fi-rr-shield text-xs"></i>{" "}
                 Community Guidelines
               </a>
               <a
-                className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case"
+                className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
                 href="#"
               >
-                <i className="fi fi-rr-interrogation text-sm leading-none"></i>{" "}
+                <i className="fi fi-rr-interrogation text-xs"></i>{" "}
                 Support
               </a>
               <a
-                className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-2.5 text-xs normal-case"
+                className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
                 href="#"
               >
-                <i className="fi fi-rr-comment-alt text-sm leading-none"></i>{" "}
+                <i className="fi fi-rr-comment-alt text-xs"></i>{" "}
                 Feedback
               </a>
             </nav>
