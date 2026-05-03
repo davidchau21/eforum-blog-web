@@ -21,12 +21,12 @@ const Message = ({ message }) => {
     message?.type?.startsWith("video");
   const formattedTime = formatTime(message.createdAt);
 
-  const bubbleClasses = `max-w-[80%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
+  const bubbleClasses = `max-w-[80%] rounded-2xl px-4 py-3 text-[14px] ${
     isImage
       ? "bg-transparent p-0 shadow-none"
       : messageFromMe
-        ? "bg-indigo-600 text-white rounded-tr-none"
-        : "bg-white text-slate-700 border border-slate-100 rounded-tl-none"
+        ? "bg-black text-white rounded-tr-none"
+        : "bg-grey text-black rounded-tl-none"
   }`;
 
   return (
@@ -34,9 +34,9 @@ const Message = ({ message }) => {
       className={`flex flex-col mb-4 ${messageFromMe ? "items-end" : "items-start"}`}
     >
       <div
-        className={`flex gap-2 items-end ${messageFromMe ? "flex-row-reverse" : "flex-row"}`}
+        className={`flex gap-3 items-end ${messageFromMe ? "flex-row-reverse" : "flex-row"}`}
       >
-        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 border border-slate-100">
+        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-grey">
           <img
             src={profileImage}
             alt="Avatar"
@@ -47,7 +47,7 @@ const Message = ({ message }) => {
         <div className={bubbleClasses}>
           {isImage ? (
             <div 
-              className="group relative overflow-hidden rounded-2xl border-2 border-white shadow-lg transition-transform hover:scale-[1.02] active:scale-95 cursor-zoom-in"
+              className="group relative overflow-hidden rounded-2xl border border-grey bg-grey transition-transform hover:scale-[1.02] active:scale-95 cursor-zoom-in"
               onClick={() => setFullScreenImage(message.message)}
             >
               <img
@@ -63,7 +63,7 @@ const Message = ({ message }) => {
             <div className={`flex flex-col gap-2 p-1 min-w-[200px]`}>
               <div className="flex items-center gap-3">
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isPDF ? "bg-rose-100 text-rose-500" : "bg-blue-100 text-blue-500"}`}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isPDF ? "bg-rose-100 text-rose-500" : "bg-white text-black"}`}
                 >
                   <i
                     className={`fi ${isPDF ? "fi-rr-file-pdf" : "fi-rr-file"} text-xl`}
@@ -90,11 +90,11 @@ const Message = ({ message }) => {
                     className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                       messageFromMe
                         ? "bg-white/20 hover:bg-white/30 text-white"
-                        : "bg-white hover:bg-grey/40 text-black border border-grey/60"
+                        : "bg-white hover:bg-grey/80 text-black shadow-sm border border-grey"
                     }`}
                   >
                     <i className="fi fi-rr-eye flex items-center"></i>
-                    Xem ngay
+                    Xem
                   </a>
                 )}
                 <a
@@ -102,10 +102,8 @@ const Message = ({ message }) => {
                   download
                   className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                     messageFromMe
-                      ? isPDF
-                        ? "bg-white/10 hover:bg-white/20 text-white"
-                        : "bg-white text-purple hover:bg-grey"
-                      : "bg-purple text-white hover:opacity-90 shadow-md shadow-purple/10"
+                      ? "bg-white text-black hover:opacity-90"
+                      : "bg-black text-white hover:opacity-90 shadow-sm"
                   }`}
                 >
                   <i className="fi fi-rr-download flex items-center"></i>
@@ -122,12 +120,12 @@ const Message = ({ message }) => {
       </div>
 
       <div
-        className={`mt-1 text-[10px] flex items-center gap-1 ${messageFromMe ? "mr-10 text-dark-grey/60" : "ml-10 text-dark-grey/60"}`}
+        className={`mt-1 text-[11px] flex items-center gap-1 ${messageFromMe ? "mr-11 text-dark-grey" : "ml-11 text-dark-grey"}`}
       >
         {formattedTime}
         {messageFromMe && (
           <i
-            className={`fi ${message.seen ? "fi-ss-check-circle text-emerald-500" : "fi-rs-check-circle"} text-[8px] mt-0.5`}
+            className={`fi ${message.seen ? "fi-ss-check-circle text-emerald-500" : "fi-rs-check-circle"} text-[10px] mt-0.5`}
           ></i>
         )}
       </div>

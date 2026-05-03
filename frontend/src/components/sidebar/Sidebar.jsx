@@ -4,18 +4,20 @@ import Coversations from "./Coversations";
 
 const Sidebar = () => {
   return (
-    <div className="flex flex-col h-full bg-white overflow-x-hidden">
-      <div className="px-6 py-6 border-b border-slate-100/80">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-slate-800 tracking-tight">Messages</h2>
-          <button className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-50 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-all">
-            <i className="fi fi-rr-edit text-sm"></i>
+    <div className="flex flex-col h-full bg-white border-r border-grey overflow-hidden">
+      {/* Header */}
+      <div className="px-5 pt-6 pb-4 border-b border-grey flex-shrink-0">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-[18px] font-bold text-black">Messages</h2>
+          <button className="w-8 h-8 flex items-center justify-center rounded-full text-dark-grey hover:bg-grey hover:text-black transition-all">
+            <i className="fi fi-rr-edit text-[14px]"></i>
           </button>
         </div>
         <SearchInput />
       </div>
 
-      <div className="flex-1 overflow-y-auto px-2 py-4">
+      {/* Conversation list */}
+      <div className="flex-1 overflow-y-auto py-2">
         <Coversations />
       </div>
     </div>

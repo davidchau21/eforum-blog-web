@@ -206,20 +206,23 @@ const EditProfile = () => {
         <form ref={editProfileForm}>
           <Toaster />
 
-          <h1 className="hidden md:block text-[22px] font-bold text-black mb-12">
-            Edit Profile
-          </h1>
+          <div className="mb-8">
+            <h1 className="text-[24px] font-bold text-black tracking-tight">
+              Edit Profile
+            </h1>
+            <p className="text-[14px] text-dark-grey mt-2">Update your personal details and public profile.</p>
+          </div>
 
-          <div className="flex flex-col lg:flex-row items-start py-10 gap-8 lg:gap-16">
-            {/* Avatar */}
-            <div className="flex flex-col items-center gap-5 lg:w-[200px] flex-none">
+          <div className="flex flex-col xl:flex-row items-start gap-8">
+            {/* Avatar Section */}
+            <div className="flex flex-col items-center gap-6 w-full xl:w-[320px] flex-none bg-black/[0.02] backdrop-blur-xl border border-grey rounded-[2rem] p-8 shadow-sm">
               <label
                 htmlFor="uploadImg"
-                className="relative block w-44 h-44 bg-grey rounded-full overflow-hidden border-2 border-grey shadow-lg cursor-pointer group"
+                className="relative block w-48 h-48 bg-grey rounded-full overflow-hidden border-4 border-white dark:border-black shadow-lg cursor-pointer group"
               >
-                <div className="w-full h-full absolute top-0 left-0 flex flex-col items-center justify-center text-white bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                  <i className="fi fi-rr-camera text-xl mb-1"></i>
-                  <span className="text-[12px] font-medium">Change photo</span>
+                <div className="w-full h-full absolute top-0 left-0 flex flex-col items-center justify-center text-white bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm">
+                  <i className="fi fi-rr-camera text-2xl mb-2"></i>
+                  <span className="text-[13px] font-medium">Change photo</span>
                 </div>
                 <img
                   ref={profileImgEle}
@@ -235,22 +238,24 @@ const EditProfile = () => {
                 hidden
                 onChange={handleImagePreview}
               />
-              <button
-                className="w-full py-2 px-4 rounded-full border border-grey bg-grey text-black text-[14px] font-medium hover:bg-black hover:text-white transition-all active:scale-95"
-                onClick={handleImageUpload}
-              >
-                Upload photo
-              </button>
-              <p className="text-[13px] text-dark-grey text-center leading-relaxed">
-                JPG or PNG. Max 2 MB.
-              </p>
+              <div className="text-center w-full">
+                <button
+                  className="w-full py-3 px-6 rounded-2xl bg-black text-white text-[14px] font-medium hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-black/10"
+                  onClick={handleImageUpload}
+                >
+                  Upload new photo
+                </button>
+                <p className="text-[12px] text-dark-grey mt-4">
+                  JPG, GIF or PNG. Max size of 800K.
+                </p>
+              </div>
             </div>
 
-            {/* Form fields */}
-            <div className="flex-1 w-full space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Form Section */}
+            <div className="flex-1 w-full space-y-8 bg-black/[0.02] backdrop-blur-xl border border-grey rounded-[2rem] p-8 md:p-10 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-[13px] text-dark-grey font-medium mb-2 block">
+                  <label className="text-[13px] text-black font-semibold mb-2.5 block">
                     Full name
                   </label>
                   <InputBox
@@ -262,8 +267,8 @@ const EditProfile = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-[13px] text-dark-grey font-medium mb-2 block">
-                    Email
+                  <label className="text-[13px] text-black font-semibold mb-2.5 block">
+                    Email address
                   </label>
                   <InputBox
                     name="email"
@@ -277,7 +282,7 @@ const EditProfile = () => {
               </div>
 
               <div>
-                <label className="text-[13px] text-dark-grey font-medium mb-2 block">
+                <label className="text-[13px] text-black font-semibold mb-2.5 block">
                   Username
                 </label>
                 <InputBox
@@ -287,38 +292,41 @@ const EditProfile = () => {
                   placeholder="Username"
                   icon="fi-rr-at"
                 />
-                <p className="text-[12px] text-dark-grey mt-1.5 px-1">
-                  Used for searches and mentions.
+                <p className="text-[12px] text-dark-grey mt-2">
+                  This will be your public URL and how others mention you.
                 </p>
               </div>
 
               <div>
-                <label className="text-[13px] text-dark-grey font-medium mb-2 block">
-                  Bio
-                </label>
+                <div className="flex items-center justify-between mb-2.5">
+                  <label className="text-[13px] text-black font-semibold block">
+                    Bio
+                  </label>
+                  <span className="text-[12px] text-dark-grey">
+                    {charactersLeft} characters left
+                  </span>
+                </div>
                 <textarea
                   name="bio"
                   maxLength={bioLimit}
                   defaultValue={bio}
-                  className="input-box h-36 resize-none leading-6 p-4"
+                  className="w-full bg-white border border-grey focus:border-black rounded-2xl h-36 resize-none leading-relaxed p-5 text-[14px] text-black placeholder:text-dark-grey/50 focus:outline-none transition-all duration-200 shadow-sm"
                   placeholder="Tell us a bit about yourself..."
                   onChange={handleCharacterChange}
                 ></textarea>
-                <p className="text-[12px] text-dark-grey mt-1 text-right">
-                  {charactersLeft} characters left
-                </p>
               </div>
 
-              <div className="pt-4 border-t border-grey">
-                <h2 className="text-[13px] text-dark-grey font-semibold mb-5">
-                  Social links
+              <div className="pt-8 border-t border-grey">
+                <h2 className="text-[15px] text-black font-bold mb-6 flex items-center gap-2">
+                  <i className="fi fi-rr-link-alt text-dark-grey"></i>
+                  Social Profiles
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                   {Object.keys(social_links).map((key, i) => {
                     let link = social_links[key];
                     return (
                       <div key={i}>
-                        <label className="text-[12px] text-dark-grey font-medium mb-1.5 block capitalize">
+                        <label className="text-[12px] text-black font-semibold mb-2 block capitalize">
                           {key}
                         </label>
                         <InputBox
@@ -339,13 +347,15 @@ const EditProfile = () => {
                 </div>
               </div>
 
-              <button
-                className="btn-dark px-10 mt-2"
-                type="submit"
-                onClick={handleSubmit}
-              >
-                Save changes
-              </button>
+              <div className="pt-6">
+                <button
+                  className="w-full md:w-auto px-10 py-3.5 rounded-2xl bg-black text-white text-[14px] font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-black/10"
+                  type="submit"
+                  onClick={handleSubmit}
+                >
+                  Save all changes
+                </button>
+              </div>
             </div>
           </div>
         </form>

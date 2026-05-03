@@ -64,12 +64,21 @@ const ChangePassword = () => {
   return (
     <AnimationWrapper>
       <Toaster />
-      <form ref={changePasswordForm} className="max-w-[500px]">
-        <h1 className="hidden md:block text-[22px] font-bold text-black mb-12">Change Password</h1>
+      <div className="mb-8">
+        <h1 className="text-[24px] font-bold text-black tracking-tight">
+          Change Password
+        </h1>
+        <p className="text-[14px] text-dark-grey mt-2">
+          Ensure your account is using a long, random password to stay secure.
+        </p>
+      </div>
 
+      <form ref={changePasswordForm} className="max-w-[600px] w-full bg-black/[0.02] backdrop-blur-xl border border-grey rounded-[2rem] p-8 md:p-10 shadow-sm">
         <div className="space-y-6">
           <div>
-            <label className="text-[13px] text-dark-grey font-medium mb-2 block">Current password</label>
+            <label className="text-[13px] text-black font-semibold mb-2.5 block">
+              Current password
+            </label>
             <InputBox
               name="currentPassword"
               type="password"
@@ -78,26 +87,38 @@ const ChangePassword = () => {
             />
           </div>
 
-          <div>
-            <label className="text-[13px] text-dark-grey font-medium mb-2 block">New password</label>
+          <div className="pt-2">
+            <label className="text-[13px] text-black font-semibold mb-2.5 block">
+              New password
+            </label>
             <InputBox
               name="newPassword"
               type="password"
               placeholder="Enter new password"
               icon="fi-rr-key"
             />
-            <p className="text-[12px] text-dark-grey mt-2 leading-relaxed">
-              Must be 6–20 characters with at least one number, one lowercase and one uppercase letter.
-            </p>
+            <div className="mt-3 bg-grey/50 p-4 rounded-2xl border border-grey flex items-start gap-3">
+              <i className="fi fi-rr-info text-dark-grey mt-0.5"></i>
+              <p className="text-[12px] text-dark-grey leading-relaxed">
+                Password requirements:
+                <ul className="list-disc ml-4 mt-1 space-y-0.5">
+                  <li>6 to 20 characters long</li>
+                  <li>At least one number</li>
+                  <li>At least one uppercase and one lowercase letter</li>
+                </ul>
+              </p>
+            </div>
           </div>
 
-          <button
-            className="btn-dark px-10 mt-4"
-            type="submit"
-            onClick={handleSubmit}
-          >
-            Update password
-          </button>
+          <div className="pt-4 border-t border-grey mt-2">
+            <button
+              className="w-full md:w-auto px-10 py-3.5 rounded-2xl bg-black text-white text-[14px] font-bold hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-black/10"
+              type="submit"
+              onClick={handleSubmit}
+            >
+              Update Password
+            </button>
+          </div>
         </div>
       </form>
     </AnimationWrapper>
