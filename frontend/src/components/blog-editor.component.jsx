@@ -6,7 +6,7 @@ import AnimationWrapper from "../common/page-animation";
 import lightBanner from "../imgs/blog banner light.png";
 import darkBanner from "../imgs/blog banner dark.png";
 import { uploadImage } from "../common/aws";
-import { useContext, useEffect, useCallback } from "react";
+import { useContext, useEffect, useCallback, useRef } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { EditorContext } from "../contexts/EditorContext";
 import EditorJS from "@editorjs/editorjs";
@@ -14,6 +14,8 @@ import { tools } from "./tools.component";
 import axios from "axios";
 import { ThemeContext, UserContext } from "../App";
 import { getTranslations } from "../../translations";
+
+const DRAFT_KEY = "blog_editor_draft";
 
 const BlogEditor = ({ isModal = false }) => {
   let { blog, setBlog, textEditor, setTextEditor, setEditorState, setActions } =
@@ -38,39 +40,91 @@ const BlogEditor = ({ isModal = false }) => {
 
   const currentTranslations = getTranslations(language);
 
-  // useEffect
+  const editorCore = useRef(null);
+
+  // --- Auto-save and Restore Logic ---
   useEffect(() => {
-    if (!textEditor.isReady) {
-      setTextEditor(
-        new EditorJS({
-          holder: "textEditor",
-          data: Array.isArray(content) ? content[0] : content,
-          tools: tools,
-          placeholder: currentTranslations.blogStoryPlaceholder,
-        }),
-      );
+    // Attempt to restore draft from LocalStorage
+    const savedDraft = localStorage.getItem(DRAFT_KEY);
+    if (savedDraft) {
+      const parsedDraft = JSON.parse(savedDraft);
+      // Only restore if it's the same blog or a new one
+      if (parsedDraft.blog_id === blog_id) {
+        setBlog((prev) => ({ ...prev, ...parsedDraft.data }));
+      }
     }
+  }, []); // Only on mount
+
+  // Save to localStorage on title or banner change
+  useEffect(() => {
+    const draftData = {
+      blog_id,
+      data: {
+        title: blog.title,
+        banner: blog.banner.startsWith("blob:") ? "" : blog.banner, // Don't save blob URLs
+        des: blog.des,
+        tags: blog.tags,
+      },
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(draftData));
+  }, [blog.title, blog.banner, blog.des, blog.tags, blog_id]);
+
+  useEffect(() => {
+    if (!editorCore.current) {
+      // Check if we have saved content for EditorJS
+      const savedDraft = localStorage.getItem(DRAFT_KEY);
+      let initialContent = Array.isArray(content) ? content[0] : content;
+
+      if (savedDraft) {
+        const parsedDraft = JSON.parse(savedDraft);
+        if (parsedDraft.blog_id === blog_id && parsedDraft.data.content) {
+          initialContent = parsedDraft.data.content;
+        }
+      }
+
+      const editor = new EditorJS({
+        holder: "textEditor",
+        data: initialContent,
+        tools: tools,
+        placeholder: currentTranslations.blogStoryPlaceholder,
+        async onChange(api) {
+          const updatedContent = await api.saver.save();
+          const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+          draft.data = { ...draft.data, content: updatedContent };
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        },
+        onReady() {
+          // No need to overwrite the instance here
+        }
+      });
+
+      editorCore.current = editor;
+      setTextEditor(editor); 
+    }
+
+    return () => {
+      if (editorCore.current && typeof editorCore.current.destroy === 'function') {
+        // editorCore.current.destroy(); // Optional: destroy on unmount
+      }
+    };
   }, []);
+
+  // Cleanup effect for preview URL to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (blog.banner && blog.banner.startsWith("blob:")) {
+        URL.revokeObjectURL(blog.banner);
+      }
+    };
+  }, [blog.banner]);
 
   const handleBannerUpload = (e) => {
     let img = e.target.files[0];
 
     if (img) {
-      let loadingToast = toast.loading(currentTranslations.uploading);
-
-      uploadImage(img)
-        .then((url) => {
-          if (url) {
-            toast.dismiss(loadingToast);
-            toast.success(currentTranslations.uploaded);
-
-            setBlog({ ...blog, banner: url });
-          }
-        })
-        .catch((err) => {
-          toast.dismiss(loadingToast);
-          return toast.error(err);
-        });
+      // Create local preview URL instead of uploading immediately
+      const previewURL = URL.createObjectURL(img);
+      setBlog({ ...blog, banner: previewURL, bannerFile: img });
     }
   };
 
@@ -105,7 +159,7 @@ const BlogEditor = ({ isModal = false }) => {
       return toast.error(currentTranslations.writeTitleToPublish);
     }
 
-    if (textEditor.isReady) {
+    if (textEditor && typeof textEditor.save === "function") {
       textEditor
         .save()
         .then((data) => {
@@ -123,7 +177,7 @@ const BlogEditor = ({ isModal = false }) => {
   }, [blog, title, textEditor, setBlog, setEditorState, currentTranslations]);
 
   const handleSaveDraft = useCallback(
-    (e) => {
+    async (e) => {
       if (e && e.target && e.target.className.includes("disable")) {
         return;
       }
@@ -136,11 +190,31 @@ const BlogEditor = ({ isModal = false }) => {
 
       if (e && e.target) e.target.classList.add("disable");
 
-      if (textEditor.isReady) {
+      let currentBanner = banner;
+
+      // If there's a local banner file, upload it now
+      if (blog.bannerFile) {
+        toast.loading(currentTranslations.uploading, { id: loadingToast });
+        try {
+          currentBanner = await uploadImage(blog.bannerFile);
+          // Update the blog state so subsequent saves don't re-upload
+          setBlog((prev) => ({
+            ...prev,
+            banner: currentBanner,
+            bannerFile: null,
+          }));
+        } catch (uploadErr) {
+          toast.dismiss(loadingToast);
+          if (e && e.target) e.target.classList.remove("disable");
+          return toast.error(uploadErr.message);
+        }
+      }
+
+      if (textEditor && typeof textEditor.save === "function") {
         textEditor.save().then((content) => {
           let blogObj = {
             title,
-            banner,
+            banner: currentBanner,
             des,
             content,
             tags,
@@ -149,7 +223,7 @@ const BlogEditor = ({ isModal = false }) => {
 
           axios
             .post(
-              import.meta.env.VITE_SERVER_DOMAIN + "/create-blog",
+              import.meta.env.VITE_SERVER_DOMAIN + "/blogs/create-blog",
               { ...blogObj, id: blog_id },
               {
                 headers: {
@@ -160,14 +234,19 @@ const BlogEditor = ({ isModal = false }) => {
             .then(() => {
               if (e && e.target) e.target.classList.remove("disable");
 
+              localStorage.removeItem(DRAFT_KEY); // Clear draft cache
+
               toast.dismiss(loadingToast);
               toast.success(currentTranslations.savedDraft);
 
-              if (!isModal) {
-                setTimeout(() => {
+              setTimeout(() => {
+                if (!isModal) {
                   navigate("/dashboard/blogs?tab=draft");
-                }, 500);
-              }
+                } else {
+                  // If it's a modal, we navigate to the draft dashboard to show the change
+                  navigate("/dashboard/blogs?tab=draft");
+                }
+              }, 500);
             })
             .catch(({ response }) => {
               if (e && e.target) e.target.classList.remove("disable");

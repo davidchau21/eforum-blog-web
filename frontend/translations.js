@@ -1,3 +1,4 @@
+/* eslint-disable no-dupe-keys */
 const translations = {
     vi: {
         searchPlaceholder: "Tìm kiếm",
@@ -46,12 +47,15 @@ const translations = {
         noDraftBlogs: "Không có bài viết nháp",
         pageEnd: "Không còn bài viết",
         chatSection: "Chat Section",
-        manageBlogs: "Quản lý Blogs",
-        searchBlogs: "Tìm kiếm Blogs",
-        publishedBlogs: "Blogs đã xuất bản",
+        manageBlogs: "Quản lý Bài Viết",
+        searchBlogs: "Tìm kiếm Bài Viết",
+        publishedBlogs: "Bài viết đã xuất bản",
         drafts: "Bản nháp",
-        noPublishedBlogs: "Không có blogs đã xuất bản",
+        pendingBlogs: "Bài viết chờ duyệt",
+        following: "Đang theo dõi",
+        noPublishedBlogs: "Không có bài viết đã xuất bản",
         noDraftBlogs: "Không có bản nháp",
+        noPendingBlogs: "Không có bài viết chờ duyệt",
         recentNotifications: "Thông báo gần đây",
         like: "Thích",
         comment: "Bình luận",
@@ -144,6 +148,10 @@ const translations = {
         noBlogsFound: "Không tìm thấy bài viết nào",
         usersSearchResult: "Người dùng liên quan",
         whatsOnYourMind: "Bạn đang nghĩ gì?",
+        followersLabel: "Người theo dõi",
+        followingLabel: "Đang theo dõi",
+        myGroups: "Nhóm của tôi",
+        savedBlogs: "Bài viết đã lưu",
     },
     en: {
         searchPlaceholder: "Search",
@@ -196,8 +204,11 @@ const translations = {
         searchBlogs: "Search Blogs",
         publishedBlogs: "Published Blogs",
         drafts: "Drafts",
+        pendingBlogs: "Pending Blogs",
+        following: "Following",
         noPublishedBlogs: "No published blogs",
         noDraftBlogs: "No draft blogs",
+        noPendingBlogs: "No pending blogs",
         recentNotifications: "Recent Notifications",
         like: "Like",
         comment: "Comment",
@@ -290,6 +301,10 @@ const translations = {
         noBlogsFound: "No blogs published",
         usersSearchResult: "User related to search",
         whatsOnYourMind: "What's on your mind?",
+        followersLabel: "Followers",
+        followingLabel: "Following",
+        myGroups: "My Groups",
+        savedBlogs: "Saved Blogs",
     },
 };
 

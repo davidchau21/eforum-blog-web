@@ -2,8 +2,12 @@ import axios from "axios";
 import AnimationWrapper from "../common/page-animation";
 import InPageNavigation from "../components/inpage-navigation.component";
 import { useContext, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Loader from "../components/loader.component";
-import { BlogCardSkeleton, MinimalBlogSkeleton } from "../components/skeleton.component";
+import {
+  BlogCardSkeleton,
+  MinimalBlogSkeleton,
+} from "../components/skeleton.component";
 import BlogPostCard from "../components/blog-post.component";
 import MinimalBlogPost from "../components/nobanner-blog-post.component";
 import { activeTabRef } from "../components/inpage-navigation.component";
@@ -12,7 +16,7 @@ import { filterPaginationData } from "../common/filter-pagination-data";
 import LoadMoreDataBtn from "../components/load-more.component";
 import SupportChat from "../components/support-chat.component";
 import { getTranslations } from "../../translations";
-import { UserContext } from "../App";
+import { UserContext, ThemeContext } from "../App";
 import { motion } from "framer-motion";
 import eduIcons from "../imgs/edu-icons.png";
 import WritePostCard from "../components/write-post-card.component";
@@ -20,16 +24,25 @@ import WriteModal from "../components/write-modal.component";
 
 const HomePage = () => {
   const [blogs, setBlogs] = useState(null);
+  const [followingBlogs, setFollowingBlogs] = useState(null);
   const [trendingBlogs, setTrendingBlogs] = useState(null);
   const [adminBlogs, setAdminBlogs] = useState(null);
-  const [pageState, setPageState] = useState("feed");
+  const [trendingTopics, setTrendingTopics] = useState([]);
+  const [topContributors, setTopContributors] = useState([]);
   const { userAuth } = useContext(UserContext);
-  const { language } = userAuth;
+  const { theme } = useContext(ThemeContext);
+  const { language, access_token } = userAuth;
   const translations = getTranslations(language);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const getPageStateFromURL = () => {
+    if (location.pathname === "/feed/following") return translations.following;
+    return "feed";
+  };
+
+  const [pageState, setPageState] = useState(getPageStateFromURL());
   const [tags, setTags] = useState([]);
-  let {
-    userAuth: { access_token },
-  } = useContext(UserContext);
   const [adminAlert, setAdminAlert] = useState(null);
   const [showWriteModal, setShowWriteModal] = useState(false);
 
@@ -63,29 +76,62 @@ const HomePage = () => {
 
   const fetchAdminBlogs = () => {
     axios
-      .get(import.meta.env.VITE_SERVER_DOMAIN + "/admin-blogs")
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/admin-blogs")
       .then(({ data }) => setAdminBlogs(data.blogs))
       .catch(console.log);
   };
 
   const fetchLatestBlogs = ({ page = 1 }) => {
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/latest-blogs", { page })
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/latest-blogs",
+        { page },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
       .then(async ({ data }) => {
         const formattedData = await filterPaginationData({
           state: blogs,
           data: data.blogs,
           page,
-          countRoute: "/all-latest-blogs-count",
+          countRoute: "/blogs/all-latest-blogs-count",
+          user: access_token,
         });
         setBlogs(formattedData);
       })
       .catch(console.log);
   };
 
+  const fetchFollowingBlogs = ({ page = 1 }) => {
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-user-blogs",
+        { page },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      .then(async ({ data }) => {
+        const formattedData = await filterPaginationData({
+          state: followingBlogs,
+          data: data.blogs,
+          page,
+          countRoute: "/blogs/get-user-blogs-count",
+          user: access_token,
+        });
+        setFollowingBlogs(formattedData);
+      })
+      .catch(console.log);
+  };
+
   const fetchBlogsByCategory = ({ page = 1 }) => {
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/search-blogs", {
         tag: pageState,
         page,
       })
@@ -94,7 +140,7 @@ const HomePage = () => {
           state: blogs,
           data: data.blogs,
           page,
-          countRoute: "/search-blogs-count",
+          countRoute: "/blogs/search-blogs-count",
           data_to_send: { tag: pageState },
         });
         setBlogs(formattedData);
@@ -104,8 +150,22 @@ const HomePage = () => {
 
   const fetchTrendingBlogs = () => {
     axios
-      .get(import.meta.env.VITE_SERVER_DOMAIN + "/trending-blogs")
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/trending-blogs")
       .then(({ data }) => setTrendingBlogs(data.blogs))
+      .catch(console.log);
+  };
+
+  const fetchTrendingTopics = () => {
+    axios
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/trending-topics")
+      .then(({ data }) => setTrendingTopics(data.topics))
+      .catch(console.log);
+  };
+
+  const fetchTopContributors = () => {
+    axios
+      .get(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/top-contributors")
+      .then(({ data }) => setTopContributors(data.contributors))
       .catch(console.log);
   };
 
@@ -118,19 +178,36 @@ const HomePage = () => {
   const loadBlogByTag = (e) => {
     const tag = e.target.value;
     setBlogs(null);
-    setPageState(pageState === tag ? "feed" : tag);
+    if (tag === translations.allSubjects) {
+      setPageState("feed");
+    } else {
+      setPageState(tag);
+    }
   };
 
   useEffect(() => {
+    setPageState(getPageStateFromURL());
+  }, [location.pathname]);
+
+  useEffect(() => {
     activeTabRef.current.click();
+    setBlogs(null); // Reset blogs for the new tab
     if (pageState === "feed") {
       fetchLatestBlogs({ page: 1 });
+    } else if (pageState === translations.following) {
+      if (!access_token) {
+        setPageState("feed");
+      } else {
+        fetchFollowingBlogs({ page: 1 });
+      }
     } else {
       fetchBlogsByCategory({ page: 1 });
     }
     if (!trendingBlogs) fetchTrendingBlogs();
     if (!adminBlogs) fetchAdminBlogs();
-  }, [pageState]);
+    fetchTrendingTopics();
+    fetchTopContributors();
+  }, [pageState, access_token]);
 
   useEffect(() => {
     fetchAlert();
@@ -155,7 +232,7 @@ const HomePage = () => {
 
     if (!hasShownAlert) {
       axios
-        .get(import.meta.env.VITE_SERVER_DOMAIN + "/alert", {
+        .get(import.meta.env.VITE_SERVER_DOMAIN + "/notifications/alert", {
           headers: { Authorization: `Bearer ${access_token}` },
         })
         .then(({ data }) => {
@@ -180,11 +257,11 @@ const HomePage = () => {
           className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 ease-in-out ${showAlert ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"}`}
           id="alert-box"
         >
-          <div className="flex items-center gap-3 px-5 py-3.5 bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 shadow-xl rounded-2xl backdrop-blur-sm">
-            <div className="flex-shrink-0 w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
+          <div className="flex items-center gap-3 px-5 py-3.5 bg-white/90 dark:bg-grey/90 border border-amber-200 dark:border-amber-900/30 shadow-xl rounded-2xl backdrop-blur-sm">
+            <div className="flex-shrink-0 w-8 h-8 bg-amber-100 dark:bg-amber-900/20 rounded-full flex items-center justify-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 text-amber-600"
+                className="h-4 w-4 text-amber-600 dark:text-amber-400"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -197,174 +274,116 @@ const HomePage = () => {
                 />
               </svg>
             </div>
-            <span className="text-amber-800 font-medium text-sm">
+            <span className="text-amber-800 dark:text-amber-200 font-medium text-sm">
               {adminAlert}
             </span>
             <button
-              className="ml-2 text-amber-400 hover:text-amber-700 transition-colors duration-200"
+              className="ml-2 text-amber-400 hover:text-amber-700 dark:hover:text-amber-200 transition-colors duration-200"
               onClick={() => setAdminAlert(null)}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <i className="fi fi-rr-cross-small text-xl"></i>
             </button>
           </div>
         </div>
       )}
 
-
-
-      <section className="w-full min-h-screen flex flex-col lg:flex-row gap-6 py-8">
-        <aside className="hidden lg:flex lg:w-1/4 sticky-section scrollbar-hide flex-col gap-6">
-          <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)] mb-2">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-purple/10 rounded-xl flex items-center justify-center">
-                <i className="fi fi-rr-user-pen text-purple text-lg leading-none"></i>
+      <section className="home-section w-full flex flex-col md:flex-row min-h-[calc(100vh-80px)] bg-grey transition-colors duration-300">
+        {/* Left SideNavBar */}
+        <aside className="home-sidebar hidden md:flex w-64 flex-shrink-0 h-[calc(100vh-80px)] sticky left-0 top-[80px] bg-white border-r border-grey flex-col overflow-y-auto scrollbar-hide">
+          {/* Brand Header */}
+          <div className="px-5 py-4 border-b border-grey">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-lg flex items-center justify-center text-indigo-500 flex-shrink-0">
+                <i className="fi fi-rr-graduation-cap text-base mt-0.5"></i>
               </div>
-              <p className="font-bold text-black text-base">
-                {translations.adminPosts}
-              </p>
+              <div>
+                <p className="text-sm font-bold text-black leading-tight">
+                  EForum
+                </p>
+                <p className="text-[10px] text-dark-grey tracking-wide uppercase font-bold">
+                  Academic Community
+                </p>
+              </div>
             </div>
-            {adminBlogs == null ? (
-              <>
-                <MinimalBlogSkeleton />
-                <MinimalBlogSkeleton />
-                <MinimalBlogSkeleton />
-              </>
-            ) : adminBlogs.length ? (
-              <div className="space-y-1">
-                {adminBlogs.map((blog, i) => (
-                  <AnimationWrapper
-                    transition={{ duration: 1, delay: i * 0.1 }}
-                    key={i}
-                  >
-                    <MinimalBlogPost blog={blog} index={i} />
-                  </AnimationWrapper>
-                ))}
-              </div>
-            ) : (
-              <NoDataMessage message={translations.noDataMessage} />
-            )}
           </div>
-        </aside>
 
-        <div className="w-full lg:w-1/2">
-          <InPageNavigation
-            routes={[pageState === "feed" ? translations.feed : pageState, translations.trending, translations.adminPosts]}
-            defaultHidden={[translations.trending, translations.adminPosts]}
-            hiddenAll={pageState === "feed" ? [translations.feed] : []}
-          >
-            <div>
-              <WritePostCard openModal={() => setShowWriteModal(true)} />
-              <WriteModal isOpen={showWriteModal} onClose={() => setShowWriteModal(false)} />
-              {blogs == null ? (
-                <>
-                  <BlogCardSkeleton key={1} />
-                  <BlogCardSkeleton key={2} />
-                  <BlogCardSkeleton key={3} />
-                </>
-              ) : blogs?.results?.length ? (
-                <div className="flex flex-col gap-0">
-                  {blogs.results.map((blog, i) => (
-                    <AnimationWrapper
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      key={i}
-                    >
-                      <BlogPostCard
-                        content={blog}
-                        author={blog.author.personal_info}
-                      />
-                    </AnimationWrapper>
-                  ))}
-                </div>
-              ) : (
-                <NoDataMessage message="No blogs published" />
-              )}
-              {blogs?.results?.length > 0 ? (
-                <LoadMoreDataBtn
-                  state={blogs}
-                  fetchDataFun={
-                    pageState == "feed"
-                      ? fetchLatestBlogs
-                      : fetchBlogsByCategory
-                  }
-                />
-              ) : null}
-            </div>
+          <nav className="px-3 py-3 space-y-0.5">
+            <button
+              onClick={() => {
+                navigate("/feed");
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === "feed" ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
+            >
+              <i
+                className={`fi fi-rr-home text-base mt-0.5 ${pageState === "feed" ? "text-indigo-500" : ""}`}
+              ></i>
+              Home
+            </button>
+            <button
+              onClick={() => {
+                navigate("/trending");
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${location.pathname === "/trending" ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
+            >
+              <i
+                className={`fi fi-rr-arrow-trend-up text-base mt-0.5 ${location.pathname === "/trending" ? "text-indigo-500" : ""}`}
+              ></i>
+              Popular
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-dark-grey hover:bg-grey hover:text-black">
+              <i className="fi fi-rr-users text-base mt-0.5"></i>
+              {translations.myGroups}
+            </button>
+            <button
+              onClick={() => {
+                if (!access_token) return navigate("/signin");
+                navigate("/feed/saved");
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === translations.savedBlogs ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
+            >
+              <i
+                className={`fi fi-rr-bookmark text-base mt-0.5 ${pageState === translations.savedBlogs ? "text-indigo-500" : ""}`}
+              ></i>
+              {translations.savedBlogs}
+            </button>
+          </nav>
 
-            <div>
-              {trendingBlogs == null ? (
-                <>
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                </>
-              ) : trendingBlogs.length ? (
-                <div className="bg-white rounded-2xl border border-grey p-4">
-                  {trendingBlogs.map((blog, i) => (
-                    <AnimationWrapper
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      key={i}
-                    >
-                      <MinimalBlogPost blog={blog} index={i} />
-                    </AnimationWrapper>
-                  ))}
-                </div>
-              ) : (
-                <NoDataMessage message={translations.noTrendingBlogs} />
-              )}
-            </div>
+          <div className="px-3 py-3 border-t border-grey">
+            <p className="px-3 text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-2">
+              Subjects
+            </p>
+            <nav className="space-y-0.5">
+              {categories.slice(0, 6).map((category, i) => (
+                <button
+                  key={i}
+                  onClick={loadBlogByCategory}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-150 text-sm ${pageState === category ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full flex-shrink-0 ${i % 3 === 0 ? "bg-blue-400" : i % 3 === 1 ? "bg-emerald-400" : "bg-amber-400"}`}
+                  ></span>
+                  <span className="capitalize truncate">{category}</span>
+                </button>
+              ))}
+            </nav>
+          </div>
 
-            <div>
-              {adminBlogs == null ? (
-                <>
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                  <MinimalBlogSkeleton />
-                </>
-              ) : adminBlogs.length ? (
-                <div className="bg-white rounded-2xl border border-grey p-4">
-                  {adminBlogs.map((blog, i) => (
-                    <AnimationWrapper
-                      transition={{ duration: 1, delay: i * 0.1 }}
-                      key={i}
-                    >
-                      <MinimalBlogPost blog={blog} index={i} />
-                    </AnimationWrapper>
-                  ))}
-                </div>
-              ) : (
-                <NoDataMessage message="No admin posts available" />
-              )}
-            </div>
-          </InPageNavigation>
-        </div>
-
-        <aside className="hidden lg:flex lg:w-1/4 sticky-section scrollbar-hide flex-col gap-6">
-          <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center">
-                <i className="fi fi-rr-filter text-emerald-500 text-lg leading-none"></i>
-              </div>
-              <p className="font-bold text-black text-base">
-                {translations.subjects}
-              </p>
-            </div>
-            <div className="relative mb-4">
+          <div className="mt-auto px-3 py-4 border-t border-grey space-y-0.5">
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-dark-grey hover:bg-grey hover:text-black transition-colors">
+              <i className="fi fi-rr-time-past text-base mt-0.5"></i>
+              History
+            </button>
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-dark-grey hover:bg-grey hover:text-black transition-colors">
+              <i className="fi fi-rr-settings text-base mt-0.5"></i>
+              Settings
+            </button>
+            <div className="relative pt-3">
               <select
-                className="w-full appearance-none bg-grey/50 text-black border border-grey rounded-xl px-4 py-2.5 text-sm font-medium cursor-pointer hover:border-purple/40 focus:border-purple focus:outline-none focus:ring-2 focus:ring-purple/20 transition-all duration-200"
+                className="w-full appearance-none bg-grey text-black border border-grey rounded-lg px-3 py-2 text-sm cursor-pointer hover:border-indigo-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 transition-all"
                 onChange={(e) => {
                   loadBlogByTag(e);
-                  if (e.target.value === translations.allSubjects) setPageState("feed");
+                  if (e.target.value === translations.allSubjects)
+                    setPageState("feed");
                 }}
               >
                 <option>{translations.allSubjects}</option>
@@ -374,49 +393,268 @@ const HomePage = () => {
                   </option>
                 ))}
               </select>
+              <i className="fi fi-rr-angle-small-down absolute right-3 top-1/2 mt-1 text-dark-grey pointer-events-none text-sm"></i>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {categories.map((category, i) => (
-                <button
-                  key={i}
-                  onClick={loadBlogByCategory}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${pageState === category ? "bg-purple text-white border-purple shadow-md shadow-purple/30 scale-105" : "bg-white text-dark-grey border-grey hover:border-purple/40 hover:text-purple hover:bg-purple/5"}`}
-                >
-                  {category}
-                </button>
-              ))}
+            <button className="w-full bg-indigo-500 text-white font-bold text-sm py-2.5 rounded-lg hover:bg-indigo-600 transition-all mt-2 active:scale-95">
+              Join Subject
+            </button>
+          </div>
+        </aside>
+
+        {/* Center Feed */}
+        <main className="home-feed-main flex-1 min-w-0 pb-12 bg-grey">
+          <div className="max-w-3xl mx-auto py-5 px-4 lg:px-8">
+            <InPageNavigation
+              routes={[
+                pageState === "feed" ? translations.feed : pageState,
+                translations.trending,
+                translations.adminPosts,
+              ]}
+              defaultHidden={[translations.trending, translations.adminPosts]}
+              hiddenAll={pageState === "feed" ? [translations.feed] : []}
+            >
+              <div>
+                <WritePostCard openModal={() => setShowWriteModal(true)} />
+                <WriteModal
+                  isOpen={showWriteModal}
+                  onClose={() => setShowWriteModal(false)}
+                />
+                {blogs == null ? (
+                  <>
+                    <BlogCardSkeleton key={1} />
+                    <BlogCardSkeleton key={2} />
+                    <BlogCardSkeleton key={3} />
+                  </>
+                ) : blogs?.results?.length ? (
+                  <div className="flex flex-col gap-0">
+                    {blogs.results.map((blog, i) => (
+                      <AnimationWrapper
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        key={i}
+                      >
+                        <BlogPostCard content={blog} author={blog.author} />
+                      </AnimationWrapper>
+                    ))}
+                  </div>
+                ) : (
+                  <NoDataMessage message="No blogs published" />
+                )}
+                {blogs?.results?.length > 0 ? (
+                  blogs.results.length < blogs.totalDocs ? (
+                    <LoadMoreDataBtn
+                      state={blogs}
+                      fetchDataFun={
+                        pageState == "feed"
+                          ? fetchLatestBlogs
+                          : fetchBlogsByCategory
+                      }
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center py-12 mt-8 border-t border-grey">
+                      <div className="w-14 h-14 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mb-5 text-emerald-500 shadow-sm">
+                        <i className="fi fi-rr-check text-2xl mt-1"></i>
+                      </div>
+                      <p className="text-black font-bold text-lg mb-2">
+                        Bạn đã xem hết tin bài rồi! 🎉
+                      </p>
+                      <p className="text-dark-grey text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
+                        Hãy quay lại sau để cập nhật thêm những kiến thức bổ ích
+                        nhé.
+                      </p>
+                      <button
+                        onClick={() =>
+                          window.scrollTo({ top: 0, behavior: "smooth" })
+                        }
+                        className="bg-black text-white px-10 py-3.5 rounded-2xl font-bold text-sm hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center gap-2 group"
+                      >
+                        <i className="fi fi-rr-arrow-small-up text-xl group-hover:-translate-y-0.5 transition-transform"></i>
+                        Quay về đầu trang
+                      </button>
+                    </div>
+                  )
+                ) : null}
+              </div>
+
+              <div>
+                {trendingBlogs == null ? (
+                  <>
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                  </>
+                ) : trendingBlogs.length ? (
+                  <div className="bg-white rounded-2xl border border-grey p-4 shadow-sm">
+                    {trendingBlogs.map((blog, i) => (
+                      <AnimationWrapper
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        key={i}
+                      >
+                        <MinimalBlogPost blog={blog} index={i} />
+                      </AnimationWrapper>
+                    ))}
+                  </div>
+                ) : (
+                  <NoDataMessage message={translations.noTrendingBlogs} />
+                )}
+              </div>
+
+              <div>
+                {adminBlogs == null ? (
+                  <>
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                    <MinimalBlogSkeleton />
+                  </>
+                ) : adminBlogs.length ? (
+                  <div className="bg-white rounded-2xl border border-grey p-4 shadow-sm">
+                    {adminBlogs.map((blog, i) => (
+                      <AnimationWrapper
+                        transition={{ duration: 1, delay: i * 0.1 }}
+                        key={i}
+                      >
+                        <MinimalBlogPost blog={blog} index={i} />
+                      </AnimationWrapper>
+                    ))}
+                  </div>
+                ) : (
+                  <NoDataMessage message="No admin posts available" />
+                )}
+              </div>
+            </InPageNavigation>
+          </div>
+        </main>
+
+        {/* Right SideNavBar (Activity) */}
+        <aside className="home-sidebar hidden lg:flex w-72 flex-shrink-0 h-[calc(100vh-80px)] sticky right-0 top-[80px] bg-white border-l border-grey flex-col overflow-y-auto scrollbar-hide">
+          {/* Trending Topics */}
+          <div className="px-5 pt-5 pb-4 border-b border-grey">
+            <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4">
+              🔥 Trending Topics
+            </p>
+            <div className="space-y-3">
+              {trendingTopics.length ? (
+                trendingTopics.map((tag, index) => (
+                  <div
+                    key={index}
+                    className="group cursor-pointer"
+                    onClick={() => {
+                      setPageState(tag);
+                      activeTabRef.current.click();
+                    }}
+                  >
+                    <div className="text-[10px] text-black uppercase tracking-wider mb-0.5 font-bold opacity-40">
+                      Subject • Trending
+                    </div>
+                    <div className="font-bold text-black text-sm capitalize group-hover:text-indigo-500 transition-colors">
+                      #{tag}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-dark-grey text-sm normal-case">
+                  Loading topics...
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 bg-rose-500/10 rounded-xl flex items-center justify-center">
-                <i className="fi fi-rr-arrow-trend-up text-rose-500 text-lg leading-none"></i>
-              </div>
-              <p className="font-bold text-black text-base">
-                {translations.trending}
-              </p>
+          {/* Top Contributors */}
+          <div className="px-5 py-4 border-b border-grey">
+            <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4">
+              🏆 Top Contributors
+            </p>
+            <div className="space-y-3">
+              {topContributors.length ? (
+                topContributors.map((user, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 group cursor-pointer"
+                    onClick={() =>
+                      navigate(`/user/${user.personal_info.username}`)
+                    }
+                  >
+                    <img
+                      src={user.personal_info.profile_img}
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0 ring-1 ring-grey"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-black text-sm truncate group-hover:text-indigo-500 transition-colors">
+                        {user.personal_info.fullname}
+                      </div>
+                      <div className="text-[11px] text-dark-grey font-medium">
+                        {user.account_info.total_reads > 1000
+                          ? (user.account_info.total_reads / 1000).toFixed(1) +
+                            "K"
+                          : user.account_info.total_reads}{" "}
+                        REP
+                      </div>
+                    </div>
+                    <button className="w-7 h-7 bg-grey border border-grey text-dark-grey rounded-full flex items-center justify-center hover:bg-indigo-500/10 hover:text-indigo-500 hover:border-indigo-500/30 transition-all active:scale-90">
+                      <i className="fi fi-rr-user-add text-[10px] mt-0.5"></i>
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <div className="text-dark-grey text-sm normal-case">
+                  Loading contributors...
+                </div>
+              )}
             </div>
-            {trendingBlogs == null ? (
-              <>
-                <MinimalBlogSkeleton />
-                <MinimalBlogSkeleton />
-                <MinimalBlogSkeleton />
-              </>
-            ) : trendingBlogs.length ? (
-              <div className="space-y-1">
-                {trendingBlogs.map((blog, i) => (
+          </div>
+
+          {/* Admin Posts */}
+          <div className="px-5 py-4 border-b border-grey">
+            <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4">
+              📌 {translations.adminPosts}
+            </p>
+            <div className="space-y-3">
+              {adminBlogs == null ? (
+                <>
+                  <MinimalBlogSkeleton />
+                  <MinimalBlogSkeleton />
+                </>
+              ) : adminBlogs.length ? (
+                adminBlogs.slice(0, 3).map((blog, i) => (
                   <AnimationWrapper
                     transition={{ duration: 1, delay: i * 0.1 }}
                     key={i}
                   >
-                    <MinimalBlogPost blog={blog} index={i} />
+                    <MinimalBlogPost blog={blog} />
                   </AnimationWrapper>
-                ))}
-              </div>
-            ) : (
-              <NoDataMessage message={translations.noTrendingBlogs} />
-            )}
+                ))
+              ) : (
+                <div className="text-dark-grey normal-case text-sm">
+                  No admin posts found.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer Links */}
+          <div className="mt-auto px-5 py-4">
+            <nav className="flex flex-col space-y-2.5">
+              <a
+                className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
+                href="#"
+              >
+                <i className="fi fi-rr-shield text-xs"></i>{" "}
+                Community Guidelines
+              </a>
+              <a
+                className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
+                href="#"
+              >
+                <i className="fi fi-rr-interrogation text-xs"></i>{" "}
+                Support
+              </a>
+              <a
+                className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
+                href="#"
+              >
+                <i className="fi fi-rr-comment-alt text-xs"></i>{" "}
+                Feedback
+              </a>
+            </nav>
           </div>
         </aside>
       </section>

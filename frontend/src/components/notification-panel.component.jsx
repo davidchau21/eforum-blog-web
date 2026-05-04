@@ -16,7 +16,7 @@ const NotificationPanel = ({ closePanel }) => {
     userAuth: { access_token, language },
     setUserAuth,
   } = useContext(UserContext);
-  const { socket } = useContext(SocketContext);
+  const { socket } = useContext(SocketContext) || {};
   const [notifications, setNotifications] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const NotificationPanel = ({ closePanel }) => {
       setLoading(true);
       try {
         const { data } = await axios.post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/notifications",
+          import.meta.env.VITE_SERVER_DOMAIN + "/notifications/list",
           { page: pageNum, filter: "all", deletedDocCount: 0 },
           { headers: { Authorization: `Bearer ${access_token}` } },
         );

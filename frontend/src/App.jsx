@@ -1,8 +1,11 @@
+/* eslint-disable react/prop-types */
 import { useMemo, createContext, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/navbar.component";
 import UserAuthForm from "./pages/userAuthForm.page";
-import { lookInSession } from "./common/session";
+import { lookInSession, removeFromSession } from "./common/session";
+import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 import Editor from "./pages/editor.pages";
 import HomePage from "./pages/home.page";
 import SearchPage from "./pages/search.page";
@@ -26,6 +29,9 @@ import ContactPage from "./pages/contact.page";
 import TermsOfServicePage from "./pages/terms-of-service.page";
 import SearchGooglePage from "./pages/search-google.page.jsx";
 import LandingPage from "./pages/landing.page.jsx";
+import SavedBlogsPage from "./pages/saved-blogs.page.jsx";
+import AboutPage from "./pages/about.page.jsx";
+import TrendingPage from "./pages/trending.page.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -34,15 +40,54 @@ const darkThemePreference = () =>
   window.matchMedia("(prefers-color-scheme: dark)").matches;
 
 const ProtectedRoute = ({ children, access_token }) => {
-    return access_token ? children : <Navigate to="/signin" />;
+  return access_token ? children : <Navigate to="/signin" />;
 };
 
 const App = () => {
   const location = useLocation();
   const [userAuth, setUserAuth] = useState(() => {
     const userInSession = lookInSession("user");
-    return userInSession ? JSON.parse(userInSession) : { access_token: null };
+
+    if (userInSession) {
+      const parsedUser = JSON.parse(userInSession);
+
+      if (parsedUser.access_token) {
+        try {
+          const decoded = jwtDecode(parsedUser.access_token);
+          const currentTime = Date.now() / 1000;
+
+          if (decoded.exp < currentTime) {
+            removeFromSession("user");
+            return { access_token: null };
+          }
+        } catch (error) {
+          removeFromSession("user");
+          return { access_token: null };
+        }
+      }
+      return parsedUser;
+    }
+
+    return { access_token: null };
   });
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (
+          error.response &&
+          (error.response.status === 403 || error.response.status === 401)
+        ) {
+          removeFromSession("user");
+          setUserAuth({ access_token: null });
+        }
+        return Promise.reject(error);
+      },
+    );
+
+    return () => axios.interceptors.response.eject(interceptor);
+  }, []);
 
   const [fullScreenImage, setFullScreenImage] = useState(null);
 
@@ -62,9 +107,15 @@ const App = () => {
   }, [theme]);
 
   const themeContextValue = useMemo(() => ({ theme, setTheme }), [theme]);
-  const userContextValue = useMemo(() => ({ 
-    userAuth, setUserAuth, fullScreenImage, setFullScreenImage 
-  }), [userAuth, fullScreenImage]);
+  const userContextValue = useMemo(
+    () => ({
+      userAuth,
+      setUserAuth,
+      fullScreenImage,
+      setFullScreenImage,
+    }),
+    [userAuth, fullScreenImage],
+  );
 
   const excludedPaths = [
     "/dashboard",
@@ -72,6 +123,7 @@ const App = () => {
     "/chat",
     "/editor",
     "/landing",
+    "/feed",
   ];
   const shouldShowFooter = !excludedPaths.some((path) =>
     path === "/"
@@ -104,7 +156,17 @@ const App = () => {
                   }
                 />
                 <Route path="/" element={<Navbar />}>
-                  <Route path="feed" element={<HomePage />} />
+                  <Route path="feed" element={<HomePage />}>
+                    <Route path="following" element={<HomePage />} />
+                  </Route>
+                  <Route
+                    path="feed/saved"
+                    element={
+                      <ProtectedRoute access_token={userAuth.access_token}>
+                        <SavedBlogsPage />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route
                     path="dashboard"
                     element={
@@ -158,6 +220,8 @@ const App = () => {
                   <Route path="privacy" element={<PrivacyPage />} />
                   <Route path="policy" element={<PolicyPage />} />
                   <Route path="contact" element={<ContactPage />} />
+                  <Route path="about" element={<AboutPage />} />
+                  <Route path="trending" element={<TrendingPage />} />
                   <Route
                     path="terms-of-service"
                     element={<TermsOfServicePage />}

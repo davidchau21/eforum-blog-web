@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable no-unused-vars */
 import { useCallback, useContext, useEffect, useState } from "react";
 import { BlogContext } from "../pages/blog.page";
 import { Link } from "react-router-dom";
@@ -17,6 +19,12 @@ const BlogInteraction = () => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
+  const blogContext = useContext(BlogContext);
+
+  if (!blogContext || !blogContext.blog) {
+    return null; // Or some fallback UI
+  }
+
   let {
     blog,
     blog: {
@@ -34,10 +42,11 @@ const BlogInteraction = () => {
     islikedByUser,
     setLikedByUser,
     setCommentsWrapper,
-  } = useContext(BlogContext);
-  let {
-    userAuth: { username, access_token, language },
-  } = useContext(UserContext);
+    isSavedByUser,
+    setSavedByUser,
+  } = blogContext;
+  let { userAuth = {}, userAuth: { username, access_token, language } = {} } =
+    useContext(UserContext) || {};
 
   const currentTranslations = getTranslations(language);
 
@@ -47,7 +56,7 @@ const BlogInteraction = () => {
     if (access_token) {
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/isliked-by-user",
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/isliked-by-user",
           { _id },
           {
             headers: { Authorization: `Bearer ${access_token}` },
@@ -55,8 +64,19 @@ const BlogInteraction = () => {
         )
         .then(({ data: { result } }) => setLikedByUser(Boolean(result)))
         .catch((err) => console.log(err));
+
+      axios
+        .post(
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/is-saved-by-user",
+          { blog_id },
+          {
+            headers: { Authorization: `Bearer ${access_token}` },
+          },
+        )
+        .then(({ data: { result } }) => setSavedByUser(Boolean(result)))
+        .catch((err) => console.log(err));
     }
-  }, []);
+  }, [_id, blog_id, access_token]);
 
   const handleLike = () => {
     if (access_token) {
@@ -65,7 +85,7 @@ const BlogInteraction = () => {
       setBlog({ ...blog, activity: { ...activity, total_likes } });
       axios
         .post(
-          import.meta.env.VITE_SERVER_DOMAIN + "/like-blog",
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/like-blog",
           { _id, islikedByUser },
           {
             headers: { Authorization: `Bearer ${access_token}` },
@@ -75,6 +95,31 @@ const BlogInteraction = () => {
     } else {
       toast.error(currentTranslations.loggedInToLike);
     }
+  };
+
+  const handleSave = () => {
+    if (!access_token) {
+      return toast.error("Vui lòng đăng nhập để lưu bài viết");
+    }
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/save-blog",
+        { blog_id },
+        {
+          headers: { Authorization: `Bearer ${access_token}` },
+        },
+      )
+      .then(({ data }) => {
+        setSavedByUser(data.saved_status);
+        toast.success(
+          data.saved_status ? "Đã lưu bài viết" : "Đã bỏ lưu bài viết",
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error("Không thể lưu bài viết");
+      });
   };
 
   const handleShare = (shareType) => {
@@ -89,7 +134,7 @@ const BlogInteraction = () => {
       share_img: blog.banner || "",
     };
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/share-blog", payload, {
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/share-blog", payload, {
         headers: { Authorization: `Bearer ${access_token}` },
       })
       .then(({ data }) => {
@@ -145,10 +190,10 @@ const BlogInteraction = () => {
           {/* Like */}
           <button
             onClick={handleLike}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
               islikedByUser
-                ? "bg-rose-50 text-rose-500 hover:bg-rose-100"
-                : "text-dark-grey hover:bg-grey/60 hover:text-rose-500"
+                ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20"
+                : "text-dark-grey hover:bg-grey hover:text-rose-500"
             }`}
           >
             <i
@@ -165,7 +210,7 @@ const BlogInteraction = () => {
                 element.scrollIntoView({ behavior: "smooth" });
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-grey/60 hover:text-blue-500 transition-all duration-200"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-grey hover:text-indigo-500 transition-all duration-200"
           >
             <i className="fi fi-rr-comment-dots text-base leading-none"></i>
             <span>{total_comments}</span>
@@ -175,7 +220,7 @@ const BlogInteraction = () => {
           <div className="relative">
             <button
               onClick={() => setShowShareOptions((prev) => !prev)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-grey/60 hover:text-emerald-500 transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-grey hover:text-emerald-500 transition-all duration-200"
             >
               <i className="fi fi-rr-share text-base leading-none"></i>
               <span>{total_share}</span>
@@ -190,7 +235,7 @@ const BlogInteraction = () => {
                     handleShare("link");
                     setShowShareOptions(false);
                   }}
-                  className="w-9 h-9 rounded-xl bg-grey/50 flex items-center justify-center hover:bg-grey transition-colors duration-200"
+                  className="w-9 h-9 rounded-xl bg-grey flex items-center justify-center hover:bg-grey/50 transition-colors duration-200 text-black"
                 >
                   <i className="fi fi-rr-link text-base leading-none"></i>
                 </button>
@@ -203,7 +248,7 @@ const BlogInteraction = () => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center hover:bg-sky-100 transition-colors duration-200">
+                  <div className="w-9 h-9 rounded-xl bg-sky-500/10 flex items-center justify-center hover:bg-sky-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-twitter text-sky-500 text-base leading-none"></i>
                   </div>
                 </TwitterShareButton>
@@ -215,7 +260,7 @@ const BlogInteraction = () => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center hover:bg-blue-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-facebook text-blue-600 text-base leading-none"></i>
                   </div>
                 </FacebookShareButton>
@@ -228,7 +273,7 @@ const BlogInteraction = () => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center hover:bg-blue-100 transition-colors duration-200">
+                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center hover:bg-blue-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-linkedin text-blue-700 text-base leading-none"></i>
                   </div>
                 </LinkedinShareButton>
@@ -240,7 +285,7 @@ const BlogInteraction = () => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center hover:bg-orange-100 transition-colors duration-200">
+                  <div className="w-9 h-9 rounded-xl bg-orange-500/10 flex items-center justify-center hover:bg-orange-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-reddit text-orange-500 text-base leading-none"></i>
                   </div>
                 </RedditShareButton>
@@ -252,13 +297,27 @@ const BlogInteraction = () => {
                     setShowShareOptions(false);
                   }}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-sky-50 flex items-center justify-center hover:bg-sky-100 transition-colors duration-200">
+                  <div className="w-9 h-9 rounded-xl bg-sky-500/10 flex items-center justify-center hover:bg-sky-500/20 transition-colors duration-200">
                     <i className="fi fi-brands-telegram text-sky-500 text-base leading-none"></i>
                   </div>
                 </TelegramShareButton>
               </div>
             )}
           </div>
+
+          {/* Save/Bookmark */}
+          <button
+            onClick={handleSave}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${
+              isSavedByUser
+                ? "bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20"
+                : "text-dark-grey hover:bg-grey hover:text-indigo-500"
+            }`}
+          >
+            <i
+              className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-base leading-none`}
+            ></i>
+          </button>
         </div>
 
         {/* Right: Actions */}
@@ -267,10 +326,10 @@ const BlogInteraction = () => {
           {username == author_username && (
             <Link
               to={`/editor/${blog_id}`}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-grey/60 hover:text-purple transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-grey hover:text-purple transition-all duration-200"
             >
               <i className="fi fi-rr-edit text-base leading-none"></i>
-              <span>{currentTranslations.edit}</span>
+              <span className="hidden sm:inline">{currentTranslations.edit}</span>
             </Link>
           )}
 
@@ -281,11 +340,11 @@ const BlogInteraction = () => {
                 navigator.clipboard.writeText(urlShare);
                 toast.success(currentTranslations.copyLink + " 👍");
               }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-blue-50 hover:text-blue-500 transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-indigo-500/10 hover:text-indigo-500 transition-all duration-200"
             >
               <i className="fi fi-rr-link text-base leading-none"></i>
             </button>
-            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black/80 text-white text-xs rounded-lg py-1 px-2 whitespace-nowrap">
+            <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-[10px] uppercase font-bold tracking-wider rounded-lg py-1 px-2 whitespace-nowrap">
               {currentTranslations.copyLink}
             </span>
           </div>
@@ -298,30 +357,30 @@ const BlogInteraction = () => {
               <div className="relative group">
                 <button
                   onClick={() => setShowConfirmModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium text-dark-grey hover:bg-rose-50 hover:text-rose-500 transition-all duration-200"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-rose-500/10 hover:text-rose-500 transition-all duration-200"
                 >
                   <i className="fi fi-rr-flag text-base leading-none"></i>
                 </button>
-                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black/80 text-white text-xs rounded-lg py-1 px-2 whitespace-nowrap">
+                <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-[10px] uppercase font-bold tracking-wider rounded-lg py-1 px-2 whitespace-nowrap">
                   {currentTranslations.reportBlog}
                 </span>
 
                 {showConfirmModal && (
                   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl p-6 w-80 mx-4">
-                      <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="bg-white border border-grey rounded-2xl shadow-2xl p-6 w-80 mx-4">
+                      <div className="w-12 h-12 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i className="fi fi-rr-flag text-rose-500 text-xl leading-none"></i>
                       </div>
                       <p className="text-base font-bold text-black text-center mb-1">
                         {currentTranslations.confirmReportTitle}
                       </p>
-                      <p className="text-sm text-dark-grey text-center mb-6">
+                      <p className="text-sm text-dark-grey text-center mb-6 font-medium">
                         {currentTranslations.confirmReportMsg}
                       </p>
                       <div className="flex gap-3">
                         <button
                           onClick={() => setShowConfirmModal(false)}
-                          className="flex-1 py-2.5 px-4 bg-grey text-dark-grey rounded-xl text-sm font-medium hover:bg-grey/80 transition-colors duration-200"
+                          className="flex-1 py-2.5 px-4 bg-grey text-dark-grey rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-grey/80 transition-colors duration-200"
                         >
                           {currentTranslations.cancel}
                         </button>
@@ -330,7 +389,7 @@ const BlogInteraction = () => {
                             report();
                             setShowConfirmModal(false);
                           }}
-                          className="flex-1 py-2.5 px-4 bg-rose-500 text-white rounded-xl text-sm font-medium hover:bg-rose-600 transition-colors duration-200"
+                          className="flex-1 py-2.5 px-4 bg-rose-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider hover:opacity-90 transition-colors duration-200 shadow-lg shadow-rose-500/20"
                         >
                           {currentTranslations.report}
                         </button>

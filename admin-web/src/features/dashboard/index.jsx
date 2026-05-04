@@ -12,11 +12,29 @@ import {
   PointElement,
   ArcElement,
 } from "chart.js";
-import { User2Icon, FileIcon, MessageCircleIcon, CalendarIcon, ThumbsUp, Share2, BookOpen} from "lucide-react";
+import {
+  User2Icon,
+  FileIcon,
+  MessageCircleIcon,
+  CalendarIcon,
+  ThumbsUp,
+  Share2,
+  BookOpen,
+} from "lucide-react";
 import reportApi from "../../api/reportApi";
 
 // Đăng ký các thành phần của Chart.js
-ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointElement, Title, Tooltip, Legend, ArcElement);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+);
 
 const Dashboard = () => {
   const [totalUser, setTotalUser] = useState(0);
@@ -85,32 +103,39 @@ const Dashboard = () => {
     ],
   });
 
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 6);
+    return d.toISOString().split("T")[0];
+  });
+  const [endDate, setEndDate] = useState(() => {
+    return new Date().toISOString().split("T")[0];
+  });
 
   useEffect(() => {
     // Lấy số liệu tổng quan
     reportApi.totalUser().then((res) => {
-      setTotalUser(res.body.totalUser);
+      if (res.ok && res.body) setTotalUser(res.body.totalUser || 0);
     });
     reportApi.totalBlog().then((res) => {
-      setTotalBlog(res.body.totalBlog);
+      if (res.ok && res.body) setTotalBlog(res.body.totalBlog || 0);
     });
     reportApi.totalComment().then((res) => {
-      setTotalComment(res.body.totalComment);
+      if (res.ok && res.body) setTotalComment(res.body.totalComment || 0);
     });
 
-    reportApi.blogStatistic().then((res) => {
-      setInteractionData({ ...interactionData, labels: res.body.labels });
-    });
     reportApi.getStats().then((res) => {
-      setTotalInteraction(res);
-      setTotalLike(totalInteraction.body.totalLikes);
-      setTotalShare(totalInteraction.body.totalShares);
-      setTotalRead(totalInteraction.body.totalReads);
+      if (res.ok && res.body) {
+        setTotalInteraction(res.body);
+        setTotalLike(res.body.totalLikes || 0);
+        setTotalShare(res.body.totalShares || 0);
+        setTotalRead(res.body.totalReads || 0);
+      }
     });
 
-    handleDateChange();
+    if (startDate && endDate) {
+      handleDateChange();
+    }
   }, [startDate, endDate]);
 
   const handleDateChange = () => {
@@ -119,9 +144,14 @@ const Dashboard = () => {
       reportApi.blogStatisticsByDate(startDate, endDate),
       reportApi.weeklyInteractions(),
     ]).then(([userResponse, blogResponse, interactionResponse]) => {
+      if (!userResponse.ok || !blogResponse.ok || !interactionResponse.ok) {
+        console.error("Failed to fetch dashboard statistics");
+        return;
+      }
+
       // Dữ liệu người dùng và bài viết
-      const userGrowth = userResponse.body.growthData;
-      const blogGrowth = blogResponse.body;
+      const userGrowth = userResponse.body.growthData || [];
+      const blogGrowth = blogResponse.body || [];
 
       const labels = userGrowth.map((entry) => entry.date); // Lấy ngày từ userGrowth
       const userData = userGrowth.map((entry) => entry.userCount);
@@ -143,7 +173,7 @@ const Dashboard = () => {
       }));
 
       // Dữ liệu tương tác hàng tuần
-      const interactions = interactionResponse.body;
+      const interactions = interactionResponse.body || [];
 
       const interactionLabels = interactions.map((entry) => entry.date);
       const likes = interactions.map((entry) => entry.totalLikes);
@@ -171,17 +201,26 @@ const Dashboard = () => {
         ],
       });
 
-      const totalInteractions = likes.reduce((a, b) => a + b, 0) + shares.reduce((a, b) => a + b, 0) + comments.reduce((a, b) => a + b, 0);
+      const totalInteractions =
+        likes.reduce((a, b) => a + b, 0) +
+        shares.reduce((a, b) => a + b, 0) +
+        comments.reduce((a, b) => a + b, 0);
 
       setPieData({
         labels: ["Lượt thích", "Lượt chia sẻ", "Lượt bình luận"],
         datasets: [
           {
-            data: [
-              (likes.reduce((a, b) => a + b, 0) / totalInteractions) * 100,
-              (shares.reduce((a, b) => a + b, 0) / totalInteractions) * 100,
-              (comments.reduce((a, b) => a + b, 0) / totalInteractions) * 100,
-            ],
+            data:
+              totalInteractions > 0
+                ? [
+                    (likes.reduce((a, b) => a + b, 0) / totalInteractions) *
+                      100,
+                    (shares.reduce((a, b) => a + b, 0) / totalInteractions) *
+                      100,
+                    (comments.reduce((a, b) => a + b, 0) / totalInteractions) *
+                      100,
+                  ]
+                : [0, 0, 0],
             backgroundColor: [
               "rgba(75, 192, 192, 0.8)",
               "rgba(255, 206, 86, 0.8)",
@@ -194,16 +233,21 @@ const Dashboard = () => {
       // Thêm % đằng sau dữ liệu
       setPieData((prev) => ({
         ...prev,
-        labels: prev.labels.map((label, index) => `${label} (${prev.datasets[0].data[index].toFixed(2)}%)`),
+        labels: prev.labels.map(
+          (label, index) =>
+            `${label.split(" (")[0]} (${prev.datasets[0].data[index].toFixed(2)}%)`,
+        ),
       }));
     });
-  }
+  };
 
   return (
     <div className="p-6 space-y-6">
       {/* Header: Chọn khoảng thời gian */}
       <div className="w-full bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-semibold text-center mb-4">Chọn khoảng thời gian</h2>
+        <h2 className="text-2xl font-semibold text-center mb-4">
+          Chọn khoảng thời gian
+        </h2>
         <div className="flex gap-4 justify-center">
           <input
             type="date"
@@ -219,85 +263,114 @@ const Dashboard = () => {
           />
         </div>
       </div>
-  
+
       {/* 6 thẻ và biểu đồ tròn */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 6 thẻ: 2 cột, 3 thẻ mỗi cột */}
         <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="h-[120px] bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <User2Icon size={44} color="white" />
-            <p className="text-3xl font-bold text-right text-white">{totalUser}</p>
+          <div className="h-[120px] bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <User2Icon size={44} color="white" />
+              <p className="text-3xl font-bold text-right text-white">
+                {totalUser}
+              </p>
+            </div>
+            <h1 className="text-xl font-semibold text-right text-white mt-2">
+              Số lượng người dùng
+            </h1>
           </div>
-          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng người dùng</h1>
+
+          <div className="h-[120px] bg-gradient-to-r from-teal-400 to-green-500 px-5 py-5 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <FileIcon size={44} color="white" />
+              <p className="text-3xl font-bold text-right text-white">
+                {totalBlog}
+              </p>
+            </div>
+            <h1 className="text-xl font-semibold text-right text-white mt-2">
+              Số lượng bài viết
+            </h1>
+          </div>
+
+          <div className="h-[120px] bg-gradient-to-r from-pink-400 to-red-500 px-5 py-5 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <MessageCircleIcon size={44} color="white" />
+              <p className="text-3xl font-bold text-right text-white">
+                {totalComment}
+              </p>
+            </div>
+            <h1 className="text-xl font-semibold text-right text-white mt-2">
+              Số lượng bình luận
+            </h1>
+          </div>
+
+          {/* Các thẻ dưới với gradient khác và icon thay đổi */}
+          <div className="h-[120px] bg-gradient-to-r from-purple-400 to-pink-500 px-5 py-5 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <ThumbsUp size={44} color="white" />{" "}
+              {/* Đổi icon thành ThumbUpIcon cho "Like" */}
+              <p className="text-3xl font-bold text-right text-white">
+                {totalLike}
+              </p>
+            </div>
+            <h1 className="text-xl font-semibold text-right text-white mt-2">
+              Số lượng like
+            </h1>
+          </div>
+
+          <div className="h-[120px] bg-gradient-to-r from-orange-400 to-yellow-500 px-5 py-5 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <Share2 size={44} color="white" />{" "}
+              {/* Đổi icon thành ShareIcon cho "Share" */}
+              <p className="text-3xl font-bold text-right text-white">
+                {totalShare}
+              </p>
+            </div>
+            <h1 className="text-xl font-semibold text-right text-white mt-2">
+              Số lượt chia sẻ
+            </h1>
+          </div>
+
+          <div className="h-[120px] bg-gradient-to-r from-indigo-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
+            <div className="flex items-center justify-between">
+              <BookOpen size={44} color="white" />{" "}
+              {/* Đổi icon thành BookIcon cho "Read" */}
+              <p className="text-3xl font-bold text-right text-white">
+                {totalRead}
+              </p>
+            </div>
+            <h1 className="text-xl font-semibold text-right text-white mt-2">
+              Số lượt đọc
+            </h1>
+          </div>
         </div>
 
-        <div className="h-[120px] bg-gradient-to-r from-teal-400 to-green-500 px-5 py-5 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <FileIcon size={44} color="white" />
-            <p className="text-3xl font-bold text-right text-white">{totalBlog}</p>
-          </div>
-          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng bài viết</h1>
-        </div>
-
-        <div className="h-[120px] bg-gradient-to-r from-pink-400 to-red-500 px-5 py-5 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <MessageCircleIcon size={44} color="white" />
-            <p className="text-3xl font-bold text-right text-white">{totalComment}</p>
-          </div>
-          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng bình luận</h1>
-        </div>
-
-        {/* Các thẻ dưới với gradient khác và icon thay đổi */}
-        <div className="h-[120px] bg-gradient-to-r from-purple-400 to-pink-500 px-5 py-5 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <ThumbsUp size={44} color="white" /> {/* Đổi icon thành ThumbUpIcon cho "Like" */}
-            <p className="text-3xl font-bold text-right text-white">{totalLike}</p>
-          </div>
-          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượng like</h1>
-        </div>
-
-        <div className="h-[120px] bg-gradient-to-r from-orange-400 to-yellow-500 px-5 py-5 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <Share2 size={44} color="white" /> {/* Đổi icon thành ShareIcon cho "Share" */}
-            <p className="text-3xl font-bold text-right text-white">{totalShare}</p>
-          </div>
-          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượt chia sẻ</h1>
-        </div>
-
-        <div className="h-[120px] bg-gradient-to-r from-indigo-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
-          <div className="flex items-center justify-between">
-            <BookOpen size={44} color="white" /> {/* Đổi icon thành BookIcon cho "Read" */}
-            <p className="text-3xl font-bold text-right text-white">{totalRead}</p>
-          </div>
-          <h1 className="text-xl font-semibold text-right text-white mt-2">Số lượt đọc</h1>
-        </div>
-
-        </div>
-  
         {/* Biểu đồ tròn */}
         <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-center text-2xl font-semibold text-gray-800 mb-4">Thống kê tương tác</h2>
+          <h2 className="text-center text-2xl font-semibold text-gray-800 mb-4">
+            Thống kê tương tác
+          </h2>
           <div className="flex justify-center items-center">
             {/* Thêm kích thước cụ thể cho biểu đồ */}
             <div className="w-[300px] h-[300px] md:w-[300px] md:h-[300px]">
-              <Pie 
-                data={pieData} 
-                options={{ 
-                  responsive: true, 
-                  maintainAspectRatio: false 
-                }} 
+              <Pie
+                data={pieData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                }}
               />
             </div>
           </div>
         </div>
-
       </div>
-  
+
       {/* 2 biểu đồ cột và đường */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="w-full bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4">Số liệu người dùng và bài viết</h2>
+          <h2 className="text-2xl font-semibold mb-4">
+            Số liệu người dùng và bài viết
+          </h2>
           <Line data={chartData} />
         </div>
         <div className="w-full bg-white rounded-lg shadow-lg p-6">
@@ -307,7 +380,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-  
 };
 
 export default Dashboard;

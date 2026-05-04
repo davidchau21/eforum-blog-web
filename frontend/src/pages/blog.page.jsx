@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 import axios from "axios";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
@@ -12,6 +13,7 @@ import CommentsContainer, {
   fetchComments,
 } from "../components/comments.component";
 import { getTranslations } from "../../translations";
+import { toast } from "react-hot-toast";
 
 export const blogStructure = {
   title: "",
@@ -21,6 +23,7 @@ export const blogStructure = {
   banner: "",
   publishedAt: "",
   tags: [],
+  activity: { total_likes: 0, total_comments: 0, total_share: 0 },
 };
 
 export const BlogContext = createContext({});
@@ -33,13 +36,32 @@ const BlogPage = () => {
   const [similarBlogs, setSimilrBlogs] = useState(null);
   const [loading, setLoading] = useState(true);
   const [islikedByUser, setLikedByUser] = useState(false);
+  const [isSavedByUser, setSavedByUser] = useState(false);
   const [totalParentCommentsLoaded, setTotalParentCommentsLoaded] = useState(0);
+  const [isFollowingAuthor, setIsFollowingAuthor] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
   const {
     fullScreenImage,
     setFullScreenImage,
-    userAuth: { language } = {},
+    userAuth: { language, access_token, username } = {},
   } = useContext(UserContext);
+
+  const trackInterest = (tags) => {
+    if (access_token && tags && tags.length) {
+      axios
+        .post(
+          import.meta.env.VITE_SERVER_DOMAIN + "/blogs/track-interest",
+          { tags },
+          {
+            headers: {
+              Authorization: `Bearer ${access_token}`,
+            },
+          },
+        )
+        .catch((err) => console.log("Interest tracking failed", err));
+    }
+  };
+
   const translations = getTranslations(language);
   const contentRef = useRef(null);
 
@@ -57,6 +79,7 @@ const BlogPage = () => {
     tags,
     author: {
       personal_info: { fullname, username: author_username, profile_img } = {},
+      _id: authorId,
     } = {},
     publishedAt,
     activity,
@@ -78,20 +101,37 @@ const BlogPage = () => {
 
   const fetchBlog = () => {
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id })
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-blog", { blog_id })
       .then(async ({ data: { blog } }) => {
         blog.comments = await fetchComments({
           blog_id: blog._id,
           setParentCommentCountFun: setTotalParentCommentsLoaded,
         });
         setBlog(blog);
+
+        // Track interest
+        trackInterest(blog.tags);
+
         axios
-          .post(import.meta.env.VITE_SERVER_DOMAIN + "/search-blogs", {
+          .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/search-blogs", {
             tag: blog.tags[0],
             limit: 3,
             eliminate_blog: blog_id,
           })
           .then(({ data }) => setSimilrBlogs(data.blogs));
+
+        // Check follow status
+        if (access_token) {
+          axios
+            .post(
+              import.meta.env.VITE_SERVER_DOMAIN + "/users/is-following",
+              { target_id: blog.author._id },
+              { headers: { Authorization: `Bearer ${access_token}` } },
+            )
+            .then(({ data }) => setIsFollowingAuthor(data.is_following))
+            .catch((err) => console.log(err));
+        }
+
         setLoading(false);
       })
       .catch((err) => {
@@ -118,14 +158,45 @@ const BlogPage = () => {
     }
   }, [location.search, loading]);
 
+  const handleFollowAuthor = () => {
+    if (!access_token) {
+      return toast.error("Vui lòng đăng nhập để theo dõi");
+    }
+
+    // Toggle local state for instant feedback
+    const newStatus = !isFollowingAuthor;
+    setIsFollowingAuthor(newStatus);
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/users/follow-user",
+        { target_id: authorId },
+        { headers: { Authorization: `Bearer ${access_token}` } },
+      )
+      .then(({ data }) => {
+        setIsFollowingAuthor(data.followed_status);
+        toast.success(
+          data.followed_status
+            ? `Đã theo dõi ${fullname}`
+            : `Đã bỏ theo dõi ${fullname}`,
+        );
+      })
+      .catch((err) => {
+        setIsFollowingAuthor(!newStatus); // Revert on error
+        console.log(err);
+        toast.error("Không thể cập nhật trạng thái theo dõi");
+      });
+  };
+
   const resetStates = () => {
     setBlog(blogStructure);
     setSimilrBlogs(null);
     setLoading(true);
     setLikedByUser(false);
-    setLikedByUser(false);
+    setSavedByUser(false);
     setTotalParentCommentsLoaded(0);
     setReadingProgress(0);
+    setIsFollowingAuthor(false);
   };
 
   const hasRealBanner = banner && banner !== bannerDefault;
@@ -147,6 +218,8 @@ const BlogPage = () => {
             setBlog,
             islikedByUser,
             setLikedByUser,
+            isSavedByUser,
+            setSavedByUser,
             totalParentCommentsLoaded,
             setTotalParentCommentsLoaded,
             fullScreenImage,
@@ -161,261 +234,219 @@ const BlogPage = () => {
             />
           </div>
 
-          <div ref={contentRef} className="text-black min-h-screen">
-            {/* ═══════════ UNIFIED CONTAINER ═══════════ */}
-            <div className="max-w-7xl mx-auto px-6 lg:px-10">
-              {/* ── HERO + SIDEBAR WRAPPER ── */}
-              <div className="flex gap-10 items-start">
-                {/* Hero content - article column */}
-                <div className="flex-1 min-w-0">
-                  <div className="pt-10 pb-8 border-b border-grey/40">
-                    <div className="absolute inset-x-0 top-0 h-64 bg-gradient-to-br from-purple/[0.04] via-transparent to-emerald-500/[0.02] pointer-events-none" />
+          <div
+            ref={contentRef}
+            className="text-black min-h-screen bg-grey py-8 transition-colors duration-300"
+          >
+            <div className="max-w-[1200px] mx-auto px-4 lg:px-8 flex flex-col lg:flex-row gap-8 items-start">
+              {/* ── LEFT COLUMN (Article + Comments) ── */}
+              <div className="flex-1 min-w-0 w-full">
+                {/* Breadcrumbs */}
+                <div className="flex items-center gap-2 text-[13px] font-bold text-dark-grey mb-6 capitalize tracking-wide opacity-60 uppercase">
+                  {tags && tags.length > 0 ? (
+                    <>
+                      <span>{tags[0]}</span>
+                      {tags[1] && (
+                        <>
+                          <i className="fi fi-rr-angle-small-right text-dark-grey"></i>
+                          <span>{tags[1]}</span>
+                        </>
+                      )}
+                    </>
+                  ) : (
+                    <span>Article</span>
+                  )}
+                </div>
 
-                    {/* Tags */}
-                    {tags && tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-5">
-                        {tags.slice(0, 5).map((tag, i) => (
+                {/* MAIN ARTICLE CARD */}
+                <article className="bg-white rounded-2xl border border-grey p-6 md:p-8 shadow-sm mb-10">
+                  {/* Card Header */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="px-3 py-1 bg-grey text-dark-grey rounded-full text-[11px] font-bold tracking-widest uppercase">
+                      {translations.post || "Post"}
+                    </span>
+                    <span className="text-[13px] text-dark-grey font-medium opacity-60">
+                      Posted {new Date(publishedAt).toLocaleDateString("en-GB")}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h1 className="text-3xl md:text-[40px] font-bold text-black leading-[1.15] mb-6 tracking-tight">
+                    {title}
+                  </h1>
+
+                  {/* Description (Optional, since sometimes it's just content) */}
+                  {des && (
+                    <p className="text-lg text-dark-grey leading-relaxed mb-8 font-medium">
+                      {des}
+                    </p>
+                  )}
+
+                  {/* Banner */}
+                  {hasRealBanner && (
+                    <div
+                      className="w-full aspect-video rounded-xl overflow-hidden shadow-md cursor-zoom-in mb-8 border border-grey"
+                      onClick={() => setFullScreenImage(banner)}
+                    >
+                      <img
+                        src={banner}
+                        className="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-500"
+                        onError={handleBannerError}
+                        alt="Banner"
+                      />
+                    </div>
+                  )}
+
+                  {/* Body Content */}
+                  <div className="blog-page-content font-inter leading-relaxed text-black text-[1.05rem] opacity-90">
+                    {content[0].blocks.map((block, i) => (
+                      <div key={i} className="my-5 md:my-7">
+                        <BlogContent block={block} />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Card Footer (Tags + Interactions) */}
+                  <div className="flex items-center justify-between pt-6 mt-8 border-t border-grey flex-wrap gap-4">
+                    {/* Left: Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {tags &&
+                        tags.map((tag, i) => (
                           <span
                             key={i}
-                            className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple/10 text-purple border border-purple/20 tracking-wide"
+                            className="bg-grey text-dark-grey text-[12px] px-3 py-1.5 rounded-md font-bold border border-grey hover:bg-indigo-500/10 hover:text-indigo-500 hover:border-indigo-500/30 transition-all cursor-pointer uppercase tracking-wider"
                           >
                             {tag}
                           </span>
                         ))}
-                      </div>
-                    )}
-
-                    {/* Title */}
-                    <p
-                      className="text-black mb-3"
-                      style={{
-                        fontSize: "clamp(1.8rem, 4vw, 2.5rem)",
-                        lineHeight: 1.15,
-                        fontWeight: 800,
-                        fontFamily: "Inter, sans-serif",
-                      }}
-                    >
-                      {title}
-                    </p>
-
-                    {/* Description */}
-                    {des && (
-                      <p
-                        className="text-dark-grey leading-relaxed mb-6"
-                        style={{ fontSize: "1.05rem" }}
-                      >
-                        {des}
-                      </p>
-                    )}
-
-                    {/* Author + Meta Row */}
-                    <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-grey/60">
-                      <Link
-                        to={`/user/${author_username}`}
-                        className="flex items-center gap-3 group"
-                      >
-                        <img
-                          src={profile_img}
-                          className="w-10 h-10 rounded-full object-cover ring-2 ring-transparent group-hover:ring-purple/40 transition-all duration-300 flex-shrink-0"
-                          alt={fullname}
-                        />
-                        <div>
-                          <p className="font-semibold text-black text-sm group-hover:text-purple transition-colors leading-tight">
-                            {fullname}
-                          </p>
-                          <p className="text-xs text-dark-grey">
-                            @{author_username}
-                          </p>
-                        </div>
-                      </Link>
-                      <div className="flex items-center gap-3 text-xs text-dark-grey">
-                        <span className="flex items-center gap-1.5">
-                          <i className="fi fi-rr-calendar text-purple/60 leading-none"></i>
-                          {new Date(publishedAt).toLocaleDateString("vi-VN", {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })}
-                        </span>
-                        <span className="flex items-center gap-1.5 bg-grey/60 px-2.5 py-1 rounded-full font-medium">
-                          <i className="fi fi-rr-time-read leading-none"></i>
-                          {estimateReadTime(content)} phút đọc
-                        </span>
-                      </div>
                     </div>
 
-                    {/* Banner */}
-                    {hasRealBanner && (
-                      <div
-                        className="mt-6 w-full aspect-[21/9] rounded-2xl overflow-hidden shadow-xl shadow-black/10 cursor-zoom-in"
-                        onClick={() => setFullScreenImage(banner)}
-                      >
-                        <img
-                          src={banner}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                          onError={handleBannerError}
-                          alt="Banner bài viết"
-                        />
-                      </div>
-                    )}
+                    {/* Right: Interactions */}
+                    <BlogInteraction />
                   </div>
-                </div>
+                </article>
 
-                {/* Sidebar spacer in hero */}
-                <div className="hidden lg:block w-72 flex-shrink-0" />
+                {/* Comments */}
+                <div className="mb-10">
+                  <h4 className="text-2xl font-bold text-black mb-6 flex items-center gap-2 tracking-tight">
+                    Comments{" "}
+                    <span className="text-dark-grey font-bold text-lg opacity-40">
+                      ({activity?.total_comments || 0})
+                    </span>
+                  </h4>
+                  <CommentsContainer />
+                </div>
               </div>
 
-              {/* ── CONTENT + SIDEBAR ── */}
-              <div className="flex gap-10 items-start py-8">
-                {/* Article */}
-                <article className="flex-1 min-w-0">
-                  <div className="mb-10 blog-page-content">
-                    <div
-                      className="font-gelasio leading-relaxed text-black/90"
-                      style={{ fontSize: "1.05rem" }}
+              {/* ── RIGHT SIDEBAR ── */}
+              <aside className="w-full lg:w-[320px] flex-shrink-0 space-y-6 lg:sticky lg:top-[100px]">
+                {/* Author Card */}
+                <div className="bg-white rounded-2xl border border-grey p-8 flex flex-col items-center text-center shadow-sm">
+                  <Link to={`/user/${author_username}`} className="mb-4">
+                    <img
+                      src={profile_img}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-grey shadow-sm hover:scale-105 transition-transform"
+                      alt={fullname}
+                    />
+                  </Link>
+                  <Link to={`/user/${author_username}`}>
+                    <h3 className="font-bold text-lg text-black hover:text-indigo-500 transition-colors">
+                      {fullname}
+                    </h3>
+                  </Link>
+                  <p className="text-[13px] text-dark-grey mb-6 font-bold opacity-60">
+                    @{author_username}
+                  </p>
+
+                  {/* Stats Grid */}
+                  <div className="flex items-center justify-center gap-8 w-full border-t border-grey pt-5 mb-6">
+                    <div className="text-center">
+                      <p className="font-bold text-indigo-500 text-lg leading-none mb-1">
+                        {activity?.total_likes > 1000
+                          ? (activity.total_likes / 1000).toFixed(1) + "k"
+                          : activity?.total_likes || 0}
+                      </p>
+                      <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest opacity-40">
+                        Rep
+                      </p>
+                    </div>
+                    <div className="w-px h-8 bg-grey"></div>
+                    <div className="text-center">
+                      <p className="font-bold text-black text-lg leading-none mb-1">
+                        {activity?.total_comments || 0}
+                      </p>
+                      <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest opacity-40">
+                        Posts
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Follow Button */}
+                  {username !== author_username && (
+                    <button
+                      onClick={handleFollowAuthor}
+                      className={`w-full font-bold text-sm py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 ${isFollowingAuthor ? "bg-grey text-dark-grey border border-grey hover:bg-grey/80" : "bg-black text-white hover:opacity-90 shadow-lg shadow-black/5"}`}
                     >
-                      {content[0].blocks.map((block, i) => (
-                        <div key={i} className="my-4 md:my-7">
-                          <BlogContent block={block} />
-                        </div>
+                      <i
+                        className={`fi ${isFollowingAuthor ? "fi-rr-user-check" : "fi-rr-user-add"} text-sm mt-0.5`}
+                      ></i>
+                      {isFollowingAuthor ? "Following" : "Follow"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Related Stream Placeholder */}
+                {similarBlogs && similarBlogs.length > 0 && (
+                  <div className="bg-white rounded-2xl border border-grey p-6 shadow-sm">
+                    <p className="text-[10px] font-bold text-dark-grey uppercase tracking-widest mb-4 opacity-50">
+                      Related Stream
+                    </p>
+                    <div className="space-y-4">
+                      {similarBlogs.slice(0, 2).map((b, i) => (
+                        <Link
+                          to={`/blog/${b.blog_id}`}
+                          key={i}
+                          className="block group"
+                        >
+                          <h4 className="font-bold text-sm text-black group-hover:text-indigo-500 transition-colors mb-1 line-clamp-2 leading-tight">
+                            {b.title}
+                          </h4>
+                          <p className="text-[11px] text-dark-grey font-medium opacity-60 uppercase tracking-tighter">
+                            {b.activity?.total_comments || 0} replies •{" "}
+                            {new Date(b.publishedAt).toLocaleDateString(
+                              "en-GB",
+                            )}
+                          </p>
+                        </Link>
                       ))}
                     </div>
                   </div>
-
-                  <BlogInteraction />
-
-                  <CommentsContainer />
-                </article>
-
-                {/* Sticky Sidebar */}
-                <aside className="hidden lg:block w-72 flex-shrink-0">
-                  <div className="sticky top-20 space-y-4">
-                    {/* Stats */}
-                    {activity && (
-                      <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
-                        <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-4">
-                          {translations.stats}
-                        </p>
-                        <div className="flex flex-col gap-3">
-                          {[
-                            {
-                              icon: "fi-rr-heart",
-                              bg: "bg-rose-50",
-                              color: "text-rose-400",
-                              val: activity.total_likes || 0,
-                              label: translations.likesCount,
-                            },
-                            {
-                              icon: "fi-rr-comment-dots",
-                              bg: "bg-blue-50",
-                              color: "text-blue-400",
-                              val: activity.total_comments || 0,
-                              label: translations.commentsCount,
-                            },
-                            {
-                              icon: "fi-rr-share",
-                              bg: "bg-emerald-50",
-                              color: "text-emerald-500",
-                              val: activity.total_share || 0,
-                              label: translations.sharesCount,
-                            },
-                          ].map(({ icon, bg, color, val, label }) => (
-                            <div
-                              key={label}
-                              className="flex items-center gap-3"
-                            >
-                              <div
-                                className={`w-9 h-9 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}
-                              >
-                                <i
-                                  className={`fi ${icon} ${color} text-base leading-none`}
-                                ></i>
-                              </div>
-                              <div>
-                                <p className="font-bold text-black text-sm leading-none">
-                                  {val}
-                                </p>
-                                <p className="text-xs text-dark-grey mt-0.5">
-                                  {label}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Tags */}
-                    {tags && tags.length > 0 && (
-                      <div className="bg-white rounded-3xl border border-grey/60 p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.04)]">
-                        <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70 mb-3">
-                          {translations.subjects}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {tags.map((tag, i) => (
-                            <span
-                              key={i}
-                              className="px-3 py-1.5 bg-grey/50 text-dark-grey text-xs rounded-full hover:bg-purple/10 hover:text-purple transition-all duration-200 cursor-pointer border border-transparent hover:border-purple/20"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Reading Progress */}
-                    <div className="bg-grey border border-grey/50 rounded-2xl p-5 shadow-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-bold uppercase tracking-widest text-dark-grey/70">
-                          {translations.progress}
-                        </p>
-                        <span className="text-xs font-bold text-purple">
-                          {readingProgress}%
-                        </span>
-                      </div>
-                      <div className="w-full h-2 bg-grey/60 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-gradient-to-r from-purple to-emerald-500 transition-all duration-300 rounded-full"
-                          style={{ width: `${readingProgress}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-dark-grey mt-2 flex items-center gap-1">
-                        <i className="fi fi-rr-time-read text-xs leading-none"></i>
-                        ~{estimateReadTime(content)} {translations.minRead}
-                      </p>
-                    </div>
-                  </div>
-                </aside>
-              </div>
-              {/* end flex content+sidebar */}
+                )}
+              </aside>
             </div>
             {/* end unified container */}
 
             {/* ═══════════ SIMILAR BLOGS ═══════════ */}
             {similarBlogs != null && similarBlogs.length > 0 && (
-              <div className="bg-grey/20 border-t border-grey/50">
-                <div className="max-w-7xl mx-auto px-6 lg:px-10 py-12">
+              <div className="max-w-[1200px] mx-auto mt-16 mb-24 px-4 sm:px-6">
+                <div className="border-t border-grey pt-12">
                   <div className="flex items-center gap-3 mb-8">
-                    <div className="w-1 h-7 bg-gradient-to-b from-purple to-emerald-500 rounded-full flex-shrink-0"></div>
-                    <p
-                      className="font-bold text-black"
-                      style={{ fontSize: "1.25rem" }}
-                    >
+                    <div className="w-1.5 h-6 bg-indigo-500 rounded-full flex-shrink-0"></div>
+                    <h3 className="text-xl font-bold text-black">
                       {translations.similarPosts}
-                    </p>
+                    </h3>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {similarBlogs.map((blog, i) => {
-                      const {
-                        author: { personal_info },
-                      } = blog;
                       return (
                         <AnimationWrapper
                           key={i}
                           transition={{ duration: 1, delay: i * 0.08 }}
                         >
-                          <BlogPostCard content={blog} author={personal_info} />
+                          <BlogPostCard
+                            content={{ ...blog, layout: "grid" }}
+                            author={blog.author}
+                          />
                         </AnimationWrapper>
                       );
                     })}

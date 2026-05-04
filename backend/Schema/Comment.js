@@ -20,9 +20,9 @@ const commentSchema = mongoose.Schema(
       type: String,
       required: false,
     },
-    children: {
-      type: [Schema.Types.ObjectId],
-      ref: "comments",
+    level: {
+      type: Number,
+      default: 0,
     },
     commented_by: {
       type: Schema.Types.ObjectId,

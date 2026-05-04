@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { BsSend } from "react-icons/bs";
-import { MdOutlineCloudUpload, MdOutlineEmojiEmotions } from "react-icons/md";
+/* eslint-disable no-unused-vars */
+import { useState } from "react";
 import EmojiPicker from "emoji-picker-react";
 import useSendMessage from "../../hook/useSendMessage";
 import fileIcon from "../../imgs/file-folder.jpg";
@@ -47,7 +46,7 @@ const MessageInput = () => {
       setPreview(null);
       return;
     }
-    if (!message) {
+    if (!message.trim()) {
       return;
     }
 
@@ -57,33 +56,37 @@ const MessageInput = () => {
 
   return (
     <>
-      <div className="px-4 py-3 border-t border-grey/40 bg-white">
+      <div className="bg-white">
         {preview && (
           <div className="relative mb-3 inline-block">
-            <div className="w-24 h-24 rounded-2xl overflow-hidden border-2 border-purple/20 shadow-lg">
-               <img className="w-full h-full object-cover" src={preview} alt="Preview" />
+            <div className="w-20 h-20 rounded-xl overflow-hidden border border-grey bg-grey shadow-sm">
+              <img
+                className="w-full h-full object-cover"
+                src={preview}
+                alt="Preview"
+              />
             </div>
             <button
               onClick={handleRemoveFile}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-md transition-colors"
+              className="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-sm transition-colors"
             >
               <i className="fi fi-rr-cross text-[10px]"></i>
             </button>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+        <form onSubmit={handleSubmit} className="flex items-center gap-3">
           {/* Emoji Button */}
           <div className="relative">
             <button
-               type="button"
-               className="w-11 h-11 flex items-center justify-center rounded-2xl text-dark-grey hover:bg-grey/60 hover:text-purple transition-all duration-200"
-               onClick={() => setShowEmojiPicker((prev) => !prev)}
+              type="button"
+              className="w-10 h-10 flex items-center justify-center rounded-full text-dark-grey hover:bg-grey hover:text-black transition-all duration-200"
+              onClick={() => setShowEmojiPicker((prev) => !prev)}
             >
-              <i className="fi fi-rr-smile text-xl"></i>
+              <i className="fi fi-rr-smile text-[20px]"></i>
             </button>
             {showEmojiPicker && (
-              <div className="absolute bottom-full mb-4 left-0 z-50">
+              <div className="absolute bottom-full mb-4 left-0 z-50 shadow-lg border border-grey rounded-2xl overflow-hidden">
                 <EmojiPicker onEmojiClick={handleEmojiClick} theme="light" />
               </div>
             )}
@@ -91,37 +94,37 @@ const MessageInput = () => {
 
           {/* Input Container */}
           <div className="flex-1 relative group">
-             <input
-                type="text"
-                placeholder="Aa"
-                className="w-full py-2.5 px-5 bg-grey/40 border border-transparent rounded-2xl focus:outline-none focus:bg-white focus:border-purple/30 focus:shadow-sm transition-all duration-200"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-             />
-             
-             {/* Upload File Inside Input Container */}
-             <label className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-xl text-dark-grey hover:bg-grey/60 hover:text-purple cursor-pointer transition-all duration-200">
-                <i className="fi fi-rr-clip text-lg"></i>
-                <input
-                  id="FileInput"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  type="file"
-                />
-             </label>
+            <input
+              type="text"
+              placeholder="Type a message..."
+              className="w-full py-3 px-5 bg-grey border border-transparent rounded-full focus:outline-none focus:bg-white focus:border-black/20 text-[14px] text-black placeholder:text-dark-grey transition-all duration-200"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+            />
+
+            {/* Upload File Inside Input Container */}
+            <label className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-dark-grey hover:bg-white hover:text-black cursor-pointer transition-all duration-200">
+              <i className="fi fi-rr-clip text-[16px]"></i>
+              <input
+                id="FileInput"
+                onChange={handleFileChange}
+                className="hidden"
+                type="file"
+              />
+            </label>
           </div>
 
           {/* Send Button */}
           <button
             type="submit"
-            className={`w-11 h-11 flex items-center justify-center rounded-2xl shadow-lg transition-all duration-300 ${
-                (message.trim() || selectedFile) 
-                ? "bg-gradient-to-br from-purple to-emerald-500 text-white shadow-purple/20 hover:scale-105 active:scale-95" 
-                : "bg-grey/60 text-dark-grey/40 cursor-not-allowed"
+            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all duration-300 ${
+              message.trim() || selectedFile
+                ? "bg-black text-white hover:opacity-80 active:scale-95"
+                : "bg-grey text-dark-grey cursor-not-allowed"
             }`}
             disabled={!message.trim() && !selectedFile}
           >
-            <i className="fi fi-rs-paper-plane text-lg"></i>
+            <i className="fi fi-rs-paper-plane text-[18px] ml-1 mt-1"></i>
           </button>
         </form>
       </div>

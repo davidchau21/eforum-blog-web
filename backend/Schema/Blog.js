@@ -55,10 +55,7 @@ const blogSchema = mongoose.Schema(
         default: 0
     }
     },
-    comments: {
-      type: [Schema.Types.ObjectId],
-      ref: "comments",
-    },
+
     draft: {
       type: Boolean,
       default: false,

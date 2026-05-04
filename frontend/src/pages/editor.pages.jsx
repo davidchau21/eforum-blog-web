@@ -26,7 +26,7 @@ const Editor = () => {
             return setLoading(false);
         }
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/get-blog", { blog_id, draft: true, mode: 'edit' })
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-blog", { blog_id, draft: true, mode: 'edit' })
         .then(( { data: { blog }} ) => {
             setBlog(blog);
             setLoading(false);

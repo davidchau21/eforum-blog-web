@@ -60,7 +60,7 @@ const InPageNavigation = ({ routes, defaultHidden = [ ], hiddenAll = [ ], defaul
 
     return (
         <>
-            <div className={`relative mb-6 flex flex-nowrap overflow-x-auto gap-1 bg-grey/50 p-1 rounded-xl ${isAllHidden ? 'hidden' : ''}`}>
+            <div className={`inpage-tab-bar relative mb-0 bg-white flex flex-nowrap overflow-x-auto gap-8 border-b border-grey scrollbar-hide px-6 pt-4 sticky top-[80px] z-10 transition-colors duration-300 ${isAllHidden ? 'hidden' : ''}`}>
                 
                 {
                     routes.map((route, i) => {
@@ -69,10 +69,10 @@ const InPageNavigation = ({ routes, defaultHidden = [ ], hiddenAll = [ ], defaul
                             ref={ i == defaultActiveIndex ? activeTabRef : null }
                             key={i} 
                             className={
-                                "relative px-4 py-2 capitalize rounded-lg text-sm font-medium transition-all duration-200 whitespace-nowrap " + 
+                                "relative pb-3 capitalize text-sm font-bold transition-all duration-300 whitespace-nowrap border-b-2 " + 
                                 ( inPageNavIndex == i 
-                                    ? "bg-white text-black shadow-sm shadow-black/10 " 
-                                    : "text-dark-grey hover:text-black hover:bg-white/60 " 
+                                    ? "border-indigo-600 text-indigo-600 " 
+                                    : "border-transparent text-black/60 hover:text-black " 
                                 ) + 
                                 ( defaultHidden.includes(route) ? " md:hidden " : " " ) +
                                 ( (typeof hiddenAll !== 'undefined' && hiddenAll.includes(route)) ? " hidden " : " " )
@@ -85,7 +85,7 @@ const InPageNavigation = ({ routes, defaultHidden = [ ], hiddenAll = [ ], defaul
                     })
                 }
 
-                {/* Hidden line ref still needed for positioning logic */}
+                {/* Hidden line ref still needed for positioning logic to prevent error */}
                 <hr ref={activeTabLineRef} className="hidden" />
 
             </div>
