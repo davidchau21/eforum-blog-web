@@ -1,14 +1,39 @@
 import Table from "@/components/table/table";
-import TableDataColumn from "@/components/table/table-data-column";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
-import { Button, Input } from "antd";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Button, Input, Tag as AntTag, Tooltip, ConfigProvider } from "antd";
+import {
+  Pencil,
+  Plus,
+  Trash2,
+  Tags,
+  Search,
+  Hash,
+  ArrowUpDown,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import CreateCategoryModal from "./modals/create-category-modal";
 import UpdateCategoryModal from "./modals/update-category-modal";
 import tagApi from "../../api/tag";
 import DeleteCategoryModal from "./modals/delete-category-modal";
+
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
 
 const CategoryManagement = () => {
   const [pagination, setPagination] = useState({
@@ -16,31 +41,27 @@ const CategoryManagement = () => {
     limit: 10,
   });
   const [categoryList, setCategoryList] = useState({ total: 0, items: [] });
-  const [filteredCategories, setFilteredCategories] = useState([]); // Danh sách sau khi lọc
-  const [searchKeyword, setSearchKeyword] = useState(""); // Từ khóa tìm kiếm
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [isShowCreateModal, setShowCreateModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(undefined);
-  const [selectedDeleteCategory, setSelectedDeleteCategory] = useState(undefined);
+  const [selectedDeleteCategory, setSelectedDeleteCategory] =
+    useState(undefined);
 
   const onSortChange = (pagination, filters, sorter) => {
     if (sorter.order) {
       const { order } = sorter;
-      // Sắp xếp theo tên thẻ danh mục
       const sortedCategories = [...categoryList.items].sort((a, b) => {
-        if (order === 'ascend') {
-          return a.tag_name.localeCompare(b.tag_name); // Sắp xếp A-Z
-        } else if (order === 'descend') {
-          return b.tag_name.localeCompare(a.tag_name); // Sắp xếp Z-A
-        }
+        if (order === "ascend") return a.tag_name.localeCompare(b.tag_name);
+        if (order === "descend") return b.tag_name.localeCompare(a.tag_name);
         return 0;
       });
       setFilteredCategories(sortedCategories);
     } else {
-      setFilteredCategories(categoryList.items); // Nếu không sắp xếp, hiển thị dữ liệu gốc
+      setFilteredCategories(categoryList.items);
     }
   };
-    
-  // Lấy danh sách danh mục
+
   const onGet = useCallback(async () => {
     const { ok, body } = await tagApi.getAllTags({
       limit: pagination.limit,
@@ -48,52 +69,45 @@ const CategoryManagement = () => {
     });
     if (ok && body) {
       setCategoryList({ items: body.list, total: body.total ?? 0 });
-      setFilteredCategories(body.list); // Đồng bộ danh sách lọc
+      setFilteredCategories(body.list);
     }
   }, [pagination.limit, pagination.page]);
 
   const [pendingCategories, getAllCategories] = useHandleAsyncRequest(onGet);
 
-  // Xử lý tìm kiếm
   const onSearchChange = useCallback(
     async (e) => {
-      const keyword = e.target.value; // Không loại bỏ khoảng trắng
+      const keyword = e.target.value;
       setSearchKeyword(keyword);
-  
+
       if (keyword.trim()) {
-        // Gọi API để lấy toàn bộ danh sách nếu cần thiết
         const { ok, body } = await tagApi.getAllTags({
-          limit: 1000, // Lấy đủ dữ liệu cần tìm
+          limit: 1000,
           page: 0,
         });
-  
+
         if (ok && body) {
           const filtered = body.list.filter((category) =>
-            category.tag_name.toLowerCase().includes(keyword.toLowerCase())
+            category.tag_name.toLowerCase().includes(keyword.toLowerCase()),
           );
-          setFilteredCategories(filtered); // Hiển thị tất cả kết quả trên một trang
+          setFilteredCategories(filtered);
         }
       } else {
-        // Hiển thị toàn bộ dữ liệu của trang hiện tại nếu không tìm kiếm
         setFilteredCategories(categoryList.items);
       }
     },
-    [categoryList.items]
+    [categoryList.items],
   );
 
   const displayedCategories = useMemo(() => {
-    if (searchKeyword.trim()) {
-      return filteredCategories; // Hiển thị danh sách tìm kiếm
-    }
-    return categoryList.items; // Hiển thị danh sách phân trang
+    if (searchKeyword.trim()) return filteredCategories;
+    return categoryList.items;
   }, [searchKeyword, filteredCategories, categoryList.items]);
 
-  // Thay đổi trang
   const onPageChange = useCallback((page) => {
     setPagination((prev) => ({ ...prev, page }));
   }, []);
 
-  // Đóng modal
   const onCloseModal = useCallback(
     (type, isReload = false) => {
       switch (type) {
@@ -109,51 +123,67 @@ const CategoryManagement = () => {
         default:
           break;
       }
-      if (isReload) {
-        onGet();
-      }
+      if (isReload) onGet();
     },
-    [onGet]
+    [onGet],
   );
 
-  // Cột hiển thị trong bảng
   const columns = useMemo(
     () => [
       {
         dataIndex: "_id",
         title: <TableHeaderColumn label="ID" />,
-        render: (_id) => <TableDataColumn label={_id} />,
+        width: 100,
+        render: (_id) => (
+          <span className="font-mono text-xs text-slate-400">
+            #{_id.slice(-6)}
+          </span>
+        ),
       },
       {
         dataIndex: "tag_name",
-        title: <TableHeaderColumn label="Tên thẻ danh mục" />,
-        render: (name) => <TableDataColumn label={name} />,
-        sorter: (a, b) => a.tag_name.localeCompare(b.tag_name), // Sắp xếp theo tên thẻ
+        title: <TableHeaderColumn label="Tên danh mục" />,
+        render: (name) => (
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-slate-100 rounded-lg text-slate-400">
+              <Hash size={14} />
+            </div>
+            <AntTag
+              bordered={false}
+              className="bg-emerald-50 text-emerald-600 font-black px-3 py-1 rounded-full text-sm"
+            >
+              {name}
+            </AntTag>
+          </div>
+        ),
+        sorter: (a, b) => a.tag_name.localeCompare(b.tag_name),
       },
       {
         title: <TableHeaderColumn label="Thao tác" />,
+        width: 120,
         render: (_, record) => (
           <div className="flex items-center gap-2">
-            <Button
-              type="primary"
-              htmlType="button"
-              icon={<Pencil size={20} />}
-              className="min-w-[44px] min-h-[44px]"
-              onClick={() => setSelectedCategory(record)}
-            />
-            <Button
-              type="primary"
-              htmlType="button"
-              icon={<Trash2 size={20} />}
-              className="min-w-[44px] min-h-[44px]"
-              danger
-              onClick={() => setSelectedDeleteCategory(record)}
-            />
+            <Tooltip title="Chỉnh sửa">
+              <Button
+                type="text"
+                icon={<Pencil size={18} />}
+                className="text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                onClick={() => setSelectedCategory(record)}
+              />
+            </Tooltip>
+            <Tooltip title="Xóa vĩnh viễn">
+              <Button
+                type="text"
+                icon={<Trash2 size={18} />}
+                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl"
+                onClick={() => setSelectedDeleteCategory(record)}
+              />
+            </Tooltip>
           </div>
         ),
       },
     ],
-    []
+    [],
   );
 
   useEffect(() => {
@@ -161,52 +191,109 @@ const CategoryManagement = () => {
   }, [pagination.page, getAllCategories]);
 
   return (
-    <div className="w-full p-5">
-      <div className="flex items-center justify-between w-full mb-4">
-        <div className="items-left">
-        <h3 className="text-xl font-semibold">Danh sách thẻ tag</h3>
-        <Input
-            placeholder="Tìm kiếm"
-            value={searchKeyword}
-            onChange={onSearchChange} // Xử lý tìm kiếm
-            allowClear
-            className="w-full mt-2"
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          
-          <Button
-            type="primary"
-            icon={<Plus size={24} />}
-            className="h-9 bg-emerald-600 hover:!bg-emerald-600 duration-300 text-sm font-medium"
-            onClick={() => setShowCreateModal(true)}
-          >
-            Thêm thẻ danh mục
-          </Button>
-        </div>
-      </div>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: "#10b981",
+          borderRadius: 12,
+        },
+      }}
+    >
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full p-8 font-exo-2"
+      >
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <motion.div variants={itemVariants}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-2xl">
+                <Tags size={24} />
+              </div>
+              <h1 className="text-3xl font-black text-slate-800 tracking-tight">
+                Danh mục thẻ Tag
+              </h1>
+            </div>
+            <p className="text-slate-400 font-medium">
+              Quản lý các chủ đề và từ khóa để phân loại nội dung bài viết.
+            </p>
+          </motion.div>
 
-      <Table
-        columns={columns}
-        loading={pendingCategories}
-        data={displayedCategories} // Hiển thị dữ liệu tùy theo chế độ tìm kiếm
-        total={searchKeyword.trim() ? filteredCategories.length : categoryList.total}
-        onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
-        page={pagination.page}
-        onChange={onSortChange} // Xử lý khi thay đổi thứ tự sắp xếp
-      />
-      <CreateCategoryModal isOpen={isShowCreateModal} onClose={onCloseModal} />
-      <UpdateCategoryModal
-        isOpen={!!selectedCategory}
-        category={selectedCategory}
-        onClose={onCloseModal}
-      />
-      <DeleteCategoryModal
-        isOpen={!!selectedDeleteCategory}
-        category={selectedDeleteCategory}
-        onClose={onCloseModal}
-      />
-    </div>
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-wrap items-center gap-4"
+          >
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:border-emerald-500/50 focus-within:shadow-emerald-500/5">
+              <Search size={18} className="text-slate-400" />
+              <input
+                placeholder="Tìm tên thẻ..."
+                value={searchKeyword}
+                onChange={onSearchChange}
+                className="bg-transparent border-none outline-none text-sm font-medium text-slate-600 w-64"
+              />
+            </div>
+
+            <Button
+              type="primary"
+              icon={<Plus size={20} />}
+              className="h-11 px-6 bg-emerald-500 hover:!bg-emerald-600 border-none rounded-2xl shadow-lg shadow-emerald-500/20 text-sm font-black transition-all active:scale-95"
+              onClick={() => setShowCreateModal(true)}
+            >
+              THÊM DANH MỤC
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Table Section */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden"
+        >
+          <Table
+            columns={columns}
+            loading={pendingCategories}
+            data={displayedCategories}
+            total={
+              searchKeyword.trim()
+                ? filteredCategories.length
+                : categoryList.total
+            }
+            onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
+            page={pagination.page}
+            onChange={onSortChange}
+            rowClassName={() =>
+              "hover:bg-slate-50/80 transition-colors cursor-default"
+            }
+          />
+        </motion.div>
+
+        {/* Modals */}
+        <AnimatePresence>
+          {isShowCreateModal && (
+            <CreateCategoryModal
+              isOpen={isShowCreateModal}
+              onClose={onCloseModal}
+            />
+          )}
+          {selectedCategory && (
+            <UpdateCategoryModal
+              isOpen={!!selectedCategory}
+              category={selectedCategory}
+              onClose={onCloseModal}
+            />
+          )}
+          {selectedDeleteCategory && (
+            <DeleteCategoryModal
+              isOpen={!!selectedDeleteCategory}
+              category={selectedDeleteCategory}
+              onClose={onCloseModal}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </ConfigProvider>
   );
 };
 

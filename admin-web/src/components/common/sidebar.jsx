@@ -16,12 +16,17 @@ import {
   MessageCircleCode,
   Users,
   Bell,
+  ChevronRight,
 } from "lucide-react";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
+import { useTranslation } from "react-i18next";
 
 const Sidebar = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { removeLocalStorage } = useLocalStorage();
@@ -29,61 +34,35 @@ const Sidebar = () => {
 
   const menus = [
     {
-      label: "Trang chủ",
-      icon: <House width={24} height={24} />,
+      label: t('sidebar.dashboard'),
+      icon: <House size={20} />,
       link: "/",
     },
     {
-      label: "Người dùng",
-      icon: <Users width={24} height={24} />,
+      label: t('sidebar.users'),
+      icon: <Users size={20} />,
       link: "/users",
     },
     {
-      label: "Danh mục",
-      icon: <Menu width={24} height={24} />,
+      label: t('sidebar.categories'),
+      icon: <Menu size={20} />,
       link: "/tags",
     },
     {
-      label: "Bài đăng",
-      icon: <Book width={24} height={24} />,
+      label: t('sidebar.blogs'),
+      icon: <Book size={20} />,
       link: "/blogs",
     },
     {
-      label: "Bình luận",
-      icon: <MessageCircleCode width={24} height={24} />,
+      label: t('sidebar.comments'),
+      icon: <MessageCircleCode size={20} />,
       link: "/comments",
     },
     {
-      label: "Thông báo",
-      icon: <Bell width={24} height={24} />,
+      label: t('sidebar.notifications'),
+      icon: <Bell size={20} />,
       link: "/notifications",
     },
-    // {
-    //   label: "Nguyên liệu",
-    //   icon: <Blocks width={24} height={24} />,
-    //   link: "/ingredients",
-    // },
-
-    // {
-    //   label: "Khu vực",
-    //   icon: <LandPlot width={24} height={24} />,
-    //   link: "/areas",
-    // },
-    // {
-    //   label: "Sản phẩm",
-    //   icon: <CupSoda width={24} height={24} />,
-    //   link: "/products",
-    // },
-    // {
-    //   label: "Nhập hàng",
-    //   icon: <CircleFadingPlus width={24} height={24} />,
-    //   link: "/import",
-    // },
-    // {
-    //   label: "Đơn hàng",
-    //   icon: <BadgeDollarSign width={24} height={24} />,
-    //   link: "/orders",
-    // },
   ];
 
   const onLogout = () => {
@@ -93,38 +72,61 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="bg-gray-1 border-r border-gray-200 w-64 min-h-[calc(100vh-80px)] max-h-[calc(100vh-80px)] p-5 flex flex-col items-start justify-between">
-      <div className="flex flex-col items-start w-full gap-3">
+    <div className="bg-white border-r border-slate-200 w-72 min-h-[calc(100vh-80px)] max-h-[calc(100vh-80px)] p-6 flex flex-col items-start justify-between font-exo-2 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+      <div className="flex flex-col items-start w-full gap-2">
+        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 px-4">
+          {t('sidebar.menu_title')}
+        </p>
         {menus.map((item, index) => (
           <NavLink
             key={`menu-item-${index}`}
             className={({ isActive }) =>
               clsx(
-                "flex items-center w-full h-12 gap-3 px-4 duration-300 rounded-md shadow outline-none",
+                "group flex items-center justify-between w-full h-12 px-4 duration-300 rounded-2xl outline-none transition-all",
                 {
-                  "bg-white text-white-1 hover:bg-[#e9ecef]": !isActive,
-                  "bg-emerald-500 text-white": isActive,
+                  "text-slate-500 hover:bg-slate-50 hover:text-slate-900": !isActive,
+                  "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20": isActive,
                 }
               )
             }
             to={item.link}
           >
-            {item.icon}
-            <span className="text-base font-medium">{item.label}</span>
+            {({ isActive }) => (
+              <>
+                <div className="flex items-center gap-3">
+                  <span className={clsx("transition-transform duration-300", isActive ? "scale-110" : "group-hover:scale-110")}>
+                    {item.icon}
+                  </span>
+                  <span className="text-sm font-bold tracking-tight">{item.label}</span>
+                </div>
+                {isActive && (
+                  <motion.div
+                    layoutId="active-indicator"
+                    initial={{ opacity: 0, x: -5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                  >
+                    <ChevronRight size={14} />
+                  </motion.div>
+                )}
+              </>
+            )}
           </NavLink>
         ))}
       </div>
 
-      <button
-        onClick={onLogout}
-        type="button"
-        className="flex items-center w-full h-12 gap-3 px-4 bg-white rounded-md shadow text-emerald-500 hover:bg-[#e9ecef] outline-none duration-300"
-      >
-        <LogOut width={24} height={24} />
-        <span className="text-base font-medium">Đăng xuất</span>
-      </button>
+      <div className="w-full pt-6 border-t border-slate-100">
+        <button
+          onClick={onLogout}
+          type="button"
+          className="flex items-center w-full h-12 gap-3 px-4 text-slate-500 hover:bg-rose-50 hover:text-rose-500 rounded-2xl transition-all duration-300 group"
+        >
+          <LogOut size={20} className="group-hover:rotate-12 transition-transform" />
+          <span className="text-sm font-bold">{t('sidebar.logout')}</span>
+        </button>
+      </div>
     </div>
   );
 };
 
 export default Sidebar;
+

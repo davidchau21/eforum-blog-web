@@ -1,15 +1,43 @@
 import Table from "@/components/table/table";
-import TableDataColumn from "@/components/table/table-data-column";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
-import { StatusColorMapper } from "@/mappers/staff";
-import { Button, Tag, Input } from "antd";
-import { LockIcon, Pencil, Plus, UnlockIcon } from "lucide-react";
+import { Button, Tag, Input, Tooltip, ConfigProvider, Avatar } from "antd";
+import { 
+  LockIcon, 
+  Pencil, 
+  Plus, 
+  UnlockIcon, 
+  Users, 
+  Search, 
+  Mail, 
+  User, 
+  ShieldCheck,
+  MessageSquareOff,
+  MessageSquare
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import userApi from "../../api/userApi";
 import { formatDate } from "../../utils/dateUtils";
 import BlockCommentModal from "./modals/block-comment-modal";
+
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
 
 const StaffManagement = () => {
   const navigate = useNavigate();
@@ -69,94 +97,100 @@ const StaffManagement = () => {
       {
         dataIndex: "id",
         title: <TableHeaderColumn label="ID" />,
-        render: (_, record) => <TableDataColumn label={record._id} />,
+        width: 80,
+        render: (_, record) => <span className="font-mono text-xs text-slate-400">#{record._id.slice(-6)}</span>,
+      },
+      {
+        dataIndex: "user",
+        title: <TableHeaderColumn label="Người dùng" />,
+        render: (_, record) => (
+          <div className="flex items-center gap-3">
+            <Avatar 
+              size={40} 
+              className="bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold"
+            >
+              {record.personal_info.fullname?.charAt(0) || "U"}
+            </Avatar>
+            <div className="flex flex-col gap-0.5">
+              <span className="font-bold text-slate-700 truncate">{record.personal_info.fullname}</span>
+              <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                <User size={10} /> @{record.personal_info.username}
+              </span>
+            </div>
+          </div>
+        ),
       },
       {
         dataIndex: "email",
-        title: <TableHeaderColumn label="Email" />,
-        sorter: (a, b) =>
-          a.personal_info.email.localeCompare(b.personal_info.email),
+        title: <TableHeaderColumn label="Liên hệ" />,
         render: (_, record) => (
-          <TableDataColumn label={record.personal_info.email} />
-        ),
-      },
-      {
-        dataIndex: "username",
-        title: <TableHeaderColumn label="Username" />,
-        sorter: (a, b) =>
-          a.personal_info.username.localeCompare(b.personal_info.username),
-        render: (_, record) => (
-          <TableDataColumn label={record.personal_info.username} />
-        ),
-      },
-      {
-        title: <TableHeaderColumn label="Họ tên" />,
-        render: (_, record) => (
-          <TableDataColumn label={`${record.personal_info.fullname}`} />
+          <div className="flex flex-col gap-0.5">
+            <span className="text-sm font-medium text-slate-600 flex items-center gap-1.5">
+              <Mail size={14} className="text-slate-400" /> {record.personal_info.email}
+            </span>
+            <span className="text-[11px] text-slate-400 italic">Tham gia: {formatDate(record.joinedAt)}</span>
+          </div>
         ),
       },
       {
         title: <TableHeaderColumn label="Vai trò" />,
+        width: 120,
         render: (_, record) => (
-          <TableDataColumn label={record?.personal_info?.role || ""} />
+          <Tag color="blue" bordered={false} className="rounded-full px-3 py-0.5 font-bold uppercase text-[10px] tracking-wider">
+            {record?.personal_info?.role || "USER"}
+          </Tag>
         ),
       },
       {
         dataIndex: "status",
         title: <TableHeaderColumn label="Trạng thái" />,
+        width: 150,
         render: (_, record) => (
           <Tag
             bordered={false}
-            color={
-              record.verified
-                ? "green" // Màu xanh lá cho "Kích hoạt"
-                : "yellow" // Màu vàng cho "Chưa kích hoạt"
-            }
-            className="text-sm font-exo-2"
+            color={record.verified ? "success" : "default"}
+            className="rounded-full px-3 py-0.5 font-bold uppercase text-[10px] tracking-wider"
           >
-            {record.verified ? "Kích hoạt" : "Chưa kích hoạt"}
+            {record.verified ? "Đã xác thực" : "Chưa xác thực"}
           </Tag>
         ),
       },
-      
       {
-        title: <TableHeaderColumn label="Ngày tạo" />,
-        dataIndex: "joinedAt",
-        sorter: (a, b) => new Date(a.joinedAt) - new Date(b.joinedAt),
+        title: <TableHeaderColumn label="Bình luận" />,
+        width: 120,
         render: (_, record) => (
-          <TableDataColumn label={`${formatDate(record.joinedAt)}`} />
-        ),
-      },
-      {
-        title: <TableHeaderColumn label="Khoá bình luận" />,
-        render: (_, record) => (
-          <TableDataColumn
-            className={`text-sm font-exo-2  ${
-              record.blocked_comment ? "text-red-500" : "text-green-500"
-            }`}
-            label={`${record.blocked_comment ? "Khoá" : "Mở"}`}
-          />
+          record.blocked_comment ? (
+            <Tag color="error" bordered={false} className="flex items-center gap-1 w-fit rounded-full px-2 font-bold text-[10px]">
+              <MessageSquareOff size={12} /> BỊ KHÓA
+            </Tag>
+          ) : (
+            <Tag color="success" bordered={false} className="flex items-center gap-1 w-fit rounded-full px-2 font-bold text-[10px]">
+              <MessageSquare size={12} /> BÌNH THƯỜNG
+            </Tag>
+          )
         ),
       },
       {
         title: <TableHeaderColumn label="Thao tác" />,
+        width: 120,
         render: (_, record) => (
           <div className="flex items-center gap-2">
-            <Button
-              type="primary"
-              htmlType="button"
-              icon={<Pencil size={20} />}
-              className="min-w-[44px] min-h-[44px]"
-              onClick={() => navigate(`/users/${record._id}`)}
-            />
-            <Button
-              type="primary"
-              htmlType="button"
-              icon={record.blocked_comment ? <UnlockIcon size={20} /> : <LockIcon size={20} />}
-              className="min-w-[44px] min-h-[44px]"
-              danger={record.blocked_comment}
-              onClick={() => setSelectedUser(record)}
-            />
+            <Tooltip title="Chỉnh sửa">
+              <Button
+                type="text"
+                icon={<Pencil size={18} />}
+                className="text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                onClick={() => navigate(`/users/${record._id}`)}
+              />
+            </Tooltip>
+            <Tooltip title={record.blocked_comment ? "Mở khóa bình luận" : "Khóa bình luận"}>
+              <Button
+                type="text"
+                icon={record.blocked_comment ? <UnlockIcon size={18} /> : <LockIcon size={18} />}
+                className={record.blocked_comment ? "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl" : "text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl"}
+                onClick={() => setSelectedUser(record)}
+              />
+            </Tooltip>
           </div>
         ),
       },
@@ -173,16 +207,8 @@ const StaffManagement = () => {
 
   const onCloseModal = useCallback(
     (type, isReload = false) => {
-      switch (type) {
-        case "block":
-          setSelectedUser(undefined);
-          break;
-        default:
-          break;
-      }
-      if (isReload) {
-        onGet();
-      }
+      if (type === "block") setSelectedUser(undefined);
+      if (isReload) onGet();
     },
     [onGet]
   );
@@ -192,45 +218,84 @@ const StaffManagement = () => {
   }, [pagination.page, getAllStaff]);
 
   return (
-    <div className="w-full p-5">
-      <div className="flex items-center justify-between w-full mb-4">
-        <div className="items-left">
-          <h3 className="text-xl font-semibold">Danh sách người dùng</h3>
-          <Input
-            placeholder="Tìm kiếm"
-            value={searchKeyword}
-            onChange={onSearchChange}
-            allowClear
-            className="w-full mt-2"
-          />
-        </div>
-        <div className="flex items-center gap-3">
-          <Button
-            type="primary"
-            icon={<Plus size={24} />}
-            className="h-9 bg-emerald-500 hover:!bg-emerald-600 duration-300 text-sm font-medium"
-            onClick={() => navigate("/users/create")}
-          >
-            Thêm người dùng
-          </Button>
-        </div>
-      </div>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#10b981',
+          borderRadius: 12,
+        },
+      }}
+    >
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full p-8 font-exo-2"
+      >
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <motion.div variants={itemVariants}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-2xl">
+                <Users size={24} />
+              </div>
+              <h1 className="text-3xl font-black text-slate-800 tracking-tight">Quản lý người dùng</h1>
+            </div>
+            <p className="text-slate-400 font-medium">Theo dõi hoạt động, phân quyền và kiểm soát tương tác cộng đồng.</p>
+          </motion.div>
 
-      <Table
-        columns={columns}
-        loading={pendingStaff}
-        data={displayedStaff}
-        total={searchKeyword.trim() ? filteredStaff.length : staffList.total}
-        onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
-        page={pagination.page}
-      />
-      <BlockCommentModal
-        isOpen={!!selectedUser}
-        onClose={onCloseModal}
-        user={selectedUser}
-      />
-    </div>
+          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:border-emerald-500/50 focus-within:shadow-emerald-500/5">
+              <Search size={18} className="text-slate-400" />
+              <input
+                placeholder="Tìm tên, email hoặc username..."
+                value={searchKeyword}
+                onChange={onSearchChange}
+                className="bg-transparent border-none outline-none text-sm font-medium text-slate-600 w-64"
+              />
+            </div>
+
+            <Button
+              type="primary"
+              icon={<Plus size={20} />}
+              className="h-11 px-6 bg-emerald-500 hover:!bg-emerald-600 border-none rounded-2xl shadow-lg shadow-emerald-500/20 text-sm font-black transition-all active:scale-95"
+              onClick={() => navigate("/users/create")}
+            >
+              THÊM NGƯỜI DÙNG
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Table Section */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden"
+        >
+          <Table
+            columns={columns}
+            loading={pendingStaff}
+            data={displayedStaff}
+            total={searchKeyword.trim() ? filteredStaff.length : staffList.total}
+            onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
+            page={pagination.page}
+            rowClassName={() => "hover:bg-slate-50/80 transition-colors cursor-default"}
+          />
+        </motion.div>
+
+        {/* Modals */}
+        <AnimatePresence>
+          {selectedUser && (
+            <BlockCommentModal
+              isOpen={!!selectedUser}
+              onClose={onCloseModal}
+              user={selectedUser}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </ConfigProvider>
   );
 };
 
 export default StaffManagement;
+

@@ -16,7 +16,7 @@ const SubmitButton = ({
         loading={loading}
         htmlType="submit"
         className={clsx(
-          "w-full text-base bg-emerald-500 hover:!bg-emerald-600 duration-300 h-10 font-exo-2",
+          "w-full flex items-center justify-center bg-emerald-500 hover:!bg-emerald-600 duration-300 font-exo-2 transition-all",
           className
         )}
         type="primary"
@@ -28,7 +28,7 @@ const SubmitButton = ({
 };
 
 SubmitButton.propTypes = {
-  text: PropTypes.string.isRequired,
+  text: PropTypes.node.isRequired,
   className: PropTypes.string,
   loading: PropTypes.bool,
   disabled: PropTypes.bool,
