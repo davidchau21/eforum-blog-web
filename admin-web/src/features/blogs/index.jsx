@@ -2,15 +2,46 @@ import Table from "@/components/table/table";
 import TableDataColumn from "@/components/table/table-data-column";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
-import { Button, Tag, Input } from "antd";
-import { FlagIcon, LockIcon, Pencil, Plus, Trash2, UnlockIcon } from "lucide-react";
+import { Button, Tag, Input, Switch, Tooltip, ConfigProvider } from "antd";
+import { 
+  FlagIcon, 
+  LockIcon, 
+  Pencil, 
+  Plus, 
+  Trash2, 
+  UnlockIcon, 
+  Search,
+  Filter,
+  FileText,
+  AlertTriangle,
+  User,
+  Calendar as CalendarIcon
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatDate } from "../../utils/dateUtils";
 import blogApi from "../../api/blogApi";
 import DeleteModal from "./modals/delete-modal";
 import ActiveModal from "./modals/active-modal";
 import DeleteReportModal from "./modals/deleteReportModal";
+
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 }
+};
 
 const BlogManagement = () => {
   const navigate = useNavigate();
@@ -27,7 +58,6 @@ const BlogManagement = () => {
   const [selectedRemoveReport, setSelectedRemoveReport] = useState(undefined);
   const [isReport, setIsReport] = useState(false);
 
-  // Lấy danh sách blog
   const onGet = useCallback(async () => {
     const { ok, body } = await blogApi.getAllBlogs({
       limit: pagination.limit,
@@ -42,7 +72,6 @@ const BlogManagement = () => {
 
   const [pendingBlogs, getAllBlogs] = useHandleAsyncRequest(onGet);
 
-  // Xử lý tìm kiếm
   const onSearchChange = useCallback(
     async (e) => {
       const keyword = e.target.value;
@@ -74,69 +103,55 @@ const BlogManagement = () => {
     return blogList.items;
   }, [searchKeyword, filteredBlogs, blogList.items]);
 
-  // Xử lý phân trang
   const onPageChange = useCallback((page) => {
     setPagination((prev) => ({ ...prev, page }));
   }, []);
 
-  // Đóng modal
   const onCloseModal = useCallback(
     (type, isReload = false) => {
       switch (type) {
-        case "active":
-          setSelectedActive(undefined);
-          break;
-        case "delete":
-          setSelectedDelete(undefined);
-          break;
-        case "remove":
-          setSelectedRemoveReport(undefined);
-          break;
-        default:
-          break;
+        case "active": setSelectedActive(undefined); break;
+        case "delete": setSelectedDelete(undefined); break;
+        case "remove": setSelectedRemoveReport(undefined); break;
+        default: break;
       }
-      if (isReload) {
-        onGet();
-      }
+      if (isReload) onGet();
     },
-    [onGet, isReport]
+    [onGet]
   );
 
-  // Cột hiển thị trong bảng
   const columns = useMemo(
     () => [
       {
         dataIndex: "blog_id",
         title: <TableHeaderColumn label="ID" />,
-        render: (_, record) => <TableDataColumn label={record.blog_id} />,
+        width: 80,
+        render: (_, record) => <span className="font-mono text-xs text-slate-400">#{record.blog_id.slice(-6)}</span>,
       },
       {
         dataIndex: "title",
-        title: <TableHeaderColumn label="Tiêu đề" />,
-        render: (_, record) => <TableDataColumn label={record.title} />,
+        title: <TableHeaderColumn label="Bài viết" />,
+        render: (_, record) => (
+          <div className="flex flex-col gap-0.5 max-w-[300px]">
+            <span className="font-bold text-slate-700 truncate" title={record.title}>{record.title}</span>
+            <span className="text-[11px] text-slate-400 flex items-center gap-1">
+              <CalendarIcon size={10} /> {formatDate(record.publishedAt)}
+            </span>
+          </div>
+        ),
         sorter: (a, b) => a.title.localeCompare(b.title),
       },
-      // {
-      //   dataIndex: "status",
-      //   title: <TableHeaderColumn label="Trạng thái" />,
-      //   render: (_, record) => (
-      //     <TableDataColumn label={record.isActive ? "Kích hoạt" : "Chưa kích hoạt"} />
-      //   ),
-      // },
       {
         dataIndex: "status",
         title: <TableHeaderColumn label="Trạng thái" />,
+        width: 150,
         render: (_, record) => (
           <Tag
             bordered={false}
-            color={
-              record.isActive
-                ? "green" // Màu xanh lá cho "Kích hoạt"
-                : "yellow" // Màu vàng cho "Chưa kích hoạt"
-            }
-            className="text-sm font-exo-2"
+            color={record.isActive ? "success" : "warning"}
+            className="rounded-full px-3 py-0.5 font-bold uppercase text-[10px] tracking-wider"
           >
-            {record.isActive ? "Kích hoạt" : "Chưa kích hoạt"}
+            {record.isActive ? "Hoạt động" : "Tạm khóa"}
           </Tag>
         ),
       },
@@ -144,66 +159,65 @@ const BlogManagement = () => {
         dataIndex: "author",
         title: <TableHeaderColumn label="Tác giả" />,
         render: (_, record) => (
-          <TableDataColumn label={record.author.personal_info.username} />
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+              <User size={16} />
+            </div>
+            <span className="font-medium text-slate-600">{record.author.personal_info.username}</span>
+          </div>
         ),
-        sorter: (a, b) =>
-          a.author.personal_info.username.localeCompare(b.author.personal_info.username),
       },
       {
-        dataIndex: "publishedAt",
-        title: <TableHeaderColumn label="Ngày tạo" />,
+        title: <TableHeaderColumn label="Báo cáo" />,
+        width: 120,
         render: (_, record) => (
-          <TableDataColumn label={formatDate(record.publishedAt)} />
-        ),
-        sorter: (a, b) => new Date(a.publishedAt) - new Date(b.publishedAt),
-      },
-      {
-        title: <TableHeaderColumn label="Người báo cáo" />,
-        render: (_, record) => (
-          <TableDataColumn
-            label={
-              record.reportUser
-                ? record.reportUser.personal_info.username
-                : "--"
-            }
-          />
+          record.isReport ? (
+            <Tooltip title={`Báo cáo bởi: ${record.reportUser?.personal_info?.username || "Ẩn danh"}`}>
+              <Tag color="error" className="flex items-center gap-1 w-fit rounded-full font-bold">
+                <AlertTriangle size={12} /> Bị báo cáo
+              </Tag>
+            </Tooltip>
+          ) : <span className="text-slate-300 text-xs italic">Không có</span>
         ),
       },
       {
         title: <TableHeaderColumn label="Thao tác" />,
+        width: 200,
         render: (_, record) => (
           <div className="flex items-center gap-2">
-            <Button
-              type="primary"
-              htmlType="button"
-              icon={<Pencil size={20} />}
-              className="min-w-[44px] min-h-[44px]"
-              onClick={() => navigate(`/blogs/${record.blog_id}`)}
-            />
-            <Button
-              type="primary"
-              htmlType="button"
-              icon={record.isActive ? <UnlockIcon size={20} /> : <LockIcon size={20} />}
-              className="min-w-[44px] min-h-[44px]"
-              danger={record.isActive}
-              onClick={() => setSelectedActive(record)}
-            />
-            <Button
-              type="primary"
-              htmlType="button"
-              icon={<Trash2 size={20} />}
-              className="min-w-[44px] min-h-[44px]"
-              danger
-              onClick={() => setSelectedDelete(record)}
-            />
-            {record.isReport && (
+            <Tooltip title="Chỉnh sửa">
               <Button
-                type="primary"
-                htmlType="button"
-                icon={<FlagIcon size={20} />}
-                className="min-w-[44px] min-h-[44px] bg-green-300 hover:!bg-green-500"
-                onClick={() => setSelectedRemoveReport(record)}
+                type="text"
+                icon={<Pencil size={18} />}
+                className="text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                onClick={() => navigate(`/blogs/${record.blog_id}`)}
               />
+            </Tooltip>
+            <Tooltip title={record.isActive ? "Khóa bài viết" : "Mở khóa bài viết"}>
+              <Button
+                type="text"
+                icon={record.isActive ? <UnlockIcon size={18} /> : <LockIcon size={18} />}
+                className={record.isActive ? "text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl" : "text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl"}
+                onClick={() => setSelectedActive(record)}
+              />
+            </Tooltip>
+            <Tooltip title="Xóa vĩnh viễn">
+              <Button
+                type="text"
+                icon={<Trash2 size={18} />}
+                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl"
+                onClick={() => setSelectedDelete(record)}
+              />
+            </Tooltip>
+            {record.isReport && (
+              <Tooltip title="Gỡ báo cáo">
+                <Button
+                  type="text"
+                  icon={<FlagIcon size={18} />}
+                  className="text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-xl"
+                  onClick={() => setSelectedRemoveReport(record)}
+                />
+              </Tooltip>
             )}
           </div>
         ),
@@ -216,66 +230,98 @@ const BlogManagement = () => {
     getAllBlogs();
   }, [pagination.page, getAllBlogs, isReport]);
 
-  const handleChangeIsReport = (e) => {
-    setIsReport(e.target.checked);
-  };
-
   return (
-    <div className="w-full p-5">
-      <div className="flex items-center justify-between w-full mb-4">
-        <div className="items-left">
-          <h3 className="text-xl font-semibold">Danh sách blog</h3>
-          <Input
-            placeholder="Tìm kiếm"
-            value={searchKeyword}
-            onChange={onSearchChange}
-            allowClear
-            className="w-full mt-2"
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#10b981',
+          borderRadius: 12,
+        },
+      }}
+    >
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full p-8 font-exo-2"
+      >
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <motion.div variants={itemVariants}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 bg-emerald-500/10 text-emerald-500 rounded-2xl">
+                <FileText size={24} />
+              </div>
+              <h1 className="text-3xl font-black text-slate-800 tracking-tight">Quản lý bài đăng</h1>
+            </div>
+            <p className="text-slate-400 font-medium">Quản lý nội dung, kiểm duyệt và xử lý báo cáo từ người dùng.</p>
+          </motion.div>
+
+          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:border-emerald-500/50 focus-within:shadow-emerald-500/5">
+              <Search size={18} className="text-slate-400" />
+              <input
+                placeholder="Tìm tiêu đề hoặc tác giả..."
+                value={searchKeyword}
+                onChange={onSearchChange}
+                className="bg-transparent border-none outline-none text-sm font-medium text-slate-600 w-64"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
+              <Filter size={18} className="text-slate-400" />
+              <span className="text-sm font-bold text-slate-600">Bị báo cáo</span>
+              <Switch
+                size="small"
+                checked={isReport}
+                onChange={(checked) => setIsReport(checked)}
+                className={isReport ? "bg-emerald-500" : "bg-slate-200"}
+              />
+            </div>
+
+            <Button
+              type="primary"
+              icon={<Plus size={20} />}
+              className="h-11 px-6 bg-emerald-500 hover:!bg-emerald-600 border-none rounded-2xl shadow-lg shadow-emerald-500/20 text-sm font-black transition-all active:scale-95"
+              onClick={() => navigate("/blogs/create")}
+            >
+              TẠO BÀI VIẾT MỚI
+            </Button>
+          </motion.div>
+        </div>
+
+        {/* Table Section */}
+        <motion.div
+          variants={itemVariants}
+          className="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden"
+        >
+          <Table
+            columns={columns}
+            loading={pendingBlogs}
+            data={displayedBlogs}
+            total={searchKeyword.trim() ? filteredBlogs.length : blogList.total}
+            onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
+            page={pagination.page}
+            rowClassName={() => "hover:bg-slate-50/80 transition-colors cursor-default"}
           />
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex gap-2 ">
-            <input
-              type="checkbox"
-              checked={isReport}
-              onChange={handleChangeIsReport}
-            />
-            <label className="font-bold">Bài đăng bị báo cáo</label>
-            <br></br>
-          </div>
-          <Button
-            type="primary"
-            icon={<Plus size={24} />}
-            className="h-9 bg-emerald-500 hover:!bg-emerald-600 duration-300 text-sm font-medium"
-            onClick={() => navigate("/blogs/create")}
-          >
-            Thêm blog
-          </Button>
-        </div>
-      </div>
+        </motion.div>
 
-      <Table
-        columns={columns}
-        loading={pendingBlogs}
-        data={displayedBlogs}
-        total={searchKeyword.trim() ? filteredBlogs.length : blogList.total}
-        onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
-        page={pagination.page}
-      />
-
-      <DeleteModal isOpen={!!selectedDelete} blog={selectedDelete} onClose={onCloseModal} />
-      <DeleteReportModal
-        isOpen={!!selectedRemoveReport}
-        blog={selectedRemoveReport}
-        onClose={onCloseModal}
-      />
-      <ActiveModal
-        isOpen={!!selectedActive}
-        blog={selectedActive}
-        onClose={onCloseModal}
-      />
-    </div>
+        {/* Modals */}
+        <AnimatePresence>
+          {selectedDelete && (
+            <DeleteModal isOpen={!!selectedDelete} blog={selectedDelete} onClose={onCloseModal} />
+          )}
+          {selectedRemoveReport && (
+            <DeleteReportModal isOpen={!!selectedRemoveReport} blog={selectedRemoveReport} onClose={onCloseModal} />
+          )}
+          {selectedActive && (
+            <ActiveModal isOpen={!!selectedActive} blog={selectedActive} onClose={onCloseModal} />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </ConfigProvider>
   );
 };
 
 export default BlogManagement;
+

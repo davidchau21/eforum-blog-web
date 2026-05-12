@@ -1,17 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bar, Line, Pie } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  LineElement,
-  PointElement,
-  ArcElement,
-} from "chart.js";
+import Chart from "react-apexcharts";
 import {
   User2Icon,
   FileIcon,
@@ -20,87 +8,137 @@ import {
   ThumbsUp,
   Share2,
   BookOpen,
+  TrendingUp,
+  Activity,
 } from "lucide-react";
+import { motion } from "framer-motion";
 import reportApi from "../../api/reportApi";
 
-// Đăng ký các thành phần của Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-);
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100,
+    },
+  },
+};
+
+const colorMap = {
+  blue: {
+    bg: "bg-blue-50",
+    text: "text-blue-600",
+    accent: "bg-blue-500/5",
+    hover: "group-hover:bg-blue-500/10",
+  },
+  emerald: {
+    bg: "bg-emerald-50",
+    text: "text-emerald-600",
+    accent: "bg-emerald-500/5",
+    hover: "group-hover:bg-emerald-500/10",
+  },
+  purple: {
+    bg: "bg-purple-50",
+    text: "text-purple-600",
+    accent: "bg-purple-500/5",
+    hover: "group-hover:bg-purple-500/10",
+  },
+  rose: {
+    bg: "bg-rose-50",
+    text: "text-rose-600",
+    accent: "bg-rose-500/5",
+    hover: "group-hover:bg-rose-500/10",
+  },
+  amber: {
+    bg: "bg-amber-50",
+    text: "text-amber-600",
+    accent: "bg-amber-500/5",
+    hover: "group-hover:bg-amber-500/10",
+  },
+  indigo: {
+    bg: "bg-indigo-50",
+    text: "text-indigo-600",
+    accent: "bg-indigo-500/5",
+    hover: "group-hover:bg-indigo-500/10",
+  },
+};
 
 const Dashboard = () => {
   const [totalUser, setTotalUser] = useState(0);
   const [totalBlog, setTotalBlog] = useState(0);
   const [totalComment, setTotalComment] = useState(0);
-  const [totalInteraction, setTotalInteraction] = useState(0);
   const [totalLike, setTotalLike] = useState(0);
   const [totalShare, setTotalShare] = useState(0);
   const [totalRead, setTotalRead] = useState(0);
-  const [chartData, setChartData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: "Số lượng người dùng",
-        data: [],
-        borderColor: "rgba(75, 192, 192, 1)",
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderWidth: 2,
-        pointBackgroundColor: "rgba(75, 192, 192, 1)",
-        pointBorderColor: "#fff",
-      },
-      {
-        label: "Số lượng bài viết",
-        data: [],
-        borderColor: "rgba(255, 99, 132, 1)",
-        backgroundColor: "rgba(255, 99, 132, 0.2)",
-        borderWidth: 2,
-        pointBackgroundColor: "rgba(255, 99, 132, 1)",
-        pointBorderColor: "#fff",
-      },
+
+  const [growthChart, setGrowthChart] = useState({
+    series: [
+      { name: "Người dùng mới", data: [] },
+      { name: "Bài viết mới", data: [] },
     ],
+    options: {
+      chart: { type: "area", toolbar: { show: false }, fontFamily: "Exo 2, sans-serif" },
+      colors: ["#3b82f6", "#10b981"],
+      dataLabels: { enabled: false },
+      stroke: { curve: "smooth", width: 3 },
+      fill: {
+        type: "gradient",
+        gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1, stops: [0, 90, 100] },
+      },
+      xaxis: { categories: [] },
+      yaxis: { labels: { style: { colors: "#64748b" } } },
+      grid: { borderColor: "#f1f5f9" },
+    },
   });
 
-  const [interactionData, setInteractionData] = useState({
-    labels: [],
-    datasets: [
-      {
-        label: "Lượt thích",
-        data: [],
-        backgroundColor: "rgba(75, 192, 192, 0.8)",
-      },
-      {
-        label: "Lượt chia sẻ",
-        data: [],
-        backgroundColor: "rgba(255, 206, 86, 0.8)",
-      },
-      {
-        label: "Lượt bình luận",
-        data: [],
-        backgroundColor: "rgba(54, 162, 235, 0.8)",
-      },
+  const [interactionChart, setInteractionChart] = useState({
+    series: [
+      { name: "Lượt thích", data: [] },
+      { name: "Lượt chia sẻ", data: [] },
+      { name: "Lượt bình luận", data: [] },
     ],
+    options: {
+      chart: { type: "bar", stacked: true, toolbar: { show: false }, fontFamily: "Exo 2, sans-serif" },
+      colors: ["#3b82f6", "#f59e0b", "#8b5cf6"],
+      plotOptions: { bar: { borderRadius: 6, columnWidth: "45%" } },
+      xaxis: { categories: [] },
+      legend: { position: "bottom" },
+      grid: { borderColor: "#f1f5f9" },
+    },
   });
 
-  const [pieData, setPieData] = useState({
-    labels: ["Lượt thích", "Lượt chia sẻ", "Lượt bình luận"],
-    datasets: [
-      {
-        data: [0, 0, 0],
-        backgroundColor: [
-          "rgba(75, 192, 192, 0.8)",
-          "rgba(255, 206, 86, 0.8)",
-          "rgba(54, 162, 235, 0.8)",
-        ],
+  const [donutChart, setDonutChart] = useState({
+    series: [0, 0, 0],
+    options: {
+      chart: { type: "donut", fontFamily: "Exo 2, sans-serif" },
+      labels: ["Lượt thích", "Lượt chia sẻ", "Lượt bình luận"],
+      colors: ["#3b82f6", "#f59e0b", "#8b5cf6"],
+      legend: { position: "bottom" },
+      plotOptions: {
+        pie: {
+          donut: {
+            size: "70%",
+            labels: {
+              show: true,
+              total: { show: true, label: "Tổng tương tác", color: "#64748b" },
+            },
+          },
+        },
       },
-    ],
+      dataLabels: { enabled: false },
+    },
   });
 
   const [startDate, setStartDate] = useState(() => {
@@ -112,8 +150,9 @@ const Dashboard = () => {
     return new Date().toISOString().split("T")[0];
   });
 
+  const [isFiltering, setIsFiltering] = useState(false);
+
   useEffect(() => {
-    // Lấy số liệu tổng quan
     reportApi.totalUser().then((res) => {
       if (res.ok && res.body) setTotalUser(res.body.totalUser || 0);
     });
@@ -126,259 +165,201 @@ const Dashboard = () => {
 
     reportApi.getStats().then((res) => {
       if (res.ok && res.body) {
-        setTotalInteraction(res.body);
         setTotalLike(res.body.totalLikes || 0);
         setTotalShare(res.body.totalShares || 0);
         setTotalRead(res.body.totalReads || 0);
       }
     });
 
-    if (startDate && endDate) {
-      handleDateChange();
-    }
-  }, [startDate, endDate]);
+    // Initial fetch
+    handleDateChange();
+  }, []);
 
   const handleDateChange = () => {
+    if (!startDate || !endDate) return;
+    setIsFiltering(true);
+    
     Promise.all([
       reportApi.userChartByDate(startDate, endDate),
       reportApi.blogStatisticsByDate(startDate, endDate),
       reportApi.weeklyInteractions(),
     ]).then(([userResponse, blogResponse, interactionResponse]) => {
       if (!userResponse.ok || !blogResponse.ok || !interactionResponse.ok) {
-        console.error("Failed to fetch dashboard statistics");
+        setIsFiltering(false);
         return;
       }
 
-      // Dữ liệu người dùng và bài viết
-      const userGrowth = userResponse.body.growthData || [];
+      const userGrowth = userResponse.body?.growthData || [];
       const blogGrowth = blogResponse.body || [];
+      const labels = userGrowth.map((entry) => entry.date);
 
-      const labels = userGrowth.map((entry) => entry.date); // Lấy ngày từ userGrowth
-      const userData = userGrowth.map((entry) => entry.userCount);
-      const blogData = blogGrowth.map((entry) => entry.totalBlogs);
-
-      setChartData((prev) => ({
+      setGrowthChart((prev) => ({
         ...prev,
-        labels,
-        datasets: [
-          {
-            ...prev.datasets[0], // Dữ liệu người dùng
-            data: userData,
-          },
-          {
-            ...prev.datasets[1], // Dữ liệu bài viết
-            data: blogData,
-          },
+        series: [
+          { name: "Người dùng mới", data: userGrowth.map((entry) => entry.userCount) },
+          { name: "Bài viết mới", data: blogGrowth.map((entry) => entry.totalBlogs) },
         ],
+        options: { ...prev.options, xaxis: { categories: labels } },
       }));
 
-      // Dữ liệu tương tác hàng tuần
       const interactions = interactionResponse.body || [];
-
       const interactionLabels = interactions.map((entry) => entry.date);
-      const likes = interactions.map((entry) => entry.totalLikes);
-      const shares = interactions.map((entry) => entry.totalShares);
-      const comments = interactions.map((entry) => entry.totalComments);
 
-      setInteractionData({
-        labels: interactionLabels,
-        datasets: [
-          {
-            label: "Lượt thích",
-            data: likes,
-            backgroundColor: "rgba(75, 192, 192, 0.8)",
-          },
-          {
-            label: "Lượt chia sẻ",
-            data: shares,
-            backgroundColor: "rgba(255, 206, 86, 0.8)",
-          },
-          {
-            label: "Lượt bình luận",
-            data: comments,
-            backgroundColor: "rgba(54, 162, 235, 0.8)",
-          },
-        ],
-      });
-
-      const totalInteractions =
-        likes.reduce((a, b) => a + b, 0) +
-        shares.reduce((a, b) => a + b, 0) +
-        comments.reduce((a, b) => a + b, 0);
-
-      setPieData({
-        labels: ["Lượt thích", "Lượt chia sẻ", "Lượt bình luận"],
-        datasets: [
-          {
-            data:
-              totalInteractions > 0
-                ? [
-                    (likes.reduce((a, b) => a + b, 0) / totalInteractions) *
-                      100,
-                    (shares.reduce((a, b) => a + b, 0) / totalInteractions) *
-                      100,
-                    (comments.reduce((a, b) => a + b, 0) / totalInteractions) *
-                      100,
-                  ]
-                : [0, 0, 0],
-            backgroundColor: [
-              "rgba(75, 192, 192, 0.8)",
-              "rgba(255, 206, 86, 0.8)",
-              "rgba(54, 162, 235, 0.8)",
-            ],
-          },
-        ],
-      });
-
-      // Thêm % đằng sau dữ liệu
-      setPieData((prev) => ({
+      setInteractionChart((prev) => ({
         ...prev,
-        labels: prev.labels.map(
-          (label, index) =>
-            `${label.split(" (")[0]} (${prev.datasets[0].data[index].toFixed(2)}%)`,
-        ),
+        series: [
+          { name: "Lượt thích", data: interactions.map((entry) => entry.totalLikes) },
+          { name: "Lượt chia sẻ", data: interactions.map((entry) => entry.totalShares) },
+          { name: "Lượt bình luận", data: interactions.map((entry) => entry.totalComments) },
+        ],
+        options: { ...prev.options, xaxis: { categories: interactionLabels } },
       }));
-    });
+
+      const totalL = interactions.reduce((a, b) => a + b.totalLikes, 0);
+      const totalS = interactions.reduce((a, b) => a + b.totalShares, 0);
+      const totalC = interactions.reduce((a, b) => a + b.totalComments, 0);
+
+      setDonutChart((prev) => ({
+        ...prev,
+        series: [totalL, totalS, totalC],
+      }));
+      
+      setTimeout(() => setIsFiltering(false), 500); // Visual feedback
+    }).catch(() => setIsFiltering(false));
   };
 
+  const statCards = [
+    { label: "Tổng người dùng", value: totalUser, icon: User2Icon, color: "blue", trend: "+12%" },
+    { label: "Tổng bài viết", value: totalBlog, icon: FileIcon, color: "emerald", trend: "+5%" },
+    { label: "Tổng bình luận", value: totalComment, icon: MessageCircleIcon, color: "purple", trend: "+18%" },
+    { label: "Lượt thích", value: totalLike, icon: ThumbsUp, color: "rose", trend: "+24%" },
+    { label: "Lượt chia sẻ", value: totalShare, icon: Share2, color: "amber", trend: "+8%" },
+    { label: "Lượt đọc", value: totalRead, icon: BookOpen, color: "indigo", trend: "+15%" },
+  ];
+
   return (
-    <div className="p-6 space-y-6">
-      {/* Header: Chọn khoảng thời gian */}
-      <div className="w-full bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-2xl font-semibold text-center mb-4">
-          Chọn khoảng thời gian
-        </h2>
-        <div className="flex gap-4 justify-center">
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="p-8 space-y-8 bg-slate-50 min-h-full font-exo-2"
+    >
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">Bảng điều khiển</h1>
+          <p className="text-slate-500 mt-1">Chào mừng trở lại! Đây là thống kê hệ thống của bạn.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+            <CalendarIcon size={18} className="text-slate-400" />
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="bg-transparent border-none focus:outline-none text-sm font-medium text-slate-600"
+            />
+          </div>
+          <span className="text-slate-400 text-sm font-bold">to</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-100">
+            <CalendarIcon size={18} className="text-slate-400" />
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="bg-transparent border-none focus:outline-none text-sm font-medium text-slate-600"
+            />
+          </div>
+
+          <button
+            onClick={handleDateChange}
+            disabled={isFiltering}
+            className="flex items-center gap-2 px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-emerald-300 text-white text-sm font-bold rounded-xl transition-all duration-300 shadow-lg shadow-emerald-500/20 active:scale-95"
+          >
+            {isFiltering ? (
+              <Activity size={18} className="animate-spin" />
+            ) : (
+              <Activity size={18} />
+            )}
+            {isFiltering ? "Đang lọc..." : "Lọc dữ liệu"}
+          </button>
         </div>
       </div>
 
-      {/* 6 thẻ và biểu đồ tròn */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* 6 thẻ: 2 cột, 3 thẻ mỗi cột */}
-        <div className="col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-[120px] bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <User2Icon size={44} color="white" />
-              <p className="text-3xl font-bold text-right text-white">
-                {totalUser}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng người dùng
-            </h1>
-          </div>
-
-          <div className="h-[120px] bg-gradient-to-r from-teal-400 to-green-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <FileIcon size={44} color="white" />
-              <p className="text-3xl font-bold text-right text-white">
-                {totalBlog}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng bài viết
-            </h1>
-          </div>
-
-          <div className="h-[120px] bg-gradient-to-r from-pink-400 to-red-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <MessageCircleIcon size={44} color="white" />
-              <p className="text-3xl font-bold text-right text-white">
-                {totalComment}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng bình luận
-            </h1>
-          </div>
-
-          {/* Các thẻ dưới với gradient khác và icon thay đổi */}
-          <div className="h-[120px] bg-gradient-to-r from-purple-400 to-pink-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <ThumbsUp size={44} color="white" />{" "}
-              {/* Đổi icon thành ThumbUpIcon cho "Like" */}
-              <p className="text-3xl font-bold text-right text-white">
-                {totalLike}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượng like
-            </h1>
-          </div>
-
-          <div className="h-[120px] bg-gradient-to-r from-orange-400 to-yellow-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <Share2 size={44} color="white" />{" "}
-              {/* Đổi icon thành ShareIcon cho "Share" */}
-              <p className="text-3xl font-bold text-right text-white">
-                {totalShare}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượt chia sẻ
-            </h1>
-          </div>
-
-          <div className="h-[120px] bg-gradient-to-r from-indigo-400 to-blue-500 px-5 py-5 rounded-lg shadow-lg">
-            <div className="flex items-center justify-between">
-              <BookOpen size={44} color="white" />{" "}
-              {/* Đổi icon thành BookIcon cho "Read" */}
-              <p className="text-3xl font-bold text-right text-white">
-                {totalRead}
-              </p>
-            </div>
-            <h1 className="text-xl font-semibold text-right text-white mt-2">
-              Số lượt đọc
-            </h1>
-          </div>
+      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+        <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {statCards.map((card, index) => {
+            const colors = colorMap[card.color];
+            return (
+              <motion.div
+                key={index}
+                variants={itemVariants}
+                whileHover={{ y: -5 }}
+                className="group relative overflow-hidden bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300"
+              >
+                <div className={`absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 rounded-full ${colors.accent} ${colors.hover} transition-colors duration-500`} />
+                <div className="flex flex-col h-full justify-between gap-4">
+                  <div className="flex items-start justify-between">
+                    <div className={`p-4 rounded-2xl ${colors.bg} ${colors.text}`}>
+                      <card.icon size={28} />
+                    </div>
+                    <div className="flex items-center gap-1 text-emerald-500 text-sm font-bold bg-emerald-50 px-2 py-1 rounded-lg">
+                      <TrendingUp size={14} /> {card.trend}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-slate-500 font-medium text-sm">{card.label}</p>
+                    <h3 className="text-3xl font-black text-slate-800 mt-1">{card.value.toLocaleString()}</h3>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
-
-        {/* Biểu đồ tròn */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-center text-2xl font-semibold text-gray-800 mb-4">
-            Thống kê tương tác
-          </h2>
-          <div className="flex justify-center items-center">
-            {/* Thêm kích thước cụ thể cho biểu đồ */}
-            <div className="w-[300px] h-[300px] md:w-[300px] md:h-[300px]">
-              <Pie
-                data={pieData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                }}
-              />
-            </div>
+        <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-bold text-slate-800">Phân bổ tương tác</h3>
+            <Activity size={20} className="text-slate-400" />
           </div>
-        </div>
+          <div className="relative min-h-[250px]">
+            <Chart options={donutChart.options} series={donutChart.series} type="donut" width="100%" height="250" />
+          </div>
+          <div className="space-y-4 mt-6">
+            {[
+              { label: "Lượt thích", value: totalLike, color: "bg-blue-500" },
+              { label: "Chia sẻ", value: totalShare, color: "bg-emerald-500" },
+              { label: "Bình luận", value: totalComment, color: "bg-purple-500" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`w-2.5 h-2.5 rounded-full ${item.color}`} />
+                  <span className="text-sm text-slate-500 font-medium">{item.label}</span>
+                </div>
+                <span className="text-sm font-bold text-slate-700">{item.value.toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
-      {/* 2 biểu đồ cột và đường */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="w-full bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4">
-            Số liệu người dùng và bài viết
-          </h2>
-          <Line data={chartData} />
-        </div>
-        <div className="w-full bg-white rounded-lg shadow-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4">Tương tác hàng tuần</h2>
-          <Bar data={interactionData} />
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-bold text-slate-800">Tăng trưởng hệ thống</h3>
+          </div>
+          <div className="min-h-[350px]">
+            <Chart options={growthChart.options} series={growthChart.series} type="area" height="350" />
+          </div>
+        </motion.div>
+        <motion.div variants={itemVariants} className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-bold text-slate-800">Tương tác theo thời gian</h3>
+          </div>
+          <div className="min-h-[350px]">
+            <Chart options={interactionChart.options} series={interactionChart.series} type="bar" height="350" />
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

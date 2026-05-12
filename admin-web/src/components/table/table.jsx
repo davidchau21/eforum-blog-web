@@ -37,6 +37,7 @@ const CustomTable = ({
         columns={columns}
         dataSource={data}
         pagination={false}
+        rowKey={(record) => record._id || record.blog_id || record.id || record.tag_id}
         locale={{
           emptyText: (
             <Empty
