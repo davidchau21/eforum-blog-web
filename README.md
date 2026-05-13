@@ -9,6 +9,15 @@
 
 ---
 
+## 🔗 Live Demos
+
+Explore the system live in action:
+
+- **Client Website**: [eforum.vercel.app](https://eforum.vercel.app)
+- **Management Portal**: [eforum-admin.vercel.app](https://eforum-admin.vercel.app)
+
+---
+
 ## 🏗️ System Architecture
 
 The project is structured as a coordinated ecosystem (Monorepo style) consisting of three core modules:
@@ -23,16 +32,16 @@ The project is structured as a coordinated ecosystem (Monorepo style) consisting
 
 ### 👤 Member Interface (Client)
 
-- **Knowledge Exchange**: Create posts, leave comments, and engage with content (Like, Share, Report).
+- **Knowledge Exchange**: Create posts with a rich editor, leave comments, and engage with content.
 - **Real-time Chat**: Instant messaging between members powered by Socket.io.
-- **AI Study Assistant**: Integrated AI Chatbot to help answer academic questions.
-- **Resource Search**: Powerful search engine to find documents and study materials from multiple sources.
-- **Secure Authentication**: Traditional Email login and Social Login (Google via Firebase).
+- **AI Study Assistant**: Integrated AI Chatbot (Gemini) to help answer academic questions.
+- **Resource Search**: Powerful search engine to find documents and study materials.
+- **Secure Authentication**: Email login and Social Login (Google via Firebase).
 
 ### 🛡️ Management Portal (Admin — Premium UI)
 
-- **Intelligent Dashboard**: Real-time analytics for engagement metrics (Likes, Comments, Posts) with ApexCharts.
-- **Content Moderation**: Comprehensive tools to review new posts and handle reported content.
+- **Intelligent Dashboard**: Real-time analytics for engagement metrics with ApexCharts.
+- **Content Moderation**: Tools to review new posts and handle reported content.
 - **Category Management**: Flexible organization of tags and academic categories.
 - **Multi-language Support (i18n)**: Instant switching between **English** and **Vietnamese**.
 - **High-Craft Design**: Luminous Glassmorphism aesthetic with fluid animations via Framer Motion.
@@ -105,8 +114,7 @@ Edu_Blog_Website/
 ├── admin-web/         # Admin Management Portal (React + Vite)
 ├── backend/           # RESTful API Server (Node.js + Express)
 ├── frontend/          # Client Website (ReactJS)
-├── README.md          # Global Project Documentation
-└── edu-blog.workspace # VSCode Workspace configuration
+└── README.md          # Global Project Documentation
 ```
 
 ---
