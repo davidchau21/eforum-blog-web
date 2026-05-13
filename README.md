@@ -1,72 +1,128 @@
+# 🎓 EduBlog System — Academic Forum & Management Ecosystem
 
+[![Vercel](https://img.shields.io/badge/Frontend-Live-emerald)](https://eforum.vercel.app)
+[![Vercel](https://img.shields.io/badge/Admin-Live-blue)](https://eforum-admin.vercel.app)
+[![Node.js](https://img.shields.io/badge/Backend-Express-lightgrey)](https://render.com)
+[![License-MIT](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
-## Tài Khoản Mẫu
-
-Dưới đây là danh sách tài khoản dùng thử cho dự án:
-
-- **Quản Lý**:
-  - **Email**: adminm@gmail.com
-  - **Mật khẩu**: Admin11
-
-- **Người Dùng**:
-  - **Email**: Gow29292@inohm.com
-  - **Mật khẩu**: Gow29292@inohm.com
+**EduBlog** is a modern academic forum platform designed for middle and high school students. It facilitates knowledge exchange, lesson discussions, and real-time social interaction. The ecosystem includes a comprehensive **Premium Admin Dashboard** for system-wide content and user management.
 
 ---
 
-## Giới Thiệu Dự Án
+## 🔗 Live Demos
 
-Dự án diễn đàn học tập là một nền tảng giúp học sinh cấp 2 và cấp 3 trao đổi kiến thức và thảo luận.
+Explore the system live in action:
 
-- **Link Demo User**: [eforum.vercel.app](https://eforum.vercel.app)
-- **Link Demo Admin**: [eforum-admin.vercel.app](https://eforum-admin.vercel.app)
-
-### Tính Năng
-
-#### Dành cho Người Dùng Chưa Có Tài Khoản
-- Xem bài đăng của người dùng khác.
-- Chat với AI bot.
-
-#### Dành cho Người Dùng Đã Đăng Nhập
-- Xem bài đăng của người dùng khác.
-- Chat với AI bot.
-- Đăng bài chia sẻ lên diễn đàn.
-- Bình luận trong các bài đăng.
-- Quản lý bài viết của mình.
-- Tương tác (like, báo cáo, share) bài đăng khác.
-- Nhắn tin realtime.
-- Tìm tài liệu từ nhiều nguồn.
-
-#### Dành cho Quản Lý
-- Quản lý tài khoản và phân quyền.
-- Duyệt bài đăng mới.
-- Quản lý danh mục bài viết.
-- Tạo thông báo.
-- Xử lý bài viết và bình luận bị báo cáo.
-- Thống kê chung.
-- Thống kê cho bài viết và người dùng theo ngày được chọn.
-- Thống kê tương tác trong tuần.
+- **Client Website**: [eforum.vercel.app](https://eforum.vercel.app)
+- **Management Portal**: [eforum-admin.vercel.app](https://eforum-admin.vercel.app)
 
 ---
 
-## Công Nghệ Sử Dụng
+## 🏗️ System Architecture
 
-### Frontend
-- **JavaScript, ReactJS + Vite, TailwindCSS**: Xây dựng giao diện người dùng.
-- **Axios**: Kết nối API backend.
-- **Socket.io-client**: Tạo kết nối realtime cho nhắn tin.
+The project is structured as a coordinated ecosystem (Monorepo style) consisting of three core modules:
+
+1.  **`backend/`**: A robust RESTful API Server handling business logic, data persistence, and security.
+2.  **`frontend/`**: The primary client-side application for students and general users.
+3.  **`admin-web/`**: A high-fidelity Management Portal for staff and system administrators.
+
+---
+
+## 🚀 Key Features
+
+### 👤 Member Interface (Client)
+
+- **Knowledge Exchange**: Create posts with a rich editor, leave comments, and engage with content.
+- **Real-time Chat**: Instant messaging between members powered by Socket.io.
+- **AI Study Assistant**: Integrated AI Chatbot (Gemini) to help answer academic questions.
+- **Resource Search**: Powerful search engine to find documents and study materials.
+- **Secure Authentication**: Email login and Social Login (Google via Firebase).
+
+### 🛡️ Management Portal (Admin — Premium UI)
+
+- **Intelligent Dashboard**: Real-time analytics for engagement metrics with ApexCharts.
+- **Content Moderation**: Tools to review new posts and handle reported content.
+- **Category Management**: Flexible organization of tags and academic categories.
+- **Multi-language Support (i18n)**: Instant switching between **English** and **Vietnamese**.
+- **High-Craft Design**: Luminous Glassmorphism aesthetic with fluid animations via Framer Motion.
+
+---
+
+## 🛠️ Tech Stack
 
 ### Backend
-- **Node.js với ExpressJS**: Xây dựng REST API.
-- **MongoDB**: Lưu trữ dữ liệu.
-- **JWT**: Xác thực và phân quyền.
-- **Firebase**: Hỗ trợ đăng nhập Google.
-- **AWS S3**: Lưu trữ ảnh và tài liệu.
-- **googleapis**: Sử dụng API của Google.
-- **socket.io**: Tạo kết nối realtime cho nhắn tin.
 
-### Triển Khai
-- **Render**: Triển khai backend.
-- **Vercel**: Triển khai frontend.
+- **Runtime**: Node.js, Express.js
+- **Database**: MongoDB (via Mongoose ODM)
+- **Authentication**: JWT (JSON Web Token), Firebase Auth
+- **Real-time**: Socket.io
+- **Cloud Storage**: AWS S3 (for secure image and document hosting)
+- **Integrations**: Google Cloud APIs, AI Integration Engine
+
+### Frontend (Client & Admin)
+
+- **Framework**: React.js + Vite (Admin), React.js (Frontend)
+- **UI Design**: Tailwind CSS + Ant Design 5.x
+- **Animations**: Framer Motion (State-of-the-art UI experience)
+- **State Management**: Redux Toolkit
+- **Localization**: i18next & react-i18next
+- **Data Viz**: ApexCharts
 
 ---
+
+## 💻 Installation & Setup
+
+### 1. Backend Server
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### 2. Admin Management Portal
+
+```bash
+cd admin-web
+npm install
+npm run dev
+```
+
+### 3. Frontend Client Website
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+---
+
+## 🔐 Demo Credentials
+
+| Role                     | Email                | Password             |
+| :----------------------- | :------------------- | :------------------- |
+| **System Administrator** | `adminm@gmail.com`   | `Admin11`            |
+| **Registered Member**    | `Gow29292@inohm.com` | `Gow29292@inohm.com` |
+
+---
+
+## 📁 Directory Structure
+
+```text
+Edu_Blog_Website/
+├── admin-web/         # Admin Management Portal (React + Vite)
+├── backend/           # RESTful API Server (Node.js + Express)
+├── frontend/          # Client Website (ReactJS)
+└── README.md          # Global Project Documentation
+```
+
+---
+
+## 📄 License & Attribution
+
+This project was developed as a **Senior Graduation Thesis**. All rights reserved by **Group 75 (KLTN 2024-2025)**. For reproduction or reference, please credit the original authors.
+
+---
+
+_Developed with ❤️ by Group 75 - Graduation Thesis 2024-2025_
