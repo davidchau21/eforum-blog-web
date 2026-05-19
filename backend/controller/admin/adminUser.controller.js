@@ -53,6 +53,36 @@ class AdminUserController extends BaseController {
       return this.sendError(res, error.message);
     }
   }
+
+  async getMyProfile(req, res) {
+    try {
+      const userId = req.user.id;
+      const result = await adminUserService.getMyProfile(userId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async toggleDisableUser(req, res) {
+    try {
+      const { id } = req.params;
+      const result = await adminUserService.toggleDisableUser(id);
+      return this.sendSuccess(res, `User ${result.status} successfully`);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async deleteUser(req, res) {
+    try {
+      const { id } = req.params;
+      await adminUserService.deleteUser(id);
+      return this.sendSuccess(res, "User deleted successfully");
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
 }
 
 export default new AdminUserController();

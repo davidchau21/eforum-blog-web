@@ -10,5 +10,8 @@ adminUserRouter.get("/admin/users/:id", isAdmin, (req, res) => adminUserControll
 adminUserRouter.post("/admin/users", isAdmin, (req, res) => adminUserController.createUser(req, res));
 adminUserRouter.post("/admin/users/:id", isAdmin, (req, res) => adminUserController.updateUser(req, res));
 adminUserRouter.post("/admin/block-comment/:id", isAdmin, (req, res) => adminUserController.toggleBlockComment(req, res));
+adminUserRouter.post("/admin/disable-user/:id", isAdmin, (req, res) => adminUserController.toggleDisableUser(req, res));
+adminUserRouter.delete("/admin/users/:id", isAdmin, (req, res) => adminUserController.deleteUser(req, res));
+adminUserRouter.get("/admin/me", isAdmin, (req, res) => adminUserController.getMyProfile(req, res));
 
 export default adminUserRouter;

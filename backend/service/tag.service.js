@@ -8,10 +8,33 @@ class TagService {
   }
 
   async getAllTags({ page = 0, limit = 10 }) {
-    const tags = await Tag.find()
-      .sort({ createdAt: -1 })
-      .skip(page * limit)
-      .limit(limit);
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    
+    const tags = await Tag.aggregate([
+      { $sort: { createdAt: -1 } },
+      { $skip: pageNum * limitNum },
+      { $limit: limitNum },
+      {
+        $lookup: {
+          from: "blogs",
+          localField: "tag_name",
+          foreignField: "tags",
+          as: "blogs",
+        },
+      },
+      {
+        $addFields: {
+          total_posts: { $size: "$blogs" },
+        },
+      },
+      {
+        $project: {
+          blogs: 0,
+        },
+      },
+    ]);
+    
     const total = await Tag.countDocuments();
     return { list: tags, total };
   }

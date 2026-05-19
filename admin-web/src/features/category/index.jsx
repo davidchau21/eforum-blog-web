@@ -10,6 +10,8 @@ import {
   Search,
   Hash,
   ArrowUpDown,
+  Clock,
+  Calendar,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,6 +19,7 @@ import CreateCategoryModal from "./modals/create-category-modal";
 import UpdateCategoryModal from "./modals/update-category-modal";
 import tagApi from "../../api/tag";
 import DeleteCategoryModal from "./modals/delete-category-modal";
+import { formatDate } from "../../utils/dateUtils";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -131,6 +134,16 @@ const CategoryManagement = () => {
   const columns = useMemo(
     () => [
       {
+        title: <TableHeaderColumn label="STT" />,
+        width: 60,
+        fixed: "left",
+        render: (_, __, index) => (
+          <span className="text-xs font-bold text-slate-400">
+            {(pagination.page - 1) * pagination.limit + index + 1}
+          </span>
+        ),
+      },
+      {
         dataIndex: "_id",
         title: <TableHeaderColumn label="ID" />,
         width: 100,
@@ -159,8 +172,41 @@ const CategoryManagement = () => {
         sorter: (a, b) => a.tag_name.localeCompare(b.tag_name),
       },
       {
+        dataIndex: "total_posts",
+        title: <TableHeaderColumn label="Số bài viết" />,
+        width: 140,
+        render: (total) => (
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 w-fit rounded-xl border border-blue-100">
+            <span className="text-[13px] font-black text-blue-600">{total || 0}</span>
+            <span className="text-[11px] font-bold text-blue-400 uppercase tracking-wide">bài viết</span>
+          </div>
+        ),
+      },
+      {
+        title: <TableHeaderColumn label="Thời gian" />,
+        width: 200,
+        render: (_, record) => {
+          const isUpdated = record.updatedAt && new Date(record.updatedAt).getTime() !== new Date(record.createdAt).getTime();
+          return (
+            <div className="flex flex-col gap-1.5 py-1">
+              <div className="flex items-center gap-2 text-[11px] font-bold text-slate-400">
+                <Calendar size={12} className="text-slate-400" />
+                <span>Tạo lúc: <span className="text-slate-600">{formatDate(record.createdAt)}</span></span>
+              </div>
+              {isUpdated && (
+                <div className="flex items-center gap-2 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg w-fit border border-amber-200/50 uppercase tracking-tight">
+                  <Clock size={10} />
+                  <span>Cập nhật: {formatDate(record.updatedAt)}</span>
+                </div>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         title: <TableHeaderColumn label="Thao tác" />,
         width: 120,
+        fixed: "right",
         render: (_, record) => (
           <div className="flex items-center gap-2">
             <Tooltip title="Chỉnh sửa">
@@ -175,7 +221,7 @@ const CategoryManagement = () => {
               <Button
                 type="text"
                 icon={<Trash2 size={18} />}
-                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl"
+                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"
                 onClick={() => setSelectedDeleteCategory(record)}
               />
             </Tooltip>
@@ -183,7 +229,7 @@ const CategoryManagement = () => {
         ),
       },
     ],
-    [],
+    [pagination.page, pagination.limit],
   );
 
   useEffect(() => {

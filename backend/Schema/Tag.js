@@ -12,9 +12,7 @@ const tagSchema = mongoose.Schema(
     },
   },
   {
-    timestamps: {
-      createdAt: "createdAt",
-    },
+    timestamps: true,
   }
 );
 

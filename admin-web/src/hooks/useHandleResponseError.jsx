@@ -6,19 +6,22 @@ import { useNavigate } from "react-router-dom";
 import useLocalStorage from "@/hooks/useLocalStorage";
 
 const useHandleResponseError = () => {
-  const { t } = useTranslation("error");
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { removeLocalStorage } = useLocalStorage();
 
   const handleResponseError = useCallback(
     (error, onOk = undefined) => {
+      const errorMessage = typeof error === 'string' ? error : (error?.error || error?.message || "Unknown Error");
+      const translatedMessage = t(`errors.${errorMessage}`, { defaultValue: errorMessage });
+
       const instance = Modal.error({
         title: (
           <span className="text-base font-bold text-red-1 font-exo-2">
             Error
           </span>
         ),
-        content: <span className="text-base font-exo-2">{t(error)}</span>,
+        content: <span className="text-base font-exo-2">{translatedMessage}</span>,
         onOk: () => {
           instance.destroy();
           if (onOk) onOk();

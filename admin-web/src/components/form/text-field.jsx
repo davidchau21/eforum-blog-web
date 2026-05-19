@@ -12,6 +12,7 @@ const TextField = ({
   rules = [],
   readOnly = false,
   disabled = false,
+  prefix = null,
 }) => {
   return (
     <Form.Item
@@ -27,6 +28,7 @@ const TextField = ({
         className="h-10 text-base"
         readOnly={readOnly}
         disabled={disabled}
+        prefix={prefix}
       />
     </Form.Item>
   );
@@ -35,13 +37,14 @@ const TextField = ({
 TextField.propTypes = {
   autoComplete: PropTypes.string,
   name: PropTypes.string.isRequired,
-  label: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf([null])]),
+  label: PropTypes.node,
   className: PropTypes.string,
   variant: PropTypes.string,
   placeholder: PropTypes.string,
   rules: PropTypes.array,
   readOnly: PropTypes.bool,
   disabled: PropTypes.bool,
+  prefix: PropTypes.node,
 };
 
 export default TextField;
