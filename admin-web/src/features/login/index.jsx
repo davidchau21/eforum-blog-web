@@ -27,7 +27,7 @@ const LoginPage = () => {
         navigate("/");
       }
       if (errors) {
-        handleResponseError(errors);
+        handleResponseError(errors.error);
       }
     }
   );

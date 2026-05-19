@@ -3,21 +3,30 @@ import Sidebar from "@/components/common/sidebar";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { Loader } from "lucide-react";
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
+import userApi from "@/api/userApi";
+import { setProfile } from "@/redux/globalSlice";
 
 const MainLayout = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { getLocalStorage } = useLocalStorage();
-  const { loading } = useSelector((state) => state.global);
+  const { loading, profile } = useSelector((state) => state.global);
 
   useEffect(() => {
     const accessToken = getLocalStorage();
     if (!accessToken) {
       navigate("/login");
+    } else if (!profile) {
+      userApi.getMyProfile().then((res) => {
+        if (res.ok && res.body) {
+          dispatch(setProfile(res.body));
+        }
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getLocalStorage]);
+  }, [getLocalStorage, profile]);
 
   return (
     <div className="relative w-full">

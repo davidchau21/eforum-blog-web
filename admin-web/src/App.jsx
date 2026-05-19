@@ -12,6 +12,7 @@ import CreateBlog from "./features/blogs/pages/createBlog";
 import EditBlog from "./features/blogs/pages/editBlog";
 import CommentManagement from "./features/comment";
 import NotificationManagement from "./features/notifications";
+import Profile from "./features/profile";
 
 const App = () => {
   return (
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/comments" element={<CommentManagement />} />
         <Route path="/blogs/create" element={<CreateBlog />} />
         <Route path="/blogs/:id" element={<EditBlog />} />
+        <Route path="/profile" element={<Profile />} />
         <Route index element={<Dashboard />} />
       </Route>
     </Routes>

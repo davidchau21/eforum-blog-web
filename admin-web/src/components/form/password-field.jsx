@@ -10,6 +10,7 @@ const PasswordField = ({
   variant = "outlined",
   placeholder = "",
   rules = [],
+  prefix = null,
 }) => {
   return (
     <Form.Item
@@ -23,6 +24,7 @@ const PasswordField = ({
         variant={variant}
         placeholder={placeholder}
         className="h-10 text-base"
+        prefix={prefix}
       />
     </Form.Item>
   );
@@ -31,11 +33,12 @@ const PasswordField = ({
 PasswordField.propTypes = {
   autoComplete: PropTypes.string,
   name: PropTypes.string.isRequired,
-  label: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf([null])]),
+  label: PropTypes.node,
   className: PropTypes.string,
   variant: PropTypes.string,
   placeholder: PropTypes.string,
   rules: PropTypes.array,
+  prefix: PropTypes.node,
 };
 
 export default PasswordField;

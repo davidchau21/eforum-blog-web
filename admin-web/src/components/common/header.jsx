@@ -3,10 +3,12 @@ import { CircleUserRound, Search, Bell, Settings, Languages } from "lucide-react
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 const Header = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { profile } = useSelector((state) => state.global);
 
   const toggleLanguage = () => {
     const newLang = i18n.language === "en" ? "vi" : "en";
@@ -66,13 +68,28 @@ const Header = () => {
 
         <div className="h-8 w-[1px] bg-slate-200 mx-2" />
 
-        <div className="flex items-center gap-3 pl-2 group cursor-pointer">
+        <div 
+          className="flex items-center gap-3 pl-2 group cursor-pointer"
+          onClick={() => navigate("/profile")}
+        >
           <div className="flex flex-col items-end">
-            <span className="text-sm font-black text-slate-900">{t('header.admin_name')}</span>
-            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight">{t('header.admin_role')}</span>
+            <span className="text-sm font-black text-slate-900">
+              {profile?.personal_info?.fullname || t('header.admin_name')}
+            </span>
+            <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight">
+              {profile?.personal_info?.role || t('header.admin_role')}
+            </span>
           </div>
           <div className="relative">
-            <CircleUserRound size={40} className="text-slate-200 group-hover:text-emerald-500 transition-colors" />
+            {profile?.personal_info?.profile_img ? (
+              <img 
+                src={profile.personal_info.profile_img} 
+                className="w-10 h-10 rounded-full object-cover border-2 border-slate-100 group-hover:border-emerald-500 transition-all shadow-sm" 
+                alt="Avatar" 
+              />
+            ) : (
+              <CircleUserRound size={40} className="text-slate-200 group-hover:text-emerald-500 transition-colors" />
+            )}
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white" />
           </div>
         </div>
