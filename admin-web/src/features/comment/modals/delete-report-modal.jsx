@@ -3,9 +3,9 @@ import { Button, Modal } from "antd";
 import PropTypes from "prop-types";
 import { useCallback } from "react";
 import useHandleResponseError from "../../../hooks/useHandleResponseError";
-import clsx from "clsx";
-import blogApi from "../../../api/blogApi";
 import commentApi from "../../../api/comment";
+import { motion } from "framer-motion";
+import { ShieldCheck, X } from "lucide-react";
 
 const DeleteReportModal = ({ isOpen, onClose, blog }) => {
   const handleResponseError = useHandleResponseError();
@@ -20,42 +20,87 @@ const DeleteReportModal = ({ isOpen, onClose, blog }) => {
         handleResponseError(errors.message);
       }
     }
-  }, [blog, onClose]);
+  }, [blog, onClose, handleResponseError]);
 
-  const [pendingDelete, deleteCategory] = useHandleAsyncRequest(onDelete);
+  const [pendingDelete, executeDelete] = useHandleAsyncRequest(onDelete);
 
   const handleClose = () => {
     if (pendingDelete) return;
     onClose("remove", false);
   };
 
+  const username = blog?.commented_by?.personal_info?.username || "người dùng";
+  const commentText = blog?.comment || "";
+
   return (
     <Modal
       open={isOpen}
       onCancel={handleClose}
-      title={
-        <div className="flex items-center justify-center w-full">
-          <span className="text-base font-medium font-exo-2">Xoá báo cáo</span>
-        </div>
-      }
       footer={null}
       centered
+      closeIcon={<X size={18} className="text-slate-400 hover:text-slate-600 transition-colors" />}
+      styles={{
+        content: {
+          borderRadius: "24px",
+          padding: "32px",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)",
+        }
+      }}
+      width={450}
     >
-      <div className="flex items-center justify-center w-full">
-        <span className="text-base font-medium font-exo-2">
-          Bạn có chắc chắn muốn xoá báo cáo ở bình luận này không?
-        </span>
+      <div className="flex flex-col items-center text-center font-exo-2">
+        {/* Shield Icon Container with green glow */}
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mb-5 shadow-inner shadow-emerald-100"
+        >
+          <ShieldCheck size={28} className="animate-pulse" />
+        </motion.div>
+
+        {/* Modal Title */}
+        <h2 className="text-xl font-black text-slate-800 tracking-tight mb-2">
+          Gỡ bỏ báo cáo bình luận
+        </h2>
+
+        {/* Modal Message */}
+        <div className="text-sm font-medium text-slate-500 leading-relaxed mb-6 w-full">
+          <p className="mb-3">
+            Bạn có chắc chắn muốn gỡ bỏ báo cáo đối với bình luận của <span className="font-bold text-slate-700">@{username}</span>?
+          </p>
+          {commentText && (
+            <p className="p-3 bg-slate-50 text-slate-600 text-xs italic rounded-2xl border border-slate-100 max-h-24 overflow-y-auto w-full text-left line-clamp-3 leading-normal">
+              "{commentText}"
+            </p>
+          )}
+          <p className="mt-3 text-xs text-slate-400">
+            Trạng thái của bình luận sẽ trở lại bình thường và hiển thị an toàn.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <motion.button
+            whileHover={{ y: -1, scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={pendingDelete}
+            onClick={handleClose}
+            className="h-11 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-black tracking-wider transition-all cursor-pointer disabled:opacity-50"
+          >
+            HỦY BỎ
+          </motion.button>
+          
+          <Button
+            type="primary"
+            loading={pendingDelete}
+            onClick={executeDelete}
+            className="h-11 rounded-2xl bg-emerald-500 hover:!bg-emerald-600 text-white text-xs font-black tracking-wider border-none shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+          >
+            XÁC NHẬN GỠ
+          </Button>
+        </div>
       </div>
-      <Button
-        text="Xoá"
-        className={clsx(
-          "w-full text-base bg-emerald-500 hover:!bg-emerald-600 duration-300 h-10 font-exo-2 text-white"
-        )}
-        loading={pendingDelete}
-        onClick={deleteCategory}
-      >
-        Xoá
-      </Button>
     </Modal>
   );
 };

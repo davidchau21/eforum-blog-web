@@ -123,6 +123,15 @@ const BlogManagement = () => {
   const columns = useMemo(
     () => [
       {
+        title: <TableHeaderColumn label="STT" />,
+        width: 60,
+        render: (_, __, index) => (
+          <span className="font-bold text-slate-400">
+            {(pagination.page - 1) * pagination.limit + index + 1}
+          </span>
+        ),
+      },
+      {
         dataIndex: "blog_id",
         title: <TableHeaderColumn label="ID" />,
         width: 80,
@@ -223,7 +232,7 @@ const BlogManagement = () => {
         ),
       },
     ],
-    [navigate]
+    [navigate, pagination.page, pagination.limit]
   );
 
   useEffect(() => {
