@@ -9,6 +9,7 @@ import "./config/firebase.js";
 // Import central router
 import appRouter from "./router/index.js";
 
+server.set("trust proxy", true);
 server.use(express.json());
 server.use(cors(corsOptions));
 

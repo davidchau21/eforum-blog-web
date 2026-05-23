@@ -13,6 +13,8 @@ import EditBlog from "./features/blogs/pages/editBlog";
 import CommentManagement from "./features/comment";
 import NotificationManagement from "./features/notifications";
 import Profile from "./features/profile";
+import RoleManagement from "./features/roles";
+import ActivityLogs from "./features/logs";
 
 const App = () => {
   return (
@@ -29,6 +31,8 @@ const App = () => {
         <Route path="/blogs/create" element={<CreateBlog />} />
         <Route path="/blogs/:id" element={<EditBlog />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/roles" element={<RoleManagement />} />
+        <Route path="/logs" element={<ActivityLogs />} />
         <Route index element={<Dashboard />} />
       </Route>
     </Routes>

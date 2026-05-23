@@ -17,6 +17,8 @@ import {
   Users,
   Bell,
   ChevronRight,
+  Shield,
+  Clock,
 } from "lucide-react";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -32,38 +34,55 @@ const Sidebar = () => {
   const { removeLocalStorage } = useLocalStorage();
   const { profile } = useSelector((state) => state.global);
 
-  const menus = [
-    {
-      label: t('sidebar.dashboard'),
-      icon: <House size={20} />,
-      link: "/",
-    },
-    {
-      label: t('sidebar.users'),
-      icon: <Users size={20} />,
-      link: "/users",
-    },
-    {
-      label: t('sidebar.categories'),
-      icon: <Menu size={20} />,
-      link: "/tags",
-    },
-    {
-      label: t('sidebar.blogs'),
-      icon: <Book size={20} />,
-      link: "/blogs",
-    },
-    {
-      label: t('sidebar.comments'),
-      icon: <MessageCircleCode size={20} />,
-      link: "/comments",
-    },
-    {
-      label: t('sidebar.notifications'),
-      icon: <Bell size={20} />,
-      link: "/notifications",
-    },
-  ];
+  const menus = useMemo(() => {
+    const list = [
+      {
+        label: t('sidebar.dashboard'),
+        icon: <House size={20} />,
+        link: "/",
+      },
+      {
+        label: t('sidebar.users'),
+        icon: <Users size={20} />,
+        link: "/users",
+      },
+      {
+        label: t('sidebar.categories'),
+        icon: <Menu size={20} />,
+        link: "/tags",
+      },
+      {
+        label: t('sidebar.blogs'),
+        icon: <Book size={20} />,
+        link: "/blogs",
+      },
+      {
+        label: t('sidebar.comments'),
+        icon: <MessageCircleCode size={20} />,
+        link: "/comments",
+      },
+      {
+        label: t('sidebar.notifications'),
+        icon: <Bell size={20} />,
+        link: "/notifications",
+      },
+    ];
+
+    if (profile?.role_id?.role_name === "Super Admin") {
+      list.push({
+        label: t('sidebar.roles', "Phân quyền"),
+        icon: <Shield size={20} />,
+        link: "/roles",
+      });
+      list.push({
+        label: t('sidebar.logs', "Nhật ký hệ thống"),
+        icon: <Clock size={20} />,
+        link: "/logs",
+      });
+    }
+
+    return list;
+  }, [profile, t]);
 
   const onLogout = () => {
     removeLocalStorage();

@@ -10,6 +10,7 @@ import otpTemplate from "../Mail/otp.js";
 import resetPasswordTemplate from "../Mail/resetPassword.js";
 import { env } from "../config/env.js";
 import { nanoid } from "nanoid";
+import { getClientIp } from "../utils/ip.js";
 
 const ACCESS_TOKEN_EXPIRES_IN = "5h";
 const REFRESH_TOKEN_EXPIRES_IN = "9d";
@@ -22,7 +23,7 @@ class AuthService {
    */
   _getRequestMeta(req) {
     return {
-      ip_address: req?.ip || req?.headers?.["x-forwarded-for"] || "",
+      ip_address: getClientIp(req),
       user_agent: req?.headers?.["user-agent"] || "",
     };
   }

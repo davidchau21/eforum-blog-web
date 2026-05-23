@@ -1,11 +1,9 @@
-import staffApi from "@/api/staffApi";
 import NumberField from "@/components/form/number-field";
 import TextField from "@/components/form/text-field";
-import { ERole } from "@/enums/staff";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
 import useHandleResponseError from "@/hooks/useHandleResponseError";
-import { RoleMapper } from "@/mappers/staff";
 import { decrementLoading, incrementLoading } from "@/redux/globalSlice";
+import roleApi from "../../../api/role";
 import { Button, Form, Select, ConfigProvider } from "antd";
 import { ArrowLeft, UserCog, Mail, User, ShieldCheck, Calendar, Type, Save, Hash, Eye } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -42,13 +40,32 @@ const EditStaff = () => {
   const handleResponseSuccess = useHandleResponseSuccess();
 
   const [staff, setStaff] = useState(undefined);
+  const [roles, setRoles] = useState([]);
+
+  useEffect(() => {
+    roleApi.getAllRoles().then((res) => {
+      if (res.ok && res.body) {
+        setRoles(res.body);
+      }
+    });
+  }, []);
 
   const convertToBody = useCallback(
-    (data) => ({
-      fullname: data.fullname,
-      role: data.role,
-    }),
-    []
+    (data) => {
+      const selectedRole = roles.find((r) => r._id === data.role_id);
+      const roleString = 
+        selectedRole && 
+        (selectedRole.role_name === "Super Admin" || selectedRole.role_name === "Admin") 
+          ? "ADMIN" 
+          : "USER";
+
+      return {
+        fullname: data.fullname,
+        role: roleString,
+        role_id: data.role_id,
+      };
+    },
+    [roles]
   );
 
   const onGet = useCallback(async () => {
@@ -111,7 +128,7 @@ const EditStaff = () => {
         firstName: staff.firstName,
         joinedAt: formatDate(staff.joinedAt),
         username: staff.personal_info.username,
-        role: staff.personal_info.role,
+        role_id: staff.role_id?._id || staff.role_id,
         google_auth: staff.google_auth ? "Có" : "Không",
         total_posts: staff.account_info.total_posts,
         total_reads: staff.account_info.total_reads,
@@ -187,19 +204,19 @@ const EditStaff = () => {
                   />
                   
                   <Form.Item
-                    label={<span className="font-bold text-slate-700 flex items-center gap-2"> Phân quyền</span>}
+                    label={<span className="font-bold text-slate-700 flex items-center gap-2"><ShieldCheck size={16}/> Phân quyền</span>}
                     rules={[
                       {
                         required: true,
                         message: "Vui lòng chọn phân quyền",
                       },
                     ]}
-                    name="role"
+                    name="role_id"
                   >
                     <Select
-                      options={Object.values(ERole).map((role) => ({
-                        label: RoleMapper[role],
-                        value: role,
+                      options={roles.map((role) => ({
+                        label: role.role_name,
+                        value: role._id,
                       }))}
                       placeholder="Chọn phân quyền"
                       className="h-12"

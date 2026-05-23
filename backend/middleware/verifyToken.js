@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { accessTokenSecret } from "../config/auth.js";
 import UserAuth from "../Schema/UserAuth.js"; // maps to 'oauth' collection
+import User from "../Schema/User.js";
 
 /**
  * Verifies the Bearer token against:
@@ -82,4 +83,67 @@ export const isAdmin = async (req, res, next) => {
 
   req.user = decoded;
   next();
+};
+
+/**
+ * Dynamic permission guard: validates token AND checks database permissions.
+ */
+export const requireDynamicPermission = (requiredCode) => {
+  return async (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) {
+      return res.status(401).json({ error: "No access token" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, accessTokenSecret);
+    } catch {
+      return res.status(403).json({ error: "Access token is invalid or expired" });
+    }
+
+    try {
+      // Find the user, populate role_id and populate role's permissions
+      const user = await User.findById(decoded.id).populate({
+        path: "role_id",
+        populate: { path: "permissions" }
+      });
+
+      if (!user) {
+        return res.status(403).json({ error: "User not found or disabled" });
+      }
+
+      // Check if user is Super Admin (bypasses all checks)
+      if (user.role_id && user.role_id.role_name === "Super Admin") {
+        req.user = decoded;
+        return next();
+      }
+
+      // If user has no role_id, check if they are ADMIN as fallback (backward compatibility)
+      if (!user.role_id) {
+        if (decoded.role === "ADMIN") {
+          req.user = decoded;
+          return next();
+        }
+        return res.status(403).json({ error: `Bạn không có quyền thực hiện: [${requiredCode}]` });
+      }
+
+      // Check permissions
+      const hasPermission = user.role_id.permissions.some(
+        (perm) => perm.permission_code === requiredCode
+      );
+
+      if (hasPermission) {
+        req.user = decoded;
+        return next();
+      }
+
+      return res.status(403).json({ error: `Bạn không có quyền thực hiện hành động này! Yêu cầu quyền: [${requiredCode}]` });
+    } catch (err) {
+      console.error("Dynamic permission validation error:", err);
+      return res.status(500).json({ error: "Internal server error during permission check" });
+    }
+  };
 };

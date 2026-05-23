@@ -3,14 +3,11 @@ import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
 import { Button, Tag, Input, Tooltip, ConfigProvider, Avatar } from "antd";
 import {
-  LockIcon,
   Pencil,
   Plus,
-  UnlockIcon,
   Users,
   Search,
   Mail,
-  User,
   ShieldCheck,
   MessageSquareOff,
   MessageSquare,
@@ -28,6 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import userApi from "../../api/userApi";
 import { formatDate } from "../../utils/dateUtils";
 import ConfirmActionModal from "./modals/confirm-action-modal";
+import { useTranslation } from "react-i18next";
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -47,6 +45,7 @@ const itemVariants = {
 };
 
 const StaffManagement = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [pagination, setPagination] = useState({
@@ -100,7 +99,7 @@ const StaffManagement = () => {
   const columns = useMemo(
     () => [
       {
-        title: <TableHeaderColumn label="STT" />,
+        title: <TableHeaderColumn label={t("users.col_stt", "STT")} />,
         width: 60,
         fixed: "left",
         render: (_, __, index) => (
@@ -111,7 +110,7 @@ const StaffManagement = () => {
       },
       {
         dataIndex: "fullname",
-        title: <TableHeaderColumn label="Người dùng" />,
+        title: <TableHeaderColumn label={t("users.col_user", "Người dùng")} />,
         fixed: "left",
         width: 250,
         render: (_, record) => (
@@ -136,7 +135,7 @@ const StaffManagement = () => {
       },
       {
         dataIndex: "email",
-        title: <TableHeaderColumn label="Liên hệ" />,
+        title: <TableHeaderColumn label={t("users.col_contact", "Liên hệ")} />,
         width: 220,
         render: (_, record) => (
           <div className="flex items-center gap-2 text-[14px] text-slate-500 font-medium">
@@ -146,20 +145,31 @@ const StaffManagement = () => {
         ),
       },
       {
-        title: <TableHeaderColumn label="Vai trò" />,
+        title: <TableHeaderColumn label={t("users.col_role", "Vai trò")} />,
         width: 120,
-        render: (_, record) => (
-          <Tag
-            color="blue"
-            bordered={false}
-            className="rounded-md px-2 py-0.5 font-bold uppercase text-[10px] tracking-wider"
-          >
-            {record?.personal_info?.role || "USER"}
-          </Tag>
-        ),
+        render: (_, record) => {
+          const roleName = record?.role_id?.role_name || record?.personal_info?.role || "USER";
+          const getRoleColor = (name) => {
+            const lowerName = name.toLowerCase();
+            if (lowerName === "super admin") return "red";
+            if (lowerName === "admin") return "magenta";
+            if (lowerName === "contributor") return "purple";
+            if (lowerName === "user") return "blue";
+            return "cyan";
+          };
+          return (
+            <Tag
+              color={getRoleColor(roleName)}
+              bordered={false}
+              className="rounded-md px-2 py-0.5 font-bold uppercase text-[10px] tracking-wider"
+            >
+              {roleName}
+            </Tag>
+          );
+        },
       },
       {
-        title: <TableHeaderColumn label="Ngày tham gia" />,
+        title: <TableHeaderColumn label={t("users.col_status", "Trạng thái")} />,
         width: 140,
         render: (_, record) =>
           record.blocked_comment ? (
@@ -168,7 +178,7 @@ const StaffManagement = () => {
               bordered={false}
               className="flex items-center gap-1 w-fit rounded-md px-2 font-bold text-[10px]"
             >
-              <MessageSquareOff size={12} /> BỊ KHÓA
+              <MessageSquareOff size={12} /> {t("users.status_blocked", "BỊ KHÓA")}
             </Tag>
           ) : (
             <Tag
@@ -176,27 +186,29 @@ const StaffManagement = () => {
               bordered={false}
               className="flex items-center gap-1 w-fit rounded-md px-2 font-bold text-[10px]"
             >
-              <MessageSquare size={12} /> BÌNH THƯỜNG
+              <MessageSquare size={12} /> {t("users.status_normal", "BÌNH THƯỜNG")}
             </Tag>
           ),
       },
       {
-        title: <TableHeaderColumn label="Thao tác" />,
+        title: <TableHeaderColumn label={t("users.col_actions", "Thao tác")} />,
         width: 180,
         fixed: "right",
         render: (_, record) => (
           <div className="flex items-center gap-1">
-            <Tooltip title="Chỉnh sửa">
+            <Tooltip title={t("users.tooltip_edit", "Chỉnh sửa")}>
               <Button
                 type="text"
                 icon={<Pencil size={18} />}
-                className="text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all"
+                className="text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-xl transition-all cursor-pointer"
                 onClick={() => navigate(`/users/${record._id}`)}
               />
             </Tooltip>
             <Tooltip
               title={
-                record.blocked_comment ? "Mở khóa bình luận" : "Khóa bình luận"
+                record.blocked_comment 
+                  ? t("users.tooltip_unmute_comment", "Mở khóa bình luận") 
+                  : t("users.tooltip_mute_comment", "Khóa bình luận")
               }
             >
               <Button
@@ -210,8 +222,8 @@ const StaffManagement = () => {
                 }
                 className={
                   record.blocked_comment
-                    ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl"
-                    : "text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl"
+                    ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl cursor-pointer"
+                    : "text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-xl cursor-pointer"
                 }
                 onClick={() =>
                   setActionModal({
@@ -223,7 +235,11 @@ const StaffManagement = () => {
               />
             </Tooltip>
             <Tooltip
-              title={record.disabled ? "Mở khóa tài khoản" : "Khóa tài khoản"}
+              title={
+                record.disabled 
+                  ? t("users.tooltip_unlock_account", "Mở khóa tài khoản") 
+                  : t("users.tooltip_lock_account", "Khóa tài khoản")
+              }
             >
               <Button
                 type="text"
@@ -236,8 +252,8 @@ const StaffManagement = () => {
                 }
                 className={
                   record.disabled
-                    ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl"
-                    : "text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl"
+                    ? "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl cursor-pointer"
+                    : "text-slate-400 hover:text-orange-500 hover:bg-orange-50 rounded-xl cursor-pointer"
                 }
                 onClick={() =>
                   setActionModal({
@@ -248,11 +264,11 @@ const StaffManagement = () => {
                 }
               />
             </Tooltip>
-            <Tooltip title="Xóa tài khoản">
+            <Tooltip title={t("users.tooltip_delete_account", "Xóa tài khoản")}>
               <Button
                 type="text"
                 icon={<Trash2 size={18} />}
-                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl"
+                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl cursor-pointer"
                 onClick={() =>
                   setActionModal({
                     isOpen: true,
@@ -266,7 +282,7 @@ const StaffManagement = () => {
         ),
       },
     ],
-    [navigate, pagination.page, pagination.limit],
+    [navigate, pagination.page, pagination.limit, t],
   );
 
   const onCloseModal = useCallback(
@@ -284,6 +300,12 @@ const StaffManagement = () => {
   useEffect(() => {
     getAllStaff();
   }, [pagination.page, getAllStaff, filters, debouncedSearch]);
+
+  const getAddNewText = () => {
+    if (filters.role === "ADMIN") return t("users.add_admin", "Thêm quản trị viên");
+    if (filters.role === "USER") return t("users.add_reader", "Thêm độc giả");
+    return t("users.add_new", "Thêm mới");
+  };
 
   return (
     <ConfigProvider
@@ -320,11 +342,11 @@ const StaffManagement = () => {
                 <Users size={20} />
               </div>
               <h1 className="text-2xl font-black text-slate-800 tracking-tight">
-                Quản lý người dùng
+                {t("users.title", "Quản lý người dùng")}
               </h1>
             </div>
             <p className="text-sm text-slate-400 font-medium ml-11">
-              Theo dõi hoạt động, phân quyền và kiểm soát.
+              {t("users.subtitle", "Theo dõi hoạt động, phân quyền và kiểm soát.")}
             </p>
           </motion.div>
 
@@ -332,10 +354,10 @@ const StaffManagement = () => {
             <Button
               type="primary"
               icon={<Plus size={16} />}
-              className="h-9 px-4 bg-emerald-500 hover:!bg-emerald-600 border-none rounded-xl shadow-md shadow-emerald-500/20 text-sm font-bold transition-all active:scale-95"
+              className="h-10 px-5 bg-emerald-500 hover:!bg-emerald-600 border-none rounded-xl shadow-lg shadow-emerald-500/20 text-xs font-black tracking-wide active:scale-95 transition-all cursor-pointer"
               onClick={() => navigate("/users/create")}
             >
-              Thêm mới
+              {getAddNewText()}
             </Button>
           </motion.div>
         </div>
@@ -349,30 +371,36 @@ const StaffManagement = () => {
           <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 focus-within:border-emerald-500/50 focus-within:bg-white transition-all flex-1 min-w-[200px]">
             <Search size={16} className="text-slate-400" />
             <input
-              placeholder="Tìm tên, email hoặc username..."
+              placeholder={t("users.search_placeholder", "Tìm tên, email hoặc username...")}
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               className="bg-transparent border-none outline-none text-sm font-medium text-slate-600 w-full"
             />
           </div>
 
-          {/* Role Filter */}
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-emerald-500/30 transition-all">
-            <ShieldCheck size={16} className="text-slate-400" />
-            <select
-              className="bg-transparent border-none outline-none text-sm font-bold text-slate-600 cursor-pointer"
-              value={filters.role || ""}
-              onChange={(e) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  role: e.target.value || undefined,
-                }))
-              }
-            >
-              <option value="">Tất cả vai trò</option>
-              <option value="ADMIN">Admin</option>
-              <option value="USER">User</option>
-            </select>
+          {/* Premium Segmented Slider Role Tabs Filter */}
+          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/40 shadow-inner">
+            {[
+              { key: undefined, label: t("users.tab_all", "Tất cả người dùng") },
+              { key: "ADMIN", label: t("users.tab_admins", "Ban quản trị") },
+              { key: "USER", label: t("users.tab_readers", "Độc giả") },
+            ].map((tab) => {
+              const isActive = filters.role === tab.key;
+              return (
+                <button
+                  key={tab.key || "all"}
+                  onClick={() => setFilters((prev) => ({ ...prev, role: tab.key }))}
+                  type="button"
+                  className={`px-4 py-1.5 rounded-lg text-xs font-black transition-all cursor-pointer relative duration-300 ${
+                    isActive
+                      ? "bg-white text-emerald-600 shadow-sm shadow-slate-200"
+                      : "text-slate-400 hover:text-slate-600"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Date Range Filter */}
@@ -412,7 +440,7 @@ const StaffManagement = () => {
                     endDate: undefined,
                   }))
                 }
-                className="ml-1 p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors"
+                className="ml-1 p-0.5 rounded-full hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
                 title="Xóa bộ lọc ngày"
               >
                 <X size={14} />
@@ -431,7 +459,7 @@ const StaffManagement = () => {
                 sortOrder: prev.sortOrder === "asc" ? "desc" : "asc",
               }))
             }
-            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-emerald-500/30 text-slate-600 hover:text-emerald-600 transition-all"
+            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-xl border border-slate-200 hover:border-emerald-500/30 text-slate-600 hover:text-emerald-600 transition-all cursor-pointer"
             title="Sắp xếp theo ngày tạo"
           >
             {filters.sortOrder === "asc" ? (
@@ -440,7 +468,9 @@ const StaffManagement = () => {
               <ArrowDown size={16} className="text-emerald-500" />
             )}
             <span className="text-sm font-bold">
-              {filters.sortOrder === "asc" ? "Cũ nhất trước" : "Mới nhất trước"}
+              {filters.sortOrder === "asc" 
+                ? t("users.sort_asc", "Cũ nhất trước") 
+                : t("users.sort_desc", "Mới nhất trước")}
             </span>
           </button>
         </motion.div>
