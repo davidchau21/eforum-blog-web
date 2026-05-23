@@ -14,7 +14,7 @@ import CommentManagement from "./features/comment";
 import NotificationManagement from "./features/notifications";
 import Profile from "./features/profile";
 import RoleManagement from "./features/roles";
-import ActivityLogs from "./features/logs";
+import ActivityLogs from "./features/activity-logs";
 
 const App = () => {
   return (
