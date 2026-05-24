@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useContext } from "react";
 import AnimationWrapper from "../common/page-animation";
 import { Link } from "react-router-dom";
@@ -5,7 +6,7 @@ import { UserContext } from "../App";
 import { removeFromSession } from "../common/session";
 import { getTranslations } from '../../translations';
 
-const UserNavigationPanel = () => {
+const UserNavigationPanel = ({ closePanel }) => {
     const { userAuth: { username, language }, setUserAuth } = useContext(UserContext);
     const translations = getTranslations(language);
 
@@ -13,6 +14,7 @@ const UserNavigationPanel = () => {
         removeFromSession("user");
         setUserAuth({ access_token: null });
         removeFromSession("adminAlertShown");
+        if (closePanel) closePanel();
     };
 
     return (
@@ -26,17 +28,29 @@ const UserNavigationPanel = () => {
                     <p className="text-sm font-bold text-black truncate mt-0.5">@{username}</p>
                 </div>
 
-                <Link to={`/user/${username}`} className="flex items-center gap-3 px-6 py-3.5 text-black font-bold text-sm hover:bg-grey transition-all border-b border-grey">
+                <Link 
+                    to={`/user/${username}`} 
+                    onClick={closePanel}
+                    className="flex items-center gap-3 px-6 py-3.5 text-black font-bold text-sm hover:bg-grey transition-all border-b border-grey"
+                >
                     <i className="fi fi-rr-user text-indigo-500"></i>
                     {translations.profile}
                 </Link>
 
-                <Link to="/dashboard/blogs" className="flex items-center gap-3 px-6 py-3.5 text-black font-bold text-sm hover:bg-grey transition-all border-b border-grey">
+                <Link 
+                    to="/dashboard/blogs" 
+                    onClick={closePanel}
+                    className="flex items-center gap-3 px-6 py-3.5 text-black font-bold text-sm hover:bg-grey transition-all border-b border-grey"
+                >
                     <i className="fi fi-rr-apps text-indigo-500"></i>
                     {translations.dashboard}
                 </Link>
 
-                <Link to="/settings/edit-profile" className="flex items-center gap-3 px-6 py-3.5 text-black font-bold text-sm hover:bg-grey transition-all border-b border-grey">
+                <Link 
+                    to="/settings/edit-profile" 
+                    onClick={closePanel}
+                    className="flex items-center gap-3 px-6 py-3.5 text-black font-bold text-sm hover:bg-grey transition-all border-b border-grey"
+                >
                     <i className="fi fi-rr-settings text-indigo-500"></i>
                     {translations.settings}
                 </Link>

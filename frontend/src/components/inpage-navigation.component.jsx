@@ -1,3 +1,6 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, useEffect } from "react";
 
 export let activeTabLineRef;
@@ -27,17 +30,23 @@ const InPageNavigation = ({ routes, defaultHidden = [ ], hiddenAll = [ ], defaul
     useEffect(() => {
 
         const isMobile = width <= 768; // Check if it's mobile
-        const defaultIndex = isMobile ? routes.indexOf("Blogs Published") : defaultActiveIndex;
+        let defaultIndex = defaultActiveIndex;
+        if (isMobile) {
+            const blogsPublishedIdx = routes.indexOf("Blogs Published");
+            if (blogsPublishedIdx !== -1) {
+                defaultIndex = blogsPublishedIdx;
+            }
+        }
 
         if(width > 766 && inPageNavIndex != defaultActiveIndex){
             changePageState( activeTabRef.current, defaultActiveIndex )
         }
 
-        if (inPageNavIndex === null && defaultIndex !== null) {
+        if (inPageNavIndex === null && defaultIndex !== null && defaultIndex !== -1) {
             setInPageNavIndex(defaultIndex); // Set default index
         }
 
-        if (inPageNavIndex !== null && width <= 768) {
+        if (inPageNavIndex !== null && inPageNavIndex !== -1 && width <= 768 && activeTabRef.current) {
             changePageState(activeTabRef.current, inPageNavIndex); // Ensure the line position is updated
         }
 

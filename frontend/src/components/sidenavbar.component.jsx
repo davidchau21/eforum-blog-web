@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { Outlet, Navigate, NavLink } from "react-router-dom";
+import { Outlet, Navigate, NavLink, useLocation } from "react-router-dom";
 import { UserContext } from "../App";
 import { getTranslations } from "../../translations";
 
@@ -8,6 +8,7 @@ const SideNav = () => {
     userAuth: { access_token, new_notification_available, language },
   } = useContext(UserContext);
 
+  let location = useLocation();
   let page = location.pathname.split("/")[2];
   let [pageState, setPageState] = useState(page ? page.replace("-", " ") : "");
   let [showSideNav, setShowSideNav] = useState(false);
@@ -21,8 +22,10 @@ const SideNav = () => {
   const changePageState = (e) => {
     let { offsetWidth, offsetLeft } = e.target;
 
-    activeTabLine.current.style.width = offsetWidth + "px";
-    activeTabLine.current.style.left = offsetLeft + "px";
+    if (activeTabLine.current) {
+      activeTabLine.current.style.width = offsetWidth + "px";
+      activeTabLine.current.style.left = offsetLeft + "px";
+    }
 
     if (e.target == sideBarIconTab.current) {
       setShowSideNav(true);
@@ -30,6 +33,11 @@ const SideNav = () => {
       setShowSideNav(false);
     }
   };
+
+  useEffect(() => {
+    let p = location.pathname.split("/")[2];
+    setPageState(p ? p.replace("-", " ") : "");
+  }, [location.pathname]);
 
   useEffect(() => {
     setShowSideNav(false);

@@ -293,18 +293,34 @@ const BlogEditor = ({ isModal = false }) => {
           </p>
 
           <div className="flex gap-4 ml-auto">
-            <button className="btn-dark py-2" onClick={handlePublishEvent}>
+            <button className="btn-dark py-2 shrink-0" onClick={handlePublishEvent}>
               {currentTranslations.publish}
             </button>
-            <button className="btn-light py-2" onClick={handleSaveDraft}>
+            <button className="btn-light py-2 shrink-0" onClick={handleSaveDraft}>
               {currentTranslations.saveDraft}
+            </button>
+            {/* Cancel — desktop only */}
+            <button
+              className="hidden md:flex items-center gap-2 btn-light py-2 shrink-0 text-dark-grey hover:text-black border border-grey hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-all"
+              onClick={() => {
+                const isVi = language === "vi";
+                const confirmMsg = isVi
+                  ? "Bạn có chắc chắn muốn hủy viết bài? Tất cả thay đổi chưa lưu sẽ bị mất."
+                  : "Are you sure you want to cancel? All unsaved changes will be lost.";
+                if (window.confirm(confirmMsg)) {
+                  localStorage.removeItem(DRAFT_KEY);
+                  navigate(-1);
+                }
+              }}
+            >
+              {language === "vi" ? "Hủy" : "Cancel"}
             </button>
           </div>
         </nav>
       )}
       <Toaster />
       <AnimationWrapper>
-        <section className={isModal ? "py-0" : ""}>
+        <section className={isModal ? "py-0" : "pb-20 md:pb-0"}>
           <div className="mx-auto max-w-[900px] w-full">
             <div className="relative aspect-video hover:opacity-80 bg-white">
               <label htmlFor="uploadBanner">
@@ -333,6 +349,31 @@ const BlogEditor = ({ isModal = false }) => {
           </div>
         </section>
       </AnimationWrapper>
+
+      {/* Bottom Cancel Bar — mobile only */}
+      {!isModal && (
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-grey/60 px-5 py-3 flex items-center justify-between shadow-lg">
+          <p className="text-xs text-dark-grey">
+            {language === "vi" ? "Chưa xuất bản" : "Not published yet"}
+          </p>
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-grey text-dark-grey hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 transition-all text-sm font-bold"
+            onClick={() => {
+              const isVi = language === "vi";
+              const confirmMsg = isVi
+                ? "Bạn có chắc chắn muốn hủy viết bài? Tất cả thay đổi chưa lưu sẽ bị mất."
+                : "Are you sure you want to cancel? All unsaved changes will be lost.";
+              if (window.confirm(confirmMsg)) {
+                localStorage.removeItem(DRAFT_KEY);
+                navigate(-1);
+              }
+            }}
+          >
+            <i className="fi fi-rr-cross-circle text-base mt-0.5"></i>
+            {language === "vi" ? "Hủy bài viết" : "Discard"}
+          </button>
+        </div>
+      )}
     </>
   );
 };
