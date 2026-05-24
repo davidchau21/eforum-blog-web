@@ -1,14 +1,18 @@
 import Comment from "../../Schema/Comment.js";
 
 class AdminCommentService {
-  async getAllComments({ page = 0, limit = 10 }) {
-    const list = await Comment.find()
+  async getAllComments({ page = 0, limit = 10, isReport }) {
+    const query = {};
+    if (isReport === "true" || isReport === true) {
+      query.isReport = true;
+    }
+    const list = await Comment.find(query)
       .populate("commented_by", "personal_info.username personal_info.fullname personal_info.profile_img")
       .populate("blog_id", "title")
       .sort({ commentedAt: -1 })
-      .skip(page * limit)
-      .limit(limit);
-    const total = await Comment.countDocuments();
+      .skip(Number(page) * Number(limit))
+      .limit(Number(limit));
+    const total = await Comment.countDocuments(query);
     return { list, total };
   }
 

@@ -39,6 +39,17 @@ const itemVariants = {
 };
 
 const CategoryManagement = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -136,7 +147,7 @@ const CategoryManagement = () => {
       {
         title: <TableHeaderColumn label="STT" />,
         width: 60,
-        fixed: "left",
+        fixed: isMobile ? undefined : "left",
         render: (_, __, index) => (
           <span className="text-xs font-bold text-slate-400">
             {(pagination.page - 1) * pagination.limit + index + 1}
@@ -206,7 +217,7 @@ const CategoryManagement = () => {
       {
         title: <TableHeaderColumn label="Thao tác" />,
         width: 120,
-        fixed: "right",
+        fixed: isMobile ? undefined : "right",
         render: (_, record) => (
           <div className="flex items-center gap-2">
             <Tooltip title="Chỉnh sửa">
@@ -229,7 +240,7 @@ const CategoryManagement = () => {
         ),
       },
     ],
-    [pagination.page, pagination.limit],
+    [pagination.page, pagination.limit, isMobile],
   );
 
   useEffect(() => {

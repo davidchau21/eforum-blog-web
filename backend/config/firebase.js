@@ -6,7 +6,7 @@ import { env } from "./env.js";
 const serviceAccountPath = path.resolve(
   process.cwd(),
   env.FIREBASE_SERVICE_ACCOUNT_PATH ||
-    "./edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json"
+    "./config/edu-blog-website-firebase-adminsdk-h2sxh-03786661ff.json"
 );
 
 const serviceAccountKey = JSON.parse(

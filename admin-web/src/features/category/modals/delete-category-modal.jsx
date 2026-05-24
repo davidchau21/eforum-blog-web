@@ -74,8 +74,7 @@ const DeleteCategoryModal = ({ isOpen, onClose, category }) => {
                   Xóa danh mục
                 </h3>
                 <p className="text-slate-500 text-[15px] font-medium leading-relaxed mb-8">
-                  Bạn có chắc chắn muốn xóa danh mục{" "}
-                  <strong className="text-rose-600 font-bold px-1">{category?.tag_name}</strong>?{" "}
+                  Bạn có chắc chắn muốn xóa danh mục này không?{" "}
                   Hành động này <span className="underline decoration-rose-300 decoration-2 underline-offset-2">không thể</span> hoàn tác.
                 </p>
 

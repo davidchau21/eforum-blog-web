@@ -48,6 +48,15 @@ const CommentManagement = () => {
   const columns = useMemo(
     () => [
       {
+        title: <TableHeaderColumn label="STT" />,
+        width: 60,
+        render: (_, __, index) => (
+          <span className="font-bold text-slate-400">
+            {(pagination.page - 1) * 10 + index + 1}
+          </span>
+        ),
+      },
+      {
         dataIndex: "_id",
         title: <TableHeaderColumn label="ID" />,
         width: 80,
@@ -122,7 +131,7 @@ const CommentManagement = () => {
         ),
       },
     ],
-    []
+    [pagination.page]
   );
 
   const onPageChange = useCallback((page) => {

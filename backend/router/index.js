@@ -19,6 +19,8 @@ import adminCommentRouter from "./admin/adminCommentRouter.js";
 import adminReportRouter from "./admin/adminReportRouter.js";
 import adminTagRouter from "./admin/adminTagRouter.js";
 import adminUserRouter from "./admin/adminUserRouter.js";
+import adminRoleRouter from "./admin/adminRoleRouter.js";
+import adminActivityLogRouter from "./admin/adminActivityLogRouter.js";
 
 const appRouter = express.Router();
 
@@ -41,5 +43,7 @@ appRouter.use("/blogs", adminBlogRouter);
 appRouter.use("/alert", adminAlertRouter);
 appRouter.use("/comments", adminCommentRouter);
 appRouter.use("/reports", adminReportRouter);
+appRouter.use("/roles", adminRoleRouter);
+appRouter.use("/logs", adminActivityLogRouter);
 
 export default appRouter;

@@ -168,16 +168,9 @@ const ProfilePage = () => {
   };
 
   useEffect(() => {
-    if (profileId != profileLoaded) {
-      setBlogs(null);
-      setFollowingStatusLoaded(false);
-    }
-
-    if (blogs == null) {
-      resetStates();
-      fetchUserProfile();
-    }
-  }, [profileId, blogs]);
+    resetStates();
+    fetchUserProfile();
+  }, [profileId]);
 
   const resetStates = () => {
     setProfile(profileDataStructure);

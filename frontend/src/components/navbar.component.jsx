@@ -6,7 +6,7 @@ import lightLogo from "../imgs/logo-light.png";
 import { ThemeContext, UserContext } from "../App";
 import UserNavigationPanel from "./user-navigation.component";
 import axios from "axios";
-import { storeInSession } from "../common/session";
+import { storeInSession, removeFromSession } from "../common/session";
 import { getTranslations } from "../../translations"; // Import file translations.js
 import vietnamFlag from "../imgs/vietnam-flag.png"; // Nhập hình cờ Việt
 import usFlag from "../imgs/us-flag.png"; // Nhập hình cờ Mỹ
@@ -44,6 +44,7 @@ const Navbar = () => {
     userAuth: {
       access_token,
       profile_img,
+      username,
       new_notification_available,
       unread_messages,
       language,
@@ -250,20 +251,83 @@ const Navbar = () => {
             )}
           </button>
 
-          {/* Mobile Menu - Dropdown (Icons in a row) */}
+          {/* Mobile Menu - Dropdown (Overhauled & fully responsive) */}
           {mobileMenuVisible && (
-            <div className="absolute top-20 right-0 bg-white border-l border-b border-grey shadow-2xl py-6 md:hidden flex flex-col items-left gap-6 px-6 w-[70vw] animate-in slide-in-from-right duration-300">
+            <div className="absolute top-20 right-0 bg-white border-l border-b border-grey shadow-2xl py-6 md:hidden flex flex-col items-left gap-6 px-6 w-[75vw] max-h-[85vh] overflow-y-auto animate-in slide-in-from-right duration-300 z-50">
               {access_token ? (
-                <div
-                  className="relative flex items-center gap-3 text-black font-bold"
-                  onClick={toggleUserNavPanel}
-                  onBlur={handleMenuClose}
-                >
-                  <img src={profile_img} className="w-8 h-8 rounded-full object-cover" alt="avatar" />
-                  <span>{currentTranslations.profile}</span>
-                  {userNavPanel && (
-                    <UserNavigationPanel className="absolute top-full mt-2 z-10 shadow-lg bg-white w-full border border-grey" />
-                  )}
+                <div className="flex flex-col gap-4">
+                  {/* User Profile Header */}
+                  <div className="flex items-center gap-3 text-black pb-2 border-b border-grey/50">
+                    <img
+                      src={profile_img}
+                      className="w-9 h-9 rounded-full object-cover border border-grey"
+                      alt="avatar"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-black truncate">
+                        {userAuth.fullname || "User"}
+                      </p>
+                      <p className="text-xs text-dark-grey truncate">
+                        @{username}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Navigation Links in Mobile */}
+                  <Link
+                    to={`/user/${username}`}
+                    className="flex items-center gap-3 text-black font-bold hover:text-indigo-500 text-sm"
+                    onClick={handleMenuClose}
+                  >
+                    <i className="fi fi-rr-user text-indigo-500 text-lg"></i>
+                    <span>{currentTranslations.profile}</span>
+                  </Link>
+                  <Link
+                    to="/dashboard/blogs"
+                    className="flex items-center gap-3 text-black font-bold hover:text-indigo-500 text-sm"
+                    onClick={handleMenuClose}
+                  >
+                    <i className="fi fi-rr-apps text-indigo-500 text-lg"></i>
+                    <span>{currentTranslations.dashboard}</span>
+                  </Link>
+                  <Link
+                    to="/feed/saved"
+                    className="flex items-center gap-3 text-black font-bold hover:text-amber-500 text-sm"
+                    onClick={handleMenuClose}
+                  >
+                    <i className="fi fi-rr-bookmark text-amber-500 text-lg"></i>
+                    <span>
+                      {currentTranslations.savedBlogs || "Saved blogs"}
+                    </span>
+                  </Link>
+                  <Link
+                    to="/settings/edit-profile"
+                    className="flex items-center gap-3 text-black font-bold hover:text-indigo-500 text-sm"
+                    onClick={handleMenuClose}
+                  >
+                    <i className="fi fi-rr-settings text-indigo-500 text-lg"></i>
+                    <span>{currentTranslations.settings}</span>
+                  </Link>
+                  <Link
+                    to="/editor"
+                    className="flex items-center gap-3 text-black font-bold hover:text-indigo-500 text-sm"
+                    onClick={handleMenuClose}
+                  >
+                    <i className="fi fi-rr-edit text-indigo-500 text-lg"></i>
+                    <span>Viết bài mới</span>
+                  </Link>
+                  <button
+                    className="flex items-center gap-3 text-rose-500 font-bold hover:text-rose-600 text-sm text-left"
+                    onClick={() => {
+                      removeFromSession("user");
+                      setUserAuth({ access_token: null });
+                      removeFromSession("adminAlertShown");
+                      handleMenuClose();
+                    }}
+                  >
+                    <i className="fi fi-rr-sign-out-alt text-rose-500 text-lg"></i>
+                    <span>{currentTranslations.signOut}</span>
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
@@ -284,6 +348,9 @@ const Navbar = () => {
                   </Link>
                 </div>
               )}
+
+              <div className="h-px bg-grey w-full"></div>
+
               <Link
                 to="/search-google"
                 className="flex items-center gap-3 text-black font-bold hover:text-indigo-500"
@@ -292,8 +359,6 @@ const Navbar = () => {
                 <i className="fi fi-rr-search-alt text-xl"></i>
                 <span>Academic Search</span>
               </Link>
-              
-              <div className="h-px bg-grey w-full"></div>
 
               <button
                 className="flex items-center gap-3 text-black font-bold hover:text-indigo-500"
@@ -315,7 +380,7 @@ const Navbar = () => {
                     : currentTranslations.lightMode}
                 </span>
               </button>
-              
+
               {access_token && (
                 <Link
                   to="/chat"
@@ -331,7 +396,7 @@ const Navbar = () => {
                   )}
                 </Link>
               )}
-              
+
               <button
                 className="flex items-center gap-3 text-black font-bold hover:text-indigo-500"
                 onClick={() => {
@@ -435,7 +500,13 @@ const Navbar = () => {
                     />
                   </button>
 
-                  {userNavPanel ? <UserNavigationPanel /> : ""}
+                  {userNavPanel ? (
+                    <UserNavigationPanel
+                      closePanel={() => setUserNavPanel(false)}
+                    />
+                  ) : (
+                    ""
+                  )}
                 </div>
               </div>
             ) : (
@@ -457,6 +528,24 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
+
+      {/* Mobile Search Bar Dropdown (Fully Responsive) */}
+      {searchBoxVisibility && (
+        <div className="absolute top-[80px] left-0 w-full bg-white border-b border-grey px-4 py-3 md:hidden z-40 shadow-md animate-in slide-in-from-top duration-200">
+          <div className="flex items-center bg-grey border border-grey rounded-full px-4 py-2 w-full focus-within:ring-2 focus-within:ring-indigo-500/10 focus-within:border-indigo-400 transition-all">
+            <i className="fi fi-rr-search text-black/60 text-sm"></i>
+            <input
+              type="search"
+              placeholder="Tìm kiếm bài viết, chủ đề..."
+              className="bg-transparent border-none outline-none w-full ml-3 text-sm placeholder:text-black/50 text-black font-bold"
+              onKeyDown={(e) => {
+                handleSearch(e);
+                if (e.keyCode === 13) setSearchBoxVisibility(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <Outlet />
     </>

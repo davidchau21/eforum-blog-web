@@ -7,7 +7,7 @@ class AdminUserService {
   /**
    * Admin: Create a new user with specific role
    */
-  async createUser({ fullname, email, password, role }) {
+  async createUser({ fullname, email, password, role, role_id }) {
     const hashed_password = await bcrypt.hash(password, 10);
     
     // Simple username generation for admin
@@ -25,6 +25,7 @@ class AdminUserService {
         username,
         role,
       },
+      role_id,
       verified: true,
     });
 
@@ -34,13 +35,14 @@ class AdminUserService {
   /**
    * Admin: Update user details and role
    */
-  async updateUser(id, { fullname, role }) {
+  async updateUser(id, { fullname, role, role_id }) {
     const user = await User.findById(id);
     if (!user) throw new Error("User not found");
 
     const updateData = {};
     if (fullname) updateData["personal_info.fullname"] = fullname;
     if (role) updateData["personal_info.role"] = role;
+    if (role_id) updateData.role_id = role_id;
 
     return await User.findByIdAndUpdate(
       id,
@@ -78,6 +80,7 @@ class AdminUserService {
       .skip(page * limit)
       .limit(limit)
       .sort({ joinedAt: sortOrder === 'asc' ? 1 : -1 })
+      .populate("role_id")
       .lean();
 
     const userIds = list.map(user => user._id);
@@ -104,7 +107,7 @@ class AdminUserService {
    * Admin: Find user by ID
    */
   async findUserById(id) {
-    const user = await User.findById(id).select("-personal_info.password");
+    const user = await User.findById(id).select("-personal_info.password").populate("role_id");
     if (!user) throw new Error("User not found");
     return user;
   }
@@ -125,7 +128,12 @@ class AdminUserService {
    * Get current admin profile
    */
   async getMyProfile(userId) {
-    const user = await User.findById(userId).select("-personal_info.password -google_auth -updatedAt");
+    const user = await User.findById(userId)
+      .select("-personal_info.password -google_auth -updatedAt")
+      .populate({
+        path: "role_id",
+        populate: { path: "permissions" }
+      });
     if (!user) throw new Error("User not found");
     return user;
   }

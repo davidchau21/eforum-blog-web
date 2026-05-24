@@ -133,6 +133,10 @@ const userSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    role_id: {
+      type: Schema.Types.ObjectId,
+      ref: "roles",
+    },
   },
   {
     timestamps: {
