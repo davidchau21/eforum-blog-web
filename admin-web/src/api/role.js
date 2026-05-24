@@ -16,6 +16,15 @@ const roleApi = {
   deleteRole: (id) => {
     return handleResponse(axiosClient.delete(`/roles/${id}`));
   },
+  createPermission: (body) => {
+    return handleResponse(axiosClient.post("/roles/permissions", body));
+  },
+  updatePermission: (id, body) => {
+    return handleResponse(axiosClient.put(`/roles/permissions/${id}`, body));
+  },
+  deletePermission: (id) => {
+    return handleResponse(axiosClient.delete(`/roles/permissions/${id}`));
+  },
 };
 
 export default roleApi;

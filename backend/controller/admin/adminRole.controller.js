@@ -33,7 +33,7 @@ class AdminRoleController extends BaseController {
         details: `Tạo vai trò mới: "${result.role_name}"`,
         ip: req.ip,
       });
-      return this.sendSuccess(res, result, "Role created successfully");
+      return this.sendSuccess(res, result, 201);
     } catch (error) {
       return this.sendError(res, error.message);
     }
@@ -52,7 +52,7 @@ class AdminRoleController extends BaseController {
         details: `Cập nhật quyền hạn cho vai trò: "${result.role_name}"`,
         ip: req.ip,
       });
-      return this.sendSuccess(res, result, "Role updated successfully");
+      return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, error.message);
     }
@@ -72,6 +72,62 @@ class AdminRoleController extends BaseController {
         ip: req.ip,
       });
       return this.sendSuccess(res, "Role deleted successfully");
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async createPermission(req, res) {
+    try {
+      const result = await adminRoleService.createPermission(req.body);
+      // Log dynamic action
+      await adminActivityLogService.log({
+        userId: req.user.id,
+        action: "PERMISSION_CREATE",
+        targetType: "Permission",
+        targetId: result._id,
+        details: `Tạo quyền hạn mới: "${result.permission_name}" (${result.permission_code}) trong nhóm: "${result.module_name}"`,
+        ip: req.ip,
+      });
+      return this.sendSuccess(res, result, 201);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async updatePermission(req, res) {
+    try {
+      const { id } = req.params;
+      const result = await adminRoleService.updatePermission(id, req.body);
+      // Log dynamic action
+      await adminActivityLogService.log({
+        userId: req.user.id,
+        action: "PERMISSION_UPDATE",
+        targetType: "Permission",
+        targetId: id,
+        details: `Cập nhật thông tin quyền hạn: "${result.permission_name}" (${result.permission_code})`,
+        ip: req.ip,
+      });
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async deletePermission(req, res) {
+    try {
+      const { id } = req.params;
+      const result = await adminRoleService.deletePermission(id);
+      // Log dynamic action
+      await adminActivityLogService.log({
+        userId: req.user.id,
+        action: "PERMISSION_DELETE",
+        targetType: "Permission",
+        targetId: id,
+        details: `Xóa quyền hệ thống: "${result.permission_name}" (${result.permission_code})`,
+        ip: req.ip,
+      });
+      return this.sendSuccess(res, "Permission deleted successfully");
     } catch (error) {
       return this.sendError(res, error.message);
     }

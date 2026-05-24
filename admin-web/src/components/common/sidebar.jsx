@@ -45,43 +45,58 @@ const Sidebar = () => {
         label: t('sidebar.users'),
         icon: <Users size={20} />,
         link: "/users",
+        permission: "USER_VIEW",
       },
       {
         label: t('sidebar.categories'),
         icon: <Menu size={20} />,
         link: "/tags",
+        permission: "CATEGORY_MANAGE",
       },
       {
         label: t('sidebar.blogs'),
         icon: <Book size={20} />,
         link: "/blogs",
+        permission: "BLOG_VIEW",
       },
       {
         label: t('sidebar.comments'),
         icon: <MessageCircleCode size={20} />,
         link: "/comments",
+        permission: "COMMENT_VIEW",
       },
       {
         label: t('sidebar.notifications'),
         icon: <Bell size={20} />,
         link: "/notifications",
+        permission: "ALERT_PUBLISH",
       },
-    ];
-
-    if (profile?.role_id?.role_name === "Super Admin") {
-      list.push({
+      {
         label: t('sidebar.roles', "Phân quyền"),
         icon: <Shield size={20} />,
         link: "/roles",
-      });
-      list.push({
+        permission: "ROLE_MANAGE",
+      },
+      {
         label: t('sidebar.logs', "Nhật ký hệ thống"),
         icon: <Clock size={20} />,
         link: "/logs",
-      });
-    }
+        permission: "ROLE_MANAGE",
+      },
+    ];
 
-    return list;
+    // Filter menus based on user permissions
+    return list.filter(item => {
+      // Dashboard does not require permission
+      if (!item.permission) return true;
+      if (!profile) return false;
+      // Super Admin bypasses all checks
+      if (profile.role_id?.role_name === "Super Admin") return true;
+      // Check if user's role has the required permission code
+      return profile.role_id?.permissions?.some(
+        (p) => p.permission_code === item.permission
+      );
+    });
   }, [profile, t]);
 
   const onLogout = () => {
