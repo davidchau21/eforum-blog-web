@@ -161,6 +161,12 @@ const SavedBlogsPage = () => {
   const [newCollectionName, setNewCollectionName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // New Edit & Mobile states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCollection, setEditingCollection] = useState(null);
+  const [editCollectionName, setEditCollectionName] = useState("");
+  const [showMobileCollections, setShowMobileCollections] = useState(false);
+
   const {
     userAuth: { access_token },
   } = useContext(UserContext);
@@ -240,6 +246,35 @@ const SavedBlogsPage = () => {
       .finally(() => setIsSubmitting(false));
   };
 
+  const handleEditCollection = (e) => {
+    e.preventDefault();
+    if (!editCollectionName.trim())
+      return toast.error("Tên không được để trống");
+
+    setIsSubmitting(true);
+    let loadingToast = toast.loading("Đang cập nhật...");
+
+    axios
+      .put(
+        import.meta.env.VITE_SERVER_DOMAIN + `/blogs/collections/${editingCollection._id}`,
+        { name: editCollectionName },
+        { headers: { Authorization: `Bearer ${access_token}` } },
+      )
+      .then(({ data }) => {
+        toast.dismiss(loadingToast);
+        toast.success(data.message || "Đã cập nhật bộ sưu tập");
+        setShowEditModal(false);
+        setEditingCollection(null);
+        setEditCollectionName("");
+        fetchCollections(); // refresh
+      })
+      .catch((err) => {
+        toast.dismiss(loadingToast);
+        toast.error(err.response?.data?.error || "Lỗi cập nhật bộ sưu tập");
+      })
+      .finally(() => setIsSubmitting(false));
+  };
+
   const handleDeleteCollection = (e, colId) => {
     e.stopPropagation();
     if (
@@ -314,6 +349,7 @@ const SavedBlogsPage = () => {
   return (
     <AnimationWrapper>
       <Toaster />
+      
       {/* Create Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
@@ -355,6 +391,213 @@ const SavedBlogsPage = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-slate-800">
+                Đổi tên bộ sưu tập
+              </h3>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingCollection(null);
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <i className="fi fi-rr-cross-small text-xl"></i>
+              </button>
+            </div>
+            <form onSubmit={handleEditCollection} className="p-6">
+              <input
+                type="text"
+                placeholder="Nhập tên bộ sưu tập mới..."
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all outline-none"
+                value={editCollectionName}
+                onChange={(e) => setEditCollectionName(e.target.value)}
+                autoFocus
+              />
+              <div className="flex items-center gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingCollection(null);
+                  }}
+                  className="flex-1 py-3 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 rounded-xl transition-colors"
+                >
+                  Lưu
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Collections Drawer */}
+      {showMobileCollections && (
+        <div className="fixed inset-0 z-[90] md:hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300"
+            onClick={() => setShowMobileCollections(false)}
+          ></div>
+          
+          {/* Drawer Panel */}
+          <div className="absolute bottom-0 left-0 right-0 max-h-[85vh] bg-white rounded-t-3xl shadow-2xl flex flex-col z-[100] transform transition-transform duration-300 animate-slide-up pb-6">
+            {/* Drawer Handle */}
+            <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto my-3 flex-shrink-0"></div>
+            
+            {/* Header */}
+            <div className="px-6 pb-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <i className="fi fi-rr-folder-open text-indigo-600 text-lg mt-0.5"></i>
+                <h3 className="text-lg font-bold text-slate-800">Quản lý bộ sưu tập</h3>
+              </div>
+              <button
+                onClick={() => setShowMobileCollections(false)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500"
+              >
+                <i className="fi fi-rr-cross-small text-xl"></i>
+              </button>
+            </div>
+            
+            {/* Scrollable List */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2 max-h-[50vh]">
+              {/* Tất cả mục */}
+              <button
+                onClick={() => {
+                  setActiveCollection("all");
+                  setShowMobileCollections(false);
+                }}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${activeCollection === "all" ? "bg-indigo-50 border border-indigo-100" : "hover:bg-slate-50 border border-transparent"}`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs flex-shrink-0 ${activeCollection === "all" ? "bg-indigo-600 text-white" : "bg-slate-150 text-slate-600"}`}>
+                  <i className="fi fi-sr-apps text-md mt-1"></i>
+                </div>
+                <span className={`font-semibold text-sm ${activeCollection === "all" ? "text-indigo-700" : "text-slate-700"}`}>
+                  Tất cả mục đã lưu
+                </span>
+              </button>
+
+              {/* Mục mặc định */}
+              <button
+                onClick={() => {
+                  setActiveCollection("default");
+                  setShowMobileCollections(false);
+                }}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${activeCollection === "default" ? "bg-indigo-50 border border-indigo-100" : "hover:bg-slate-50 border border-transparent"}`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs flex-shrink-0 ${activeCollection === "default" ? "bg-indigo-600 text-white" : "bg-slate-150 text-slate-600"}`}>
+                  <i className="fi fi-sr-bookmark text-md mt-1"></i>
+                </div>
+                <span className={`font-semibold text-sm ${activeCollection === "default" ? "text-indigo-700" : "text-slate-700"}`}>
+                  Mục mặc định
+                </span>
+              </button>
+
+              {/* Divider */}
+              <div className="h-[1px] bg-slate-100 my-2"></div>
+              
+              <div className="px-2 pb-1">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bộ sưu tập của tôi</span>
+              </div>
+
+              {/* Custom Collections */}
+              {collections.length > 0 ? (
+                collections.map((col, idx) => {
+                  const colors = [
+                    "bg-blue-50 text-blue-600",
+                    "bg-emerald-50 text-emerald-600",
+                    "bg-pink-50 text-pink-600",
+                    "bg-amber-50 text-amber-600",
+                    "bg-purple-50 text-purple-600",
+                  ];
+                  const colBg = colors[idx % colors.length];
+                  const isActive = activeCollection === col._id;
+
+                  return (
+                    <div
+                      key={col._id}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl border transition-all ${isActive ? "bg-slate-50 border-indigo-200" : "hover:bg-slate-50/50 border-transparent"}`}
+                    >
+                      <button
+                        onClick={() => {
+                          setActiveCollection(col._id);
+                          setShowMobileCollections(false);
+                        }}
+                        className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                      >
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${colBg}`}>
+                          <i className="fi fi-rr-folder text-lg mt-1"></i>
+                        </div>
+                        <div className="flex flex-col flex-1 min-w-0">
+                          <span className={`font-semibold text-sm truncate ${isActive ? "text-indigo-700 font-bold" : "text-slate-700"}`}>
+                            {col.name}
+                          </span>
+                          <span className="text-[10px] text-slate-400 mt-0.5">Chỉ mình tôi</span>
+                        </div>
+                      </button>
+                      
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
+                        {/* Edit button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingCollection(col);
+                            setEditCollectionName(col.name);
+                            setShowEditModal(true);
+                          }}
+                          className="w-9 h-9 rounded-xl bg-slate-50 active:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors border border-slate-100"
+                        >
+                          <i className="fi fi-rr-edit text-xs"></i>
+                        </button>
+                        
+                        {/* Delete button */}
+                        <button
+                          onClick={(e) => {
+                            handleDeleteCollection(e, col._id);
+                          }}
+                          className="w-9 h-9 rounded-xl bg-red-50 active:bg-red-150 hover:bg-red-100 text-red-500 flex items-center justify-center transition-colors border border-red-100/50"
+                        >
+                          <i className="fi fi-rr-trash text-xs"></i>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-6 text-slate-400 text-xs">
+                  Chưa có bộ sưu tập tùy chỉnh nào
+                </div>
+              )}
+            </div>
+            
+            {/* Sticky bottom add button */}
+            <div className="p-4 border-t border-slate-100 bg-white">
+              <button
+                onClick={() => {
+                  setShowCreateModal(true);
+                }}
+                className="w-full py-3 bg-indigo-50 active:bg-indigo-100 hover:bg-indigo-100 text-indigo-600 font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm shadow-xs"
+              >
+                <i className="fi fi-rr-plus text-xs"></i>
+                Tạo bộ sưu tập mới
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -448,13 +691,27 @@ const SavedBlogsPage = () => {
                       </div>
                     </div>
 
-                    {/* Delete Col Btn (shows on hover) */}
-                    <div
-                      onClick={(e) => handleDeleteCollection(e, col._id)}
-                      className="w-8 h-8 rounded-full hover:bg-red-100 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all flex-shrink-0 ml-2"
-                      title="Xóa bộ sưu tập"
-                    >
-                      <i className="fi fi-rr-trash text-sm mt-0.5"></i>
+                    {/* Edit and Delete Buttons (shows on hover) */}
+                    <div className="flex items-center flex-shrink-0 opacity-0 group-hover:opacity-100 transition-all ml-2 gap-1">
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingCollection(col);
+                          setEditCollectionName(col.name);
+                          setShowEditModal(true);
+                        }}
+                        className="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all"
+                        title="Sửa bộ sưu tập"
+                      >
+                        <i className="fi fi-rr-edit text-xs"></i>
+                      </div>
+                      <div
+                        onClick={(e) => handleDeleteCollection(e, col._id)}
+                        className="w-8 h-8 rounded-full hover:bg-red-100 text-red-500 flex items-center justify-center transition-all"
+                        title="Xóa bộ sưu tập"
+                      >
+                        <i className="fi fi-rr-trash text-xs"></i>
+                      </div>
                     </div>
                   </button>
                 );
@@ -476,6 +733,32 @@ const SavedBlogsPage = () => {
         {/* Right Content */}
         <main className="flex-1 min-w-0 p-4 md:p-8 overflow-y-auto">
           <div className="max-w-3xl mx-auto">
+            {/* Mobile Collection Selector Bar */}
+            <div className="md:hidden mb-6 flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 flex-shrink-0">
+                  <i className="fi fi-rr-folder text-lg mt-1"></i>
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs text-slate-500 font-medium">Bộ sưu tập hiện tại</span>
+                  <span className="font-bold text-slate-800 text-sm truncate">
+                    {activeCollection === "all"
+                      ? "Tất cả mục đã lưu"
+                      : activeCollection === "default"
+                        ? "Mục mặc định"
+                        : collections.find((c) => c._id === activeCollection)?.name || "Bộ sưu tập"}
+                  </span>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowMobileCollections(true)}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+              >
+                <i className="fi fi-rr-settings-sliders mt-0.5"></i>
+                Thay đổi
+              </button>
+            </div>
+
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-slate-900">
                 {activeCollection === "all"
