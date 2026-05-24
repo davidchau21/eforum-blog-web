@@ -48,6 +48,17 @@ const StaffManagement = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -101,7 +112,7 @@ const StaffManagement = () => {
       {
         title: <TableHeaderColumn label={t("users.col_stt", "STT")} />,
         width: 60,
-        fixed: "left",
+        fixed: isMobile ? undefined : "left",
         render: (_, __, index) => (
           <span className="text-xs font-bold text-slate-400">
             {(pagination.page - 1) * pagination.limit + index + 1}
@@ -111,7 +122,7 @@ const StaffManagement = () => {
       {
         dataIndex: "fullname",
         title: <TableHeaderColumn label={t("users.col_user", "Người dùng")} />,
-        fixed: "left",
+        fixed: isMobile ? undefined : "left",
         width: 250,
         render: (_, record) => (
           <div className="flex items-center gap-3 py-1">
@@ -193,7 +204,7 @@ const StaffManagement = () => {
       {
         title: <TableHeaderColumn label={t("users.col_actions", "Thao tác")} />,
         width: 180,
-        fixed: "right",
+        fixed: isMobile ? undefined : "right",
         render: (_, record) => (
           <div className="flex items-center gap-1">
             <Tooltip title={t("users.tooltip_edit", "Chỉnh sửa")}>
@@ -282,7 +293,7 @@ const StaffManagement = () => {
         ),
       },
     ],
-    [navigate, pagination.page, pagination.limit, t],
+    [navigate, pagination.page, pagination.limit, t, isMobile],
   );
 
   const onCloseModal = useCallback(

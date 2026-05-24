@@ -69,6 +69,17 @@ const ActivityLogs = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const [pagination, setPagination] = useState({ page: 1, limit: 10 });
   const [logsData, setLogsData] = useState({ list: [], total: 0 });
   const [filterAction, setFilterAction] = useState(undefined);
@@ -211,7 +222,7 @@ const ActivityLogs = () => {
       title: <TableHeaderLabel label={t("logs.col_time", "Thời gian")} />,
       dataIndex: "createdAt",
       width: 160,
-      fixed: "right",
+      fixed: isMobile ? undefined : "right",
       render: (time) => (
         <span className="text-[11px] font-bold text-slate-400 flex items-center gap-1.5">
           <Calendar size={13} /> {dayjs(time).format("DD/MM/YYYY HH:mm:ss")}
