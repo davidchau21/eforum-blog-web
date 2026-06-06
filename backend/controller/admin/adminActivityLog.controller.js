@@ -4,10 +4,7 @@ import adminActivityLogService from "../../service/admin/adminActivityLogService
 class AdminActivityLogController extends BaseController {
   async getActivityLogs(req, res) {
     try {
-      const page = parseInt(req.query.page) || 0;
-      const limit = parseInt(req.query.limit) || 10;
-
-      const result = await adminActivityLogService.getActivityLogs({ page, limit });
+      const result = await adminActivityLogService.getActivityLogs(req.query);
       return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, error.message);

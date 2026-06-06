@@ -8,7 +8,7 @@ class AdminBlogService {
   /**
    * Admin: Get all blogs with filters
    */
-  async getAllBlogsForAdmin({ isDraft, isActive, title, tags, page = 0, limit = 10, isReport }) {
+  async getAllBlogsForAdmin({ isDraft, isActive, title, tags, page = 0, limit = 10, isReport, startDate, endDate }) {
     const findQuery = { isDeleted: { $in: [false, null] } };
     
     // Parse boolean strings if they come from query params
@@ -17,6 +17,13 @@ class AdminBlogService {
     if (title) findQuery.title = { $regex: title, $options: "i" };
     if (tags) findQuery.tags = { $in: Array.isArray(tags) ? tags : [tags] };
     if (isReport !== undefined) findQuery.isReport = isReport === 'true' || isReport === true;
+
+    // Date range filter
+    if (startDate || endDate) {
+      findQuery.publishedAt = {};
+      if (startDate) findQuery.publishedAt.$gte = new Date(startDate);
+      if (endDate) findQuery.publishedAt.$lte = new Date(endDate);
+    }
 
     const blogs = await Blog.find(findQuery)
       .sort({ publishedAt: -1 })

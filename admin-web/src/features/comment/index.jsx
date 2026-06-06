@@ -1,22 +1,23 @@
 import Table from "@/components/table/table";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
-import { Button, Tag, Switch, Tooltip, ConfigProvider, Avatar } from "antd";
+import { Button, Tag, Switch, Tooltip, ConfigProvider, Avatar, DatePicker, message } from "antd";
 import { 
-  MessageSquare, 
   Trash2, 
   FlagIcon, 
   AlertTriangle, 
   User, 
   Calendar,
   Filter,
-  MessageCircle
+  MessageCircle,
+  Search
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import commentApi from "../../api/comment";
 import DeleteCommentModal from "./modals/delete-comment-modal";
 import { formatDate } from "../../utils/dateUtils";
+import dayjs from "dayjs";
 import DeleteReportModal from "./modals/delete-report-modal";
 
 const containerVariants = {
@@ -44,6 +45,45 @@ const CommentManagement = () => {
   const [selectedDelete, setSelectedDelete] = useState(undefined);
   const [isReport, setIsReport] = useState(false);
   const [selectedRemoveReport, setSelectedRemoveReport] = useState(undefined);
+  const [dateRange, setDateRange] = useState(null);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [filteredComments, setFilteredComments] = useState([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+
+
+  const onSearchChange = useCallback(
+    async (e) => {
+      const keyword = e.target.value;
+      setSearchKeyword(keyword);
+
+      if (keyword.trim()) {
+        const { ok, body } = await commentApi.getAlls({
+          limit: 1000,
+          page: 0,
+        });
+        if (ok && body) {
+          const filtered = body.list.filter((comment) =>
+            comment.comment?.toLowerCase().includes(keyword.toLowerCase()) ||
+            comment.commented_by?.personal_info?.username?.toLowerCase().includes(keyword.toLowerCase()) ||
+            comment.commented_by?.personal_info?.fullname?.toLowerCase().includes(keyword.toLowerCase())
+          );
+          setFilteredComments(filtered);
+        }
+      } else {
+        setFilteredComments(comments.items);
+      }
+    },
+    [comments.items]
+  );
+
+  const displayedComments = useMemo(() => {
+    if (searchKeyword.trim()) {
+      return filteredComments;
+    }
+    return comments.items;
+  }, [searchKeyword, filteredComments, comments.items]);
 
   const columns = useMemo(
     () => [
@@ -145,21 +185,51 @@ const CommentManagement = () => {
   }, []);
 
   const onGet = useCallback(async () => {
-    const { ok, body } = await commentApi.getAlls({
+    const params = {
       limit: 10,
       page: pagination.page - 1,
       isReport: isReport ? isReport : null,
-    });
+    };
+    if (dateRange && dateRange[0]) {
+      params.startDate = dateRange[0].startOf('day').toISOString();
+    }
+    if (dateRange && dateRange[1]) {
+      params.endDate = dateRange[1].endOf('day').toISOString();
+    }
+    const { ok, body } = await commentApi.getAlls(params);
     if (ok && body) {
       setComments({ items: body.list, total: body.total ?? 0 });
+      setFilteredComments(body.list);
     }
-  }, [pagination.page, isReport]);
+  }, [pagination.page, isReport, dateRange]);
 
   const [pendingComments, getAllComments] = useHandleAsyncRequest(onGet);
 
   useEffect(() => {
     getAllComments();
-  }, [pagination, isReport, getAllComments]);
+  }, [pagination, isReport, dateRange, getAllComments]);
+
+  // Bulk action handlers
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys),
+  };
+
+  const handleBulkDelete = useCallback(async () => {
+    if (!selectedRowKeys.length) return;
+    setBulkLoading(true);
+    let successCount = 0;
+    for (const id of selectedRowKeys) {
+      try {
+        await commentApi.delete(id);
+        successCount++;
+      } catch (e) { /* skip */ }
+    }
+    message.success(`Đã xóa ${successCount}/${selectedRowKeys.length} bình luận`);
+    setSelectedRowKeys([]);
+    setBulkLoading(false);
+    onGet();
+  }, [selectedRowKeys, onGet]);
 
   return (
     <ConfigProvider
@@ -189,6 +259,17 @@ const CommentManagement = () => {
           </motion.div>
 
           <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-4">
+            {/* Search Input */}
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:border-emerald-500/50 focus-within:shadow-emerald-500/5">
+              <Search size={18} className="text-slate-400" />
+              <input
+                placeholder="Tìm nội dung hoặc người viết..."
+                value={searchKeyword}
+                onChange={onSearchChange}
+                className="bg-transparent border-none outline-none text-sm font-medium text-slate-600 w-64"
+              />
+            </div>
+
             <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm">
               <Filter size={18} className="text-slate-400" />
               <span className="text-sm font-bold text-slate-600">Bị báo cáo</span>
@@ -199,8 +280,60 @@ const CommentManagement = () => {
                 className={isReport ? "bg-emerald-500" : "bg-slate-200"}
               />
             </div>
+
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:border-emerald-500/50 focus-within:shadow-emerald-500/5">
+              <Calendar size={18} className="text-slate-400" />
+              <DatePicker.RangePicker
+                value={dateRange}
+                onChange={(dates) => {
+                  setDateRange(dates);
+                  setPagination((prev) => ({ ...prev, page: 1 }));
+                }}
+                format="DD/MM/YYYY"
+                placeholder={["Từ ngày", "Đến ngày"]}
+                allowClear
+                bordered={false}
+                className="!bg-transparent !shadow-none !p-0 font-medium text-slate-600"
+                style={{ width: 240 }}
+              />
+            </div>
           </motion.div>
         </div>
+
+
+
+        {/* Bulk Action Bar */}
+        <AnimatePresence>
+          {selectedRowKeys.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4"
+            >
+              <span className="text-sm font-bold">Đã chọn {selectedRowKeys.length} bình luận</span>
+              <div className="w-px h-6 bg-slate-600" />
+              <Button
+                size="small"
+                loading={bulkLoading}
+                danger
+                icon={<Trash2 size={14} />}
+                className="rounded-xl text-xs font-bold"
+                onClick={handleBulkDelete}
+              >
+                Xóa hàng loạt
+              </Button>
+              <Button
+                size="small"
+                type="text"
+                className="text-slate-300 hover:!text-white rounded-xl text-xs font-bold"
+                onClick={() => setSelectedRowKeys([])}
+              >
+                Bỏ chọn
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Table Section */}
         <motion.div
@@ -210,11 +343,12 @@ const CommentManagement = () => {
           <Table
             columns={columns}
             loading={pendingComments}
-            data={comments.items}
-            onPageChange={onPageChange}
+            data={displayedComments}
+            onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
             page={pagination.page}
-            total={comments.total}
+            total={searchKeyword.trim() ? filteredComments.length : comments.total}
             rowClassName={() => "hover:bg-slate-50/80 transition-colors cursor-default"}
+            rowSelection={rowSelection}
           />
         </motion.div>
 
@@ -241,4 +375,3 @@ const CommentManagement = () => {
 };
 
 export default CommentManagement;
-
