@@ -2,7 +2,7 @@ import Table from "@/components/table/table";
 import TableDataColumn from "@/components/table/table-data-column";
 import TableHeaderColumn from "@/components/table/table-header-column";
 import useHandleAsyncRequest from "@/hooks/useHandleAsyncRequest";
-import { Button, Tag, Input, Switch, Tooltip, ConfigProvider } from "antd";
+import { Button, Tag, Input, Switch, Tooltip, ConfigProvider, DatePicker, message } from "antd";
 import { 
   FlagIcon, 
   LockIcon, 
@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDate } from "../../utils/dateUtils";
+import dayjs from "dayjs";
 import blogApi from "../../api/blogApi";
 import DeleteModal from "./modals/delete-modal";
 import ActiveModal from "./modals/active-modal";
@@ -57,18 +58,30 @@ const BlogManagement = () => {
   const [selectedDelete, setSelectedDelete] = useState(undefined);
   const [selectedRemoveReport, setSelectedRemoveReport] = useState(undefined);
   const [isReport, setIsReport] = useState(false);
+  const [dateRange, setDateRange] = useState(null);
+  const [selectedRowKeys, setSelectedRowKeys] = useState([]);
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+
 
   const onGet = useCallback(async () => {
-    const { ok, body } = await blogApi.getAllBlogs({
+    const params = {
       limit: pagination.limit,
       page: pagination.page - 1,
       isReport: isReport ? isReport : null,
-    });
+    };
+    if (dateRange && dateRange[0]) {
+      params.startDate = dateRange[0].startOf('day').toISOString();
+    }
+    if (dateRange && dateRange[1]) {
+      params.endDate = dateRange[1].endOf('day').toISOString();
+    }
+    const { ok, body } = await blogApi.getAllBlogs(params);
     if (ok && body) {
       setBlogList({ items: body.list, total: body.total ?? 0 });
       setFilteredBlogs(body.list);
     }
-  }, [pagination.limit, pagination.page, isReport]);
+  }, [pagination.limit, pagination.page, isReport, dateRange]);
 
   const [pendingBlogs, getAllBlogs] = useHandleAsyncRequest(onGet);
 
@@ -237,7 +250,51 @@ const BlogManagement = () => {
 
   useEffect(() => {
     getAllBlogs();
-  }, [pagination.page, getAllBlogs, isReport]);
+  }, [pagination.page, getAllBlogs, isReport, dateRange]);
+
+  // Bulk action handlers
+  const rowSelection = {
+    selectedRowKeys,
+    onChange: (keys) => setSelectedRowKeys(keys),
+  };
+
+  const handleBulkDelete = useCallback(async () => {
+    if (!selectedRowKeys.length) return;
+    setBulkLoading(true);
+    let successCount = 0;
+    for (const id of selectedRowKeys) {
+      try {
+        const blog = displayedBlogs.find(b => (b._id || b.blog_id) === id);
+        if (blog) {
+          await blogApi.deleteBlog(blog._id || blog.blog_id);
+          successCount++;
+        }
+      } catch (e) { /* skip */ }
+    }
+    message.success(`Đã xóa ${successCount}/${selectedRowKeys.length} bài viết`);
+    setSelectedRowKeys([]);
+    setBulkLoading(false);
+    onGet();
+  }, [selectedRowKeys, displayedBlogs, onGet]);
+
+  const handleBulkToggleActive = useCallback(async () => {
+    if (!selectedRowKeys.length) return;
+    setBulkLoading(true);
+    let successCount = 0;
+    for (const id of selectedRowKeys) {
+      try {
+        const blog = displayedBlogs.find(b => (b._id || b.blog_id) === id);
+        if (blog) {
+          await blogApi.activeBlog(blog.blog_id);
+          successCount++;
+        }
+      } catch (e) { /* skip */ }
+    }
+    message.success(`Đã chuyển trạng thái ${successCount}/${selectedRowKeys.length} bài viết`);
+    setSelectedRowKeys([]);
+    setBulkLoading(false);
+    onGet();
+  }, [selectedRowKeys, displayedBlogs, onGet]);
 
   return (
     <ConfigProvider
@@ -288,6 +345,23 @@ const BlogManagement = () => {
               />
             </div>
 
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:border-emerald-500/50 focus-within:shadow-emerald-500/5">
+              <CalendarIcon size={18} className="text-slate-400" />
+              <DatePicker.RangePicker
+                value={dateRange}
+                onChange={(dates) => {
+                  setDateRange(dates);
+                  setPagination((prev) => ({ ...prev, page: 1 }));
+                }}
+                format="DD/MM/YYYY"
+                placeholder={["Từ ngày", "Đến ngày"]}
+                allowClear
+                bordered={false}
+                className="!bg-transparent !shadow-none !p-0 font-medium text-slate-600"
+                style={{ width: 240 }}
+              />
+            </div>
+
             <Button
               type="primary"
               icon={<Plus size={20} />}
@@ -298,6 +372,50 @@ const BlogManagement = () => {
             </Button>
           </motion.div>
         </div>
+
+
+
+        {/* Bulk Action Bar */}
+        <AnimatePresence>
+          {selectedRowKeys.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-slate-800 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-4"
+            >
+              <span className="text-sm font-bold">Đã chọn {selectedRowKeys.length} bài viết</span>
+              <div className="w-px h-6 bg-slate-600" />
+              <Button
+                size="small"
+                loading={bulkLoading}
+                icon={<LockIcon size={14} />}
+                className="bg-amber-500 hover:!bg-amber-600 text-white border-none rounded-xl text-xs font-bold"
+                onClick={handleBulkToggleActive}
+              >
+                Khóa/Mở khóa
+              </Button>
+              <Button
+                size="small"
+                loading={bulkLoading}
+                danger
+                icon={<Trash2 size={14} />}
+                className="rounded-xl text-xs font-bold"
+                onClick={handleBulkDelete}
+              >
+                Xóa hàng loạt
+              </Button>
+              <Button
+                size="small"
+                type="text"
+                className="text-slate-300 hover:!text-white rounded-xl text-xs font-bold"
+                onClick={() => setSelectedRowKeys([])}
+              >
+                Bỏ chọn
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Table Section */}
         <motion.div
@@ -312,6 +430,7 @@ const BlogManagement = () => {
             onPageChange={!searchKeyword.trim() ? onPageChange : undefined}
             page={pagination.page}
             rowClassName={() => "hover:bg-slate-50/80 transition-colors cursor-default"}
+            rowSelection={rowSelection}
           />
         </motion.div>
 

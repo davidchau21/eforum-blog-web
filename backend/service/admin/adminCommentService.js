@@ -1,10 +1,17 @@
 import Comment from "../../Schema/Comment.js";
 
 class AdminCommentService {
-  async getAllComments({ page = 0, limit = 10, isReport }) {
+  async getAllComments({ page = 0, limit = 10, isReport, startDate, endDate }) {
     const query = {};
     if (isReport === "true" || isReport === true) {
       query.isReport = true;
+    }
+
+    // Date range filter
+    if (startDate || endDate) {
+      query.commentedAt = {};
+      if (startDate) query.commentedAt.$gte = new Date(startDate);
+      if (endDate) query.commentedAt.$lte = new Date(endDate);
     }
     const list = await Comment.find(query)
       .populate("commented_by", "personal_info.username personal_info.fullname personal_info.profile_img")

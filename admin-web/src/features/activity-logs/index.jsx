@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Table, Tag, Avatar, Select, ConfigProvider, Tooltip } from "antd";
+import { Table, Tag, Avatar, Select, ConfigProvider, Tooltip, DatePicker } from "antd";
 import { motion } from "framer-motion";
 import { 
   Clock, 
@@ -83,14 +83,25 @@ const ActivityLogs = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10 });
   const [logsData, setLogsData] = useState({ list: [], total: 0 });
   const [filterAction, setFilterAction] = useState(undefined);
+  const [dateRange, setDateRange] = useState(null);
 
   const onGetLogs = useCallback(async () => {
     dispatch(incrementLoading());
     try {
-      const { ok, body } = await activityLogApi.getAllActivityLogs({
+      const params = {
         page: pagination.page - 1,
-        limit: pagination.limit
-      });
+        limit: pagination.limit,
+      };
+      if (filterAction) {
+        params.action = filterAction;
+      }
+      if (dateRange && dateRange[0]) {
+        params.startDate = dateRange[0].startOf('day').toISOString();
+      }
+      if (dateRange && dateRange[1]) {
+        params.endDate = dateRange[1].endOf('day').toISOString();
+      }
+      const { ok, body } = await activityLogApi.getAllActivityLogs(params);
       if (ok && body) {
         setLogsData({
           list: body.list,
@@ -102,25 +113,19 @@ const ActivityLogs = () => {
     } finally {
       dispatch(decrementLoading());
     }
-  }, [pagination.page, pagination.limit, dispatch]);
+  }, [pagination.page, pagination.limit, dispatch, filterAction, dateRange]);
 
   const [pendingLogs, getLogs] = useHandleAsyncRequest(onGetLogs);
 
   useEffect(() => {
     getLogs();
-  }, [pagination.page, pagination.limit, getLogs]);
+  }, [pagination.page, pagination.limit, getLogs, filterAction, dateRange]);
 
   const onPageChange = (page, pageSize) => {
     setPagination({ page, limit: pageSize });
   };
 
-  // Filter logs locally if an action type is selected
-  const filteredList = useMemo(() => {
-    if (!filterAction) return logsData.list;
-    return logsData.list.filter(log => log.action === filterAction);
-  }, [logsData.list, filterAction]);
-
-  // Extract unique action codes for filter options
+  // Extract unique action codes for filter dropdown
   const uniqueActions = useMemo(() => {
     const actions = logsData.list.map(log => log.action);
     return [...new Set(actions)];
@@ -273,16 +278,37 @@ const ActivityLogs = () => {
             </p>
           </motion.div>
 
-          {/* Action Filter */}
-          <motion.div variants={itemVariants} className="flex items-center gap-2">
+          {/* Filters */}
+          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3">
             <Select
               allowClear
               placeholder={t("logs.filter_placeholder", "Lọc theo hành động...")}
               className="w-[200px] h-10 shadow-sm"
-              onChange={(val) => setFilterAction(val)}
+              onChange={(val) => {
+                setFilterAction(val);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
+              value={filterAction}
               options={uniqueActions.map(action => ({ label: action, value: action }))}
               dropdownStyle={{ borderRadius: "12px" }}
             />
+
+            <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all focus-within:border-emerald-500/50 focus-within:shadow-emerald-500/5">
+              <Calendar size={18} className="text-slate-400" />
+              <DatePicker.RangePicker
+                value={dateRange}
+                onChange={(dates) => {
+                  setDateRange(dates);
+                  setPagination((prev) => ({ ...prev, page: 1 }));
+                }}
+                format="DD/MM/YYYY"
+                placeholder={["Từ ngày", "Đến ngày"]}
+                allowClear
+                bordered={false}
+                className="!bg-transparent !shadow-none !p-0 font-medium text-slate-600"
+                style={{ width: 240 }}
+              />
+            </div>
           </motion.div>
         </div>
 
@@ -304,7 +330,7 @@ const ActivityLogs = () => {
         >
           <Table
             columns={columns}
-            dataSource={filteredList.map(log => ({ ...log, key: log._id }))}
+            dataSource={logsData.list.map(log => ({ ...log, key: log._id }))}
             loading={pendingLogs}
             pagination={{
               current: pagination.page,

@@ -30,15 +30,29 @@ class AdminActivityLogService {
   /**
    * Get paginated list of activity logs
    */
-  async getActivityLogs({ page = 0, limit = 10 }) {
-    const list = await ActivityLog.find()
+  async getActivityLogs({ page = 0, limit = 10, startDate, endDate, action }) {
+    const query = {};
+
+    // Date range filter
+    if (startDate || endDate) {
+      query.createdAt = {};
+      if (startDate) query.createdAt.$gte = new Date(startDate);
+      if (endDate) query.createdAt.$lte = new Date(endDate);
+    }
+
+    // Action type filter
+    if (action) {
+      query.action = action;
+    }
+
+    const list = await ActivityLog.find(query)
       .populate("user", "personal_info.fullname personal_info.username personal_info.profile_img")
-      .skip(page * limit)
-      .limit(limit)
+      .skip(Number(page) * Number(limit))
+      .limit(Number(limit))
       .sort({ createdAt: -1 })
       .lean();
 
-    const total = await ActivityLog.countDocuments();
+    const total = await ActivityLog.countDocuments(query);
     return { list, total };
   }
 }

@@ -1,10 +1,11 @@
 import express from "express";
 import { requireDynamicPermission, isAuthenticate } from "../../middleware/verifyToken.js";
 import adminUserController from "../../controller/admin/adminUser.controller.js";
+import validateDateRange from "../../middleware/validateDateRange.js";
 
 const adminUserRouter = express.Router();
 
-adminUserRouter.get("/admin/users", requireDynamicPermission("USER_VIEW"), (req, res) => adminUserController.getAllUsers(req, res));
+adminUserRouter.get("/admin/users", requireDynamicPermission("USER_VIEW"), validateDateRange, (req, res) => adminUserController.getAllUsers(req, res));
 adminUserRouter.get("/admin/users/:id", requireDynamicPermission("USER_VIEW"), (req, res) => adminUserController.findUserById(req, res));
 adminUserRouter.post("/admin/users", requireDynamicPermission("USER_CREATE"), (req, res) => adminUserController.createUser(req, res));
 adminUserRouter.post("/admin/users/:id", requireDynamicPermission("USER_UPDATE"), (req, res) => adminUserController.updateUser(req, res));

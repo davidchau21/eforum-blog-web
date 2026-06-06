@@ -13,6 +13,7 @@ const CustomTable = ({
   onPageChange = () => {},
   rowClassName = () => {},
   scrollX = 1200,
+  rowSelection,
 }) => {
   const [isLoading, setIsLoading] = useState(loading);
 
@@ -35,7 +36,7 @@ const CustomTable = ({
     <div className="flex flex-col items-start w-full">
       <Table
         className="w-full custom-table"
-        loading={isLoading} // Use the state of loading to control the spinner
+        loading={isLoading}
         columns={columns}
         dataSource={data}
         pagination={false}
@@ -54,6 +55,7 @@ const CustomTable = ({
           x: scrollX
         }}
         rowClassName={rowClassName}
+        rowSelection={rowSelection}
       />
 
       {isShowPagination && !!total && (
@@ -88,6 +90,7 @@ CustomTable.propTypes = {
   onPageChange: Proptypes.func,
   rowClassName: Proptypes.func,
   scrollX: Proptypes.number,
+  rowSelection: Proptypes.object,
 };
 
 export default CustomTable;
