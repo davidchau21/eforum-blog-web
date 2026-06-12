@@ -1,6 +1,51 @@
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import PropTypes from 'prop-types';
 import chatBot from "../imgs/chatbot.png"; // We can reuse the chatbot image for bot avatar
+
+const CodeBlock = ({ language, code }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="my-3 rounded-lg overflow-hidden border border-grey/40 bg-grey/10 dark:bg-grey/20">
+      {/* Code Header */}
+      <div className="flex justify-between items-center px-4 py-2 bg-grey/30 border-b border-grey/40 text-xs text-dark-grey font-mono">
+        <span className="capitalize">{language}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 hover:text-purple transition-colors font-sans text-xs focus:outline-none"
+        >
+          {copied ? (
+            <>
+              <i className="fi fi-rr-check text-green-500"></i>
+              <span className="text-green-500">Đã sao chép</span>
+            </>
+          ) : (
+            <>
+              <i className="fi fi-rr-copy"></i>
+              <span>Sao chép</span>
+            </>
+          )}
+        </button>
+      </div>
+      {/* Code Pre */}
+      <pre className="p-4 overflow-x-auto text-xs leading-relaxed font-mono">
+        <code className={`language-${language}`}>{code}</code>
+      </pre>
+    </div>
+  );
+};
+
+CodeBlock.propTypes = {
+  language: PropTypes.string.isRequired,
+  code: PropTypes.string.isRequired,
+};
 
 const ChatHistory = ({ chatHistory, isGenerating }) => {
   return (
@@ -55,7 +100,24 @@ const ChatHistory = ({ chatHistory, isGenerating }) => {
               }`}
             >
               <div className={`prose prose-sm max-w-none break-words ${isUser ? "prose-invert" : ""} ${showCursor ? "typing-cursor" : ""}`}>
-                <ReactMarkdown>{message.message}</ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    code({ className, children, ...props }) {
+                      const match = /language-(\w+)/.exec(className || '');
+                      const codeText = String(children).replace(/\n$/, '');
+                      
+                      return match ? (
+                        <CodeBlock language={match[1]} code={codeText} />
+                      ) : (
+                        <code className="bg-grey/30 dark:bg-grey/50 px-1.5 py-0.5 rounded font-mono text-xs text-purple font-semibold break-all" {...props}>
+                          {children}
+                        </code>
+                      );
+                    }
+                  }}
+                >
+                  {message.message}
+                </ReactMarkdown>
               </div>
             </div>
 

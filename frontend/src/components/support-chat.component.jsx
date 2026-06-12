@@ -65,12 +65,13 @@ const SupportChat = () => {
     }, 15); // Print a character every 15ms
   };
 
-  const sendMessage = async (e) => {
+  const sendMessage = async (e, overrideInput) => {
     if (e) e.preventDefault();
-    if (userInput.trim() === "") return;
+    const textToSend = overrideInput || userInput;
+    if (textToSend.trim() === "") return;
 
     // Save input and immediately clear the input box & show as loading
-    const currentInput = userInput;
+    const currentInput = textToSend;
     setUserInput("");
     setIsLoading(true);
     setIsGenerating(true);
@@ -146,6 +147,10 @@ const SupportChat = () => {
     }
   };
 
+  const handleSuggestionClick = (suggestionText) => {
+    sendMessage(null, suggestionText);
+  };
+
   // Function to clear the chat history
   const clearChat = () => {
     if (window.confirm("Bạn có chắc muốn xóa lịch sử trò chuyện?")) {
@@ -219,11 +224,39 @@ const SupportChat = () => {
         {/* Chat Area */}
         <div className="flex-1 overflow-y-auto p-4 bg-grey/10 space-y-4">
           {chatHistory.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center text-dark-grey opacity-70 px-4">
-              <i className="fi fi-rr-messages text-4xl mb-3"></i>
-              <p className="text-sm">
-                Hãy gửi tin nhắn để bắt đầu cuộc trò chuyện!
+            <div className="flex flex-col items-center justify-center min-h-full py-4 text-center px-2 font-sans select-none">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-purple to-emerald-500 p-2 flex items-center justify-center shadow-md mb-2">
+                <img
+                  src={chatBot}
+                  alt="AI Assistant"
+                  className="w-full h-full object-contain filter brightness-0 invert"
+                />
+              </div>
+              <h4 className="font-semibold text-black mb-1 text-sm">
+                Xin chào! 👋
+              </h4>
+              <p className="text-[11px] text-dark-grey mb-4 max-w-[240px] leading-relaxed">
+                Mình là Trợ lý AI EForum. Bạn có thể hỏi mình bất cứ điều gì hoặc chọn các câu hỏi gợi ý bên dưới nhé!
               </p>
+
+              {/* Suggestions Grid */}
+              <div className="w-full space-y-2 max-w-[270px]">
+                {[
+                  "Làm sao để đăng bài viết mới?",
+                  "Cách tìm bài viết theo chủ đề?",
+                  "Xem bài viết xu hướng ở đâu?",
+                  "Liên hệ hỗ trợ kỹ thuật?"
+                ].map((suggestion, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-3.5 py-2.5 bg-white border border-grey/50 hover:border-purple/50 hover:bg-purple/5 dark:hover:bg-purple/10 rounded-xl text-[11px] text-black transition-all duration-200 shadow-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 focus:outline-none"
+                  >
+                    <i className="fi fi-rr-comment-question text-purple text-xs shrink-0 mt-0.5"></i>
+                    <span className="truncate">{suggestion}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           ) : (
             <ChatHistory chatHistory={chatHistory} isGenerating={isGenerating} />
