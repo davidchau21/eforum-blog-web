@@ -9,9 +9,16 @@ const SupportChat = () => {
   const [userInput, setUserInput] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Create a ref for the chat container to automatically scroll to bottom
   const chatEndRef = useRef(null);
+
+  // Refs to manage typewriter effect for smooth streaming
+  const fullTextRef = useRef("");
+  const displayedTextRef = useRef("");
+  const typewriterIntervalRef = useRef(null);
+  const isStreamingRef = useRef(false);
 
   const toggleChat = () => setIsOpen(!isOpen);
 
@@ -24,6 +31,40 @@ const SupportChat = () => {
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
+  const startTypewriter = () => {
+    if (typewriterIntervalRef.current) return;
+
+    typewriterIntervalRef.current = setInterval(() => {
+      const fullText = fullTextRef.current;
+      const displayedText = displayedTextRef.current;
+
+      if (displayedText.length < fullText.length) {
+        // Calculate adaptive characters to print at once to catch up if lagging
+        const lag = fullText.length - displayedText.length;
+        const charsToAdd = lag > 40 ? 4 : lag > 15 ? 2 : 1;
+        
+        const nextText = fullText.slice(0, displayedText.length + charsToAdd);
+        displayedTextRef.current = nextText;
+
+        setChatHistory((prevHistory) => {
+          const updatedHistory = [...prevHistory];
+          if (updatedHistory.length > 0 && updatedHistory[updatedHistory.length - 1].type === "bot") {
+            updatedHistory[updatedHistory.length - 1] = {
+              ...updatedHistory[updatedHistory.length - 1],
+              message: nextText,
+            };
+          }
+          return updatedHistory;
+        });
+      } else if (!isStreamingRef.current) {
+        // Stream has completed and we caught up
+        clearInterval(typewriterIntervalRef.current);
+        typewriterIntervalRef.current = null;
+        setIsGenerating(false);
+      }
+    }, 15); // Print a character every 15ms
+  };
+
   const sendMessage = async (e) => {
     if (e) e.preventDefault();
     if (userInput.trim() === "") return;
@@ -32,6 +73,8 @@ const SupportChat = () => {
     const currentInput = userInput;
     setUserInput("");
     setIsLoading(true);
+    setIsGenerating(true);
+    isStreamingRef.current = true;
 
     const newChatHistory = [
       ...chatHistory,
@@ -40,28 +83,66 @@ const SupportChat = () => {
 
     setChatHistory(newChatHistory);
 
-    try {
-      // Call Gemini API to get a response
-      const result = await model.generateContent(currentInput);
-      const response = await result.response;
+    // Reset typewriter refs
+    fullTextRef.current = "";
+    displayedTextRef.current = "";
+    if (typewriterIntervalRef.current) {
+      clearInterval(typewriterIntervalRef.current);
+      typewriterIntervalRef.current = null;
+    }
 
-      // Add Gemini's response to the chat history
-      setChatHistory([
-        ...newChatHistory,
-        { type: "bot", message: response.text() },
+    try {
+      // Call Gemini API to get a response stream
+      const result = await model.generateContentStream(currentInput);
+
+      // Add a placeholder message for the bot to show the stream starts
+      setChatHistory((prevHistory) => [
+        ...prevHistory,
+        { type: "bot", message: "" }
       ]);
+      
+      // Stop showing the loading spinner, as we're starting the stream
+      setIsLoading(false);
+
+      // Start typewriter loop
+      startTypewriter();
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        fullTextRef.current += chunkText;
+        startTypewriter();
+      }
     } catch (error) {
       console.error("Error sending message:", error);
-      // Optionally add an error message to the chat
-      setChatHistory([
-        ...newChatHistory,
-        {
-          type: "bot",
-          message: "Xin lỗi, đã có lỗi xảy ra. Hãy thử lại sau nhé.",
-        },
-      ]);
+      // Clean up typewriter interval
+      if (typewriterIntervalRef.current) {
+        clearInterval(typewriterIntervalRef.current);
+        typewriterIntervalRef.current = null;
+      }
+      setIsGenerating(false);
+
+      setChatHistory((prevHistory) => {
+        const updatedHistory = [...prevHistory];
+        const lastMsgIndex = updatedHistory.length - 1;
+        if (lastMsgIndex >= 0 && updatedHistory[lastMsgIndex].type === "bot") {
+          updatedHistory[lastMsgIndex] = {
+            type: "bot",
+            message: "Xin lỗi, đã có lỗi xảy ra. Hãy thử lại sau nhé.",
+          };
+          return updatedHistory;
+        } else {
+          return [
+            ...updatedHistory,
+            {
+              type: "bot",
+              message: "Xin lỗi, đã có lỗi xảy ra. Hãy thử lại sau nhé.",
+            },
+          ];
+        }
+      });
     } finally {
       setIsLoading(false);
+      isStreamingRef.current = false;
     }
   };
 
@@ -72,12 +153,21 @@ const SupportChat = () => {
     }
   };
 
-  // Auto-scroll logic
+  // Cleanup typewriter interval on unmount
+  useEffect(() => {
+    return () => {
+      if (typewriterIntervalRef.current) {
+        clearInterval(typewriterIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Auto-scroll logic (uses smooth scroll on open/toggle/load, but auto/instant scroll during streaming to avoid lag)
   useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+      chatEndRef.current.scrollIntoView({ behavior: isGenerating ? "auto" : "smooth" });
     }
-  }, [chatHistory, isLoading, isOpen]);
+  }, [chatHistory, isLoading, isOpen, isGenerating]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-sans">
@@ -96,8 +186,8 @@ const SupportChat = () => {
               />
             </div>
             <div>
-              <h3 className="font-semibold text-base leading-tight">
-                EduBot Trợ lý
+              <h3 className="font-semibold text-[11px] leading-tight">
+                Trợ lý AI
               </h3>
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -110,7 +200,8 @@ const SupportChat = () => {
             {chatHistory.length > 0 && (
               <button
                 onClick={clearChat}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors tooltip"
+                disabled={isGenerating}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/20 transition-colors tooltip disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Xóa rác"
               >
                 <i className="fi fi-rr-trash text-sm"></i>
@@ -135,7 +226,7 @@ const SupportChat = () => {
               </p>
             </div>
           ) : (
-            <ChatHistory chatHistory={chatHistory} />
+            <ChatHistory chatHistory={chatHistory} isGenerating={isGenerating} />
           )}
 
           <Loading isLoading={isLoading} />
@@ -151,11 +242,11 @@ const SupportChat = () => {
               className="w-full bg-grey/30 pt-3 pb-3 pl-4 pr-12 rounded-full focus:outline-none focus:bg-grey/50 focus:ring-1 focus:ring-purple/50 transition-all text-sm"
               value={userInput}
               onChange={handleUserInput}
-              disabled={isLoading}
+              disabled={isGenerating}
             />
             <button
               type="submit"
-              disabled={isLoading || !userInput.trim()}
+              disabled={isGenerating || !userInput.trim()}
               className="absolute right-1.5 w-9 h-9 flex items-center justify-center rounded-full bg-purple text-white hover:bg-purple/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <i className="fi fi-rr-paper-plane text-sm mt-1 mr-0.5"></i>
