@@ -126,7 +126,7 @@ const HomePage = () => {
           state: followingBlogs,
           data: data.blogs,
           page,
-          countRoute: "/blogs/get-user-blogs-count",
+          countRoute: "/blogs/following-blogs-count",
           user: access_token,
         });
         setFollowingBlogs(formattedData);

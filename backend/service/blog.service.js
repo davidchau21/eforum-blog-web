@@ -180,8 +180,8 @@ class BlogService {
       .skip((page - 1) * maxLimit)
       .limit(maxLimit)
       .sort({ publishedAt: -1 })
-      .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname -_id")
-      .select("blog_id title des banner activity tags publishedAt -_id");
+      .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
+      .select("blog_id title des banner activity tags publishedAt");
 
     return { blogs };
   }

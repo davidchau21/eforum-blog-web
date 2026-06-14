@@ -35,6 +35,29 @@ export const uploadFile = async (fileBuffer, fileName, mimeType) => {
   return publicUrlData.publicUrl;
 };
 
+export const uploadDocumentFile = async (fileBuffer, fileName, mimeType) => {
+  const extension = fileName.split(".").pop();
+  const path = `documents/${nanoid()}-${Date.now()}.${extension}`;
+
+  const { data, error } = await supabase.storage
+    .from(bucketName)
+    .upload(path, fileBuffer, {
+      contentType: mimeType,
+      upsert: false,
+      cacheControl: "31536000",
+    });
+
+  if (error) {
+    throw new Error(`Supabase document upload error: ${error.message}`);
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from(bucketName)
+    .getPublicUrl(data.path);
+
+  return publicUrlData.publicUrl;
+};
+
 export const generateUploadURL = async () => {
   const path = `images/${nanoid()}-${Date.now()}.jpeg`;
 
