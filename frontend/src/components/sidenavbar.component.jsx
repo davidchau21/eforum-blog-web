@@ -97,6 +97,15 @@ const SideNav = () => {
                 </NavLink>
 
                 <NavLink
+                  to="/dashboard/documents"
+                  onClick={(e) => setPageState(e.target.innerText)}
+                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}
+                >
+                  <i className="fi fi-rr-folder text-[16px]"></i>
+                  {translations.myDocuments || "Tài liệu của tôi"}
+                </NavLink>
+
+                <NavLink
                   to="/dashboard/notifications"
                   onClick={(e) => setPageState(e.target.innerText)}
                   className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}

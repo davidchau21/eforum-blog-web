@@ -199,9 +199,8 @@ const Navbar = () => {
             </span>
           </Link>
           <Link
-            to="/feed"
-            onClick={handleExploreClick}
-            className="h-full flex items-center text-black/70 hover:text-indigo-600 font-bold text-sm px-1 transition-colors"
+            to="/directory"
+            className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all ${location.pathname === "/directory" ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
           >
             Directory
           </Link>

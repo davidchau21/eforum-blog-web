@@ -152,6 +152,8 @@ const translations = {
         followingLabel: "Đang theo dõi",
         myGroups: "Nhóm của tôi",
         savedBlogs: "Bài viết đã lưu",
+        myDocuments: "Tài liệu của tôi",
+        manageDocuments: "Quản lý tài liệu",
     },
     en: {
         searchPlaceholder: "Search",
@@ -305,6 +307,8 @@ const translations = {
         followingLabel: "Following",
         myGroups: "My Groups",
         savedBlogs: "Saved Blogs",
+        myDocuments: "My Documents",
+        manageDocuments: "Manage Documents",
     },
 };
 

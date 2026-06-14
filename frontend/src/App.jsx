@@ -17,6 +17,7 @@ import ChangePassword from "./pages/change-password.page";
 import EditProfile from "./pages/edit-profile.page";
 import Notifications from "./pages/notifications.page";
 import ManageBlogs from "./pages/manage-blogs.page";
+import ManageDocuments from "./pages/manage-documents.page.jsx";
 import VerifyOtp from "./pages/verifyOtp.page";
 import NewPasswordPage from "./pages/new-password.page";
 import ForgotPasswordPage from "./pages/forgot-password.page";
@@ -32,6 +33,7 @@ import LandingPage from "./pages/landing.page.jsx";
 import SavedBlogsPage from "./pages/saved-blogs.page.jsx";
 import AboutPage from "./pages/about.page.jsx";
 import TrendingPage from "./pages/trending.page.jsx";
+import DocumentLibraryPage from "./pages/directory.page.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -176,6 +178,7 @@ const App = () => {
                     }
                   >
                     <Route path="blogs" element={<ManageBlogs />} />
+                    <Route path="documents" element={<ManageDocuments />} />
                     <Route path="notifications" element={<Notifications />} />
                   </Route>
                   <Route
@@ -234,6 +237,7 @@ const App = () => {
                       </ProtectedRoute>
                     }
                   />
+                  <Route path="directory" element={<DocumentLibraryPage />} />
                   <Route path="*" element={<PageNotFound />} />
                 </Route>
               </Routes>
