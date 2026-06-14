@@ -194,9 +194,6 @@ const Navbar = () => {
             className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all gap-2 ${location.pathname === "/search-google" ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
           >
             Academic Search
-            <span className="bg-indigo-500/10 text-indigo-500 text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-tighter border border-indigo-500/20">
-              New
-            </span>
           </Link>
           <Link
             to="/directory"

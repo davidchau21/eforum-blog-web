@@ -4,7 +4,16 @@ import { getTranslations } from "../../translations";
 
 /* eslint-disable react/prop-types */
 const DocumentCard = ({ doc, onClick, language }) => {
-  const { title, description, file_type, file_size, author, views, downloads, createdAt } = doc;
+  const {
+    title,
+    description,
+    file_type,
+    file_size,
+    author,
+    views,
+    downloads,
+    createdAt,
+  } = doc;
   const translations = getTranslations(language || "vi");
 
   const formatFileSize = (bytes) => {
@@ -21,27 +30,27 @@ const DocumentCard = ({ doc, onClick, language }) => {
         return {
           icon: "fi fi-rr-file-pdf",
           bgColor: "bg-rose-500/10 text-rose-600 border-rose-500/20",
-          iconColor: "text-rose-500"
+          iconColor: "text-rose-500",
         };
       case "ppt":
       case "pptx":
         return {
           icon: "fi fi-rr-file-powerpoint",
           bgColor: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-          iconColor: "text-amber-500"
+          iconColor: "text-amber-500",
         };
       case "doc":
       case "docx":
         return {
           icon: "fi fi-rr-file-word",
           bgColor: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-          iconColor: "text-blue-500"
+          iconColor: "text-blue-500",
         };
       default:
         return {
           icon: "fi fi-rr-file",
           bgColor: "bg-slate-500/10 text-slate-600 border-slate-500/20",
-          iconColor: "text-slate-500"
+          iconColor: "text-slate-500",
         };
     }
   };
@@ -51,7 +60,7 @@ const DocumentCard = ({ doc, onClick, language }) => {
     try {
       // Trigger database download counter increment
       await axios.post(
-        import.meta.env.VITE_SERVER_DOMAIN + `/documents/${doc._id}/download`
+        import.meta.env.VITE_SERVER_DOMAIN + `/documents/${doc._id}/download`,
       );
 
       // Force browser to download file
@@ -79,7 +88,9 @@ const DocumentCard = ({ doc, onClick, language }) => {
     >
       {/* Left side: Icon + Title/Description */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center border ${fileStyles.bgColor} flex-shrink-0 transition-transform group-hover:scale-105 duration-200`}>
+        <div
+          className={`w-12 h-12 rounded-xl flex items-center justify-center border ${fileStyles.bgColor} flex-shrink-0 transition-transform group-hover:scale-105 duration-200`}
+        >
           <i className={`${fileStyles.icon} text-2xl mt-1`}></i>
         </div>
         <div className="min-w-0 flex-1">
@@ -123,7 +134,7 @@ const DocumentCard = ({ doc, onClick, language }) => {
           {new Date(createdAt).toLocaleDateString("vi-VN", {
             month: "short",
             day: "numeric",
-            year: "numeric"
+            year: "numeric",
           })}
         </span>
 
@@ -138,7 +149,7 @@ const DocumentCard = ({ doc, onClick, language }) => {
             <span>{downloads}</span>
           </div>
         </div>
-        
+
         {/* Quick Download Button */}
         <button
           onClick={handleQuickDownload}
