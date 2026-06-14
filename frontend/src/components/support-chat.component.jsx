@@ -1,8 +1,14 @@
 import { useState, useRef, useEffect } from "react";
 import ChatHistory from "./chat-history.component";
 import Loading from "./loading.component";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import chatBot from "../imgs/chatbot.png"; // Assuming this is an avatar/icon image
+
+const SUGGESTIONS = [
+  "Làm sao để đăng bài viết mới?",
+  "Cách tìm bài viết theo chủ đề?",
+  "Xem bài viết xu hướng ở đâu?",
+  "Liên hệ hỗ trợ kỹ thuật?",
+];
 
 const SupportChat = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,11 +32,6 @@ const SupportChat = () => {
     setUserInput(e.target.value);
   };
 
-  // Initialize Gemini API
-  // IMPORTANT: It's best practice to put API keys in .env
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-
   const startTypewriter = () => {
     if (typewriterIntervalRef.current) return;
 
@@ -42,19 +43,21 @@ const SupportChat = () => {
         // Calculate adaptive characters to print at once to catch up if lagging
         const lag = fullText.length - displayedText.length;
         const charsToAdd = lag > 40 ? 4 : lag > 15 ? 2 : 1;
-        
+
         const nextText = fullText.slice(0, displayedText.length + charsToAdd);
         displayedTextRef.current = nextText;
 
         setChatHistory((prevHistory) => {
-          const updatedHistory = [...prevHistory];
-          if (updatedHistory.length > 0 && updatedHistory[updatedHistory.length - 1].type === "bot") {
-            updatedHistory[updatedHistory.length - 1] = {
-              ...updatedHistory[updatedHistory.length - 1],
+          const lastIdx = prevHistory.length - 1;
+          if (lastIdx >= 0 && prevHistory[lastIdx].type === "bot") {
+            const updatedHistory = [...prevHistory];
+            updatedHistory[lastIdx] = {
+              ...updatedHistory[lastIdx],
               message: nextText,
             };
+            return updatedHistory;
           }
-          return updatedHistory;
+          return prevHistory;
         });
       } else if (!isStreamingRef.current) {
         // Stream has completed and we caught up
@@ -93,26 +96,88 @@ const SupportChat = () => {
     }
 
     try {
-      // Call Gemini API to get a response stream
-      const result = await model.generateContentStream(currentInput);
+      // Call Backend API to get response stream
+      const response = await fetch(
+        import.meta.env.VITE_SERVER_DOMAIN + "/chat/support",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ message: currentInput }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
 
       // Add a placeholder message for the bot to show the stream starts
       setChatHistory((prevHistory) => [
         ...prevHistory,
-        { type: "bot", message: "" }
+        { type: "bot", message: "" },
       ]);
-      
+
       // Stop showing the loading spinner, as we're starting the stream
       setIsLoading(false);
 
       // Start typewriter loop
       startTypewriter();
 
-      for await (const chunk of result.stream) {
-        const chunkText = chunk.text();
-        fullTextRef.current += chunkText;
-        startTypewriter();
+      const reader = response.body.getReader();
+      try {
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          
+          // Split buffer by lines
+          const lines = buffer.split("\n");
+          // Keep the last chunk (potentially incomplete line) in the buffer
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith("data:")) {
+              const jsonStr = trimmed.slice(5).trim();
+              if (jsonStr === "[DONE]") continue;
+              try {
+                const data = JSON.parse(jsonStr);
+                // Extract text chunk from the Gemini stream structure
+                const textChunk = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (textChunk) {
+                  fullTextRef.current += textChunk;
+                  startTypewriter();
+                }
+              } catch (err) {
+                console.warn("Failed to parse stream chunk:", err, trimmed);
+              }
+            }
+          }
+        }
+
+        // Process any remaining data in buffer
+        if (buffer && buffer.trim().startsWith("data:")) {
+          const jsonStr = buffer.trim().slice(5).trim();
+          try {
+            const data = JSON.parse(jsonStr);
+            const textChunk = data.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (textChunk) {
+              fullTextRef.current += textChunk;
+              startTypewriter();
+            }
+          } catch (err) {
+            // Ignore final block parse errors
+          }
+        }
+      } finally {
+        reader.releaseLock();
       }
+
     } catch (error) {
       console.error("Error sending message:", error);
       // Clean up typewriter interval
@@ -170,7 +235,9 @@ const SupportChat = () => {
   // Auto-scroll logic (uses smooth scroll on open/toggle/load, but auto/instant scroll during streaming to avoid lag)
   useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: isGenerating ? "auto" : "smooth" });
+      chatEndRef.current.scrollIntoView({
+        behavior: isGenerating ? "auto" : "smooth",
+      });
     }
   }, [chatHistory, isLoading, isOpen, isGenerating]);
 
@@ -236,17 +303,13 @@ const SupportChat = () => {
                 Xin chào! 👋
               </h4>
               <p className="text-[11px] text-dark-grey mb-4 max-w-[240px] leading-relaxed">
-                Mình là Trợ lý AI EForum. Bạn có thể hỏi mình bất cứ điều gì hoặc chọn các câu hỏi gợi ý bên dưới nhé!
+                Mình là Trợ lý AI EForum. Bạn có thể hỏi mình bất cứ điều gì
+                hoặc chọn các câu hỏi gợi ý bên dưới nhé!
               </p>
 
               {/* Suggestions Grid */}
               <div className="w-full space-y-2 max-w-[270px]">
-                {[
-                  "Làm sao để đăng bài viết mới?",
-                  "Cách tìm bài viết theo chủ đề?",
-                  "Xem bài viết xu hướng ở đâu?",
-                  "Liên hệ hỗ trợ kỹ thuật?"
-                ].map((suggestion, idx) => (
+                {SUGGESTIONS.map((suggestion, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleSuggestionClick(suggestion)}
@@ -259,7 +322,10 @@ const SupportChat = () => {
               </div>
             </div>
           ) : (
-            <ChatHistory chatHistory={chatHistory} isGenerating={isGenerating} />
+            <ChatHistory
+              chatHistory={chatHistory}
+              isGenerating={isGenerating}
+            />
           )}
 
           <Loading isLoading={isLoading} />

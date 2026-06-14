@@ -13,7 +13,13 @@ server.set("trust proxy", true);
 server.use(express.json());
 server.use(cors(corsOptions));
 
-connectDatabase();
+connectDatabase()
+  .then(() => {
+    console.log("Database connected successfully.");
+  })
+  .catch((err) => {
+    console.error("Database connection error:", err);
+  });
 
 // Use central router for all endpoints
 server.use("/", appRouter);
