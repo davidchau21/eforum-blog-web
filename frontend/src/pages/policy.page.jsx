@@ -1,23 +1,147 @@
 import React, { useContext } from "react";
-import { UserContext } from '../App'; // Đảm bảo bạn nhập đúng đường dẫn đến tệp App
-import { getTranslations } from '../../translations'; // Đảm bảo bạn nhập đúng đường dẫn đến tệp translations
+import { ThemeContext, UserContext } from "../App";
+import { getTranslations } from "../../translations";
+import AnimationWrapper from "../common/page-animation";
 
 const PolicyPage = () => {
-    const { userAuth } = useContext(UserContext); // Lấy thông tin người dùng từ context
-    const { language } = userAuth; // Lấy ngôn ngữ hiện tại
-    const translations = getTranslations(language); // Lấy bản dịch theo ngôn ngữ hiện tại
+  const { theme } = useContext(ThemeContext);
+  const { userAuth } = useContext(UserContext);
+  const language = userAuth?.language || "vi";
+  const translations = getTranslations(language);
 
-    return (
-        <div className="p-6 max-w-screen-lg min-h-screen mx-auto">
-            <h1 className="text-2xl font-bold mb-4">{translations.policyContent.title}</h1>
-            <p className="text-lg mb-4">{translations.policyContent.intro}</p>
-            <h2 className="text-xl font-semibold mb-2">{translations.policyContent.userConductTitle}</h2>
-            <p className="text-lg mb-4">{translations.policyContent.userConduct}</p>
-            <h2 className="text-xl font-semibold mb-2">{translations.policyContent.contentOwnershipTitle}</h2>
-            <p className="text-lg mb-4">{translations.policyContent.contentOwnership}</p>
-            <p className="text-lg">{translations.policyContent.closing}</p>
+  const isVi = language === "vi";
+  const t = translations.policyContent || {};
+
+  // Dynamic fallbacks for missing translation keys
+  const title = t.title || (isVi ? "Chính sách trang web" : "Site Policy");
+  const intro =
+    t.intro ||
+    (isVi
+      ? "Chào mừng bạn đến với EForum. Chính sách này phác thảo các quy tắc và nguyên tắc sử dụng nền tảng của chúng tôi để đảm bảo một môi trường học tập, thảo luận lành mạnh và an toàn cho tất cả thành viên."
+      : "Welcome to EForum. This policy outlines the rules and guidelines for using our platform to ensure a healthy, educational, and safe environment for all members.");
+
+  const userConductTitle =
+    t.userConductTitle || (isVi ? "Hành vi người dùng" : "User Conduct");
+  const userConduct =
+    t.userConduct ||
+    (isVi
+      ? "Người dùng được yêu cầu tham gia một cách tôn trọng và tránh mọi hình thức quấy rối, phát ngôn thù hận, hoặc chia sẻ nội dung không phù hợp."
+      : "Users are expected to engage respectfully and refrain from any form of harassment, hate speech, or inappropriate content.");
+
+  const contentOwnershipTitle =
+    t.contentOwnershipTitle ||
+    (isVi ? "Quyền sở hữu nội dung" : "Content Ownership");
+  const contentOwnership =
+    t.contentOwnership ||
+    (isVi
+      ? "Bằng việc đăng tải nội dung, người dùng cấp phép cho EForum quyền hiển thị và quảng bá nội dung trên nền tảng. Người dùng luôn giữ quyền sở hữu hoàn toàn nội dung của mình."
+      : "By submitting content, users grant EForum a license to display and promote their content on the platform. Users retain full ownership of their submissions.");
+
+  const closing =
+    t.closing ||
+    (isVi
+      ? "Bằng cách sử dụng EForum, bạn đồng ý tuân thủ các chính sách này. Nếu bạn có bất kỳ câu hỏi nào, xin vui lòng liên hệ với đội ngũ hỗ trợ của chúng tôi."
+      : "By using EForum, you agree to comply with these policies. If you have any questions, please feel free to contact our support team.");
+
+  return (
+    <AnimationWrapper>
+      <div
+        className={`min-h-screen py-16 px-[6vw] md:px-[15vw] lg:px-[20vw] transition-colors duration-500 font-inter ${
+          theme === "light"
+            ? "bg-[#FCFCFC] text-slate-900"
+            : "bg-[#09090B] text-slate-100"
+        }`}
+      >
+        {/* Subtle background grid pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
+
+        <div className="max-w-3xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="border-b border-slate-200 dark:border-slate-800 pb-8 mb-12">
+            <span className="text-xs font-bold uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400 mb-3 block">
+              {isVi ? "ĐIỀU KHOẢN & QUY ĐỊNH" : "RULES & GUIDELINES"}
+            </span>
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight font-jakarta leading-none mb-6">
+              {title}
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 font-light text-base leading-relaxed">
+              {intro}
+            </p>
+          </div>
+
+          {/* Single Column Content Sections */}
+          <div className="space-y-8 mb-12">
+            {/* Section 1: User Conduct */}
+            <div className="bg-white dark:bg-[#121214] border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 md:p-8 shadow-sm flex gap-5 hover:border-slate-350 dark:hover:border-slate-800 transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <i className="fi fi-rr-users-alt text-lg"></i>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold font-jakarta text-slate-800 dark:text-slate-200">
+                  {userConductTitle}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light">
+                  {userConduct}
+                </p>
+              </div>
+            </div>
+
+            {/* Section 2: Content Ownership */}
+            <div className="bg-white dark:bg-[#121214] border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 md:p-8 shadow-sm flex gap-5 hover:border-slate-350 dark:hover:border-slate-800 transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                <i className="fi fi-rr-document-signed text-lg"></i>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold font-jakarta text-slate-800 dark:text-slate-200">
+                  {contentOwnershipTitle}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light">
+                  {contentOwnership}
+                </p>
+              </div>
+            </div>
+
+            {/* Section 3: Moderation & Reporting */}
+            <div className="bg-white dark:bg-[#121214] border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 md:p-8 shadow-sm flex gap-5 hover:border-slate-350 dark:hover:border-slate-800 transition-all duration-300">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <i className="fi fi-rr-shield text-lg"></i>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold font-jakarta text-slate-800 dark:text-slate-200">
+                  {t.moderationTitle ||
+                    (isVi ? "Báo cáo & Điều hành" : "Moderation & Reporting")}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed font-light">
+                  {t.moderation ||
+                    (isVi
+                      ? "Hệ thống có quyền kiểm duyệt, chỉnh sửa hoặc gỡ bỏ các nội dung vi phạm mà không cần báo trước. Người dùng vi phạm nhiều lần có thể bị đình chỉ tài khoản tạm thời hoặc vĩnh viễn."
+                      : "We reserve the right to moderate, edit, or remove violating content without prior notice. Users who repeatedly violate our policies may have their accounts temporarily or permanently suspended.")}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Closing Banner */}
+          <div className="border border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center relative overflow-hidden bg-slate-50 dark:bg-[#121214]/50">
+            <div className="max-w-xl mx-auto space-y-4">
+              <p className="text-slate-550 dark:text-slate-400 text-sm font-light leading-relaxed">
+                {closing}
+              </p>
+              <div className="pt-2">
+                <a
+                  href="/contact"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white font-bold rounded-xl transition-all text-xs tracking-wider uppercase text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white"
+                >
+                  <i className="fi fi-rr-envelope"></i>
+                  {isVi ? "Liên Hệ Hỗ Trợ" : "Contact Support"}
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
-    );
+      </div>
+    </AnimationWrapper>
+  );
 };
 
 export default PolicyPage;

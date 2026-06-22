@@ -97,20 +97,36 @@ const translations = {
         },
         policyContent: {
             title: "Chính sách trang web",
-            userConduct: "Người dùng được yêu cầu tham gia một cách tôn trọng và tránh mọi hình thức quấy rối, phát ngôn thù hận, hoặc nội dung không phù hợp.",
-            contentOwnership: "Bằng việc gửi nội dung, người dùng cấp phép cho EForum hiển thị và quảng bá nội dung trên nền tảng. Người dùng giữ quyền sở hữu hoàn toàn nội dung của mình."
+            intro: "Chào mừng bạn đến với EForum. Các chính sách dưới đây được thiết lập để định hướng hành vi của các thành viên, bảo vệ quyền sở hữu trí tuệ và đảm bảo một cộng đồng học thuật an toàn, văn minh.",
+            userConductTitle: "Hành vi người dùng",
+            userConduct: "Thành viên phải tương tác một cách tôn trọng. Nghiêm cấm mọi hành vi quấy rối, ngôn từ thù hận, công kích cá nhân, đạo văn hoặc phát tán thông tin sai lệch, spam quảng cáo và nội dung không phù hợp với chuẩn mực giáo dục.",
+            contentOwnershipTitle: "Quyền sở hữu nội dung",
+            contentOwnership: "Bạn giữ toàn bộ quyền sở hữu đối với các bài viết, tài liệu và bình luận do bạn đăng tải. Bằng việc đăng nội dung lên EForum, bạn cấp cho chúng tôi quyền hiển thị, phân phối và quảng bá nội dung đó trên hệ thống.",
+            moderationTitle: "Báo cáo & Điều hành",
+            moderation: "Hệ thống có quyền kiểm duyệt, chỉnh sửa hoặc gỡ bỏ các nội dung vi phạm mà không cần báo trước. Người dùng vi phạm nhiều lần có thể bị đình chỉ tài khoản tạm thời hoặc vĩnh viễn.",
+            closing: "Bằng việc đăng ký tài khoản và hoạt động trên EForum, bạn đồng ý tuân thủ các điều lệ chính sách này."
         },
         privacyContent: {
             title: "Chính sách bảo mật",
-            intro: "Tại EForum, chúng tôi tôn trọng và coi trọng quyền riêng tư của bạn.",
-            informationCollection: "Chúng tôi thu thập thông tin mà bạn cung cấp khi đăng ký, chẳng hạn như tên, địa chỉ email và sở thích của bạn.",
-            dataUsage: "Thông tin của bạn được sử dụng để cung cấp và nâng cao dịch vụ của chúng tôi, cá nhân hóa trải nghiệm của bạn, và thông báo các cập nhật quan trọng."
+            intro: "Tại EForum, sự an toàn và quyền riêng tư của bạn là ưu tiên hàng đầu của chúng tôi. Tài liệu này mô tả chi tiết cách thức chúng tôi thu thập, xử lý và bảo vệ thông tin cá nhân của bạn.",
+            informationCollectionTitle: "Thông tin thu thập",
+            informationCollection: "Chúng tôi thu thập các thông tin bạn cung cấp trực tiếp như tên hiển thị, địa chỉ email, mật khẩu đã mã hóa và ảnh đại diện. Ngoài ra, hệ thống tự động ghi nhận nhật ký hoạt động (lượt thích, bình luận, bài viết đã lưu) và thông tin trình duyệt để cải thiện dịch vụ.",
+            dataUsageTitle: "Mục đích sử dụng",
+            dataUsage: "Dữ liệu được dùng để vận hành nền tảng, cá nhân hóa nội dung hiển thị, gửi thông báo hệ thống và ngăn chặn các hành vi gian lận hoặc phá hoại bảo mật. Chúng tôi cam kết không bán hoặc chia sẻ thông tin cá nhân của bạn cho bên thứ ba vì mục đích thương mại.",
+            dataProtectionTitle: "Quyền của bạn",
+            dataProtection: "Bạn có toàn quyền truy cập, chỉnh sửa hoặc cập nhật thông tin cá nhân trong trang cài đặt tài khoản bất kỳ lúc nào. Bạn cũng có quyền yêu cầu xóa bỏ tài khoản hoặc gỡ các bài viết đã xuất bản khỏi hệ thống.",
+            closing: "Nếu bạn có bất kỳ câu hỏi nào về chính sách bảo mật, xin vui lòng liên hệ với ban quản trị qua hòm thư hỗ trợ."
         },
         termsOfServiceContent: {
             title: "Điều khoản dịch vụ",
-            intro: "Các điều khoản dịch vụ này điều chỉnh việc bạn sử dụng EForum và nêu rõ các điều kiện để truy cập nền tảng của chúng tôi.",
-            accountRegistration: "Người dùng phải đăng ký tài khoản để truy cập một số tính năng nhất định. Bằng cách tạo tài khoản, bạn đồng ý cung cấp thông tin chính xác và giữ cho nó được cập nhật.",
-            serviceLimitations: "EForum có quyền sửa đổi hoặc ngừng cung cấp dịch vụ bất kỳ lúc nào mà không cần thông báo trước."
+            intro: "Các điều khoản dịch vụ này cấu thành một thỏa thuận pháp lý giữa bạn và EForum về việc truy cập và sử dụng dịch vụ trên nền tảng của chúng tôi.",
+            accountRegistrationTitle: "Tài khoản người dùng",
+            accountRegistration: "Để tham gia viết bài hoặc thảo luận, bạn cần đăng ký tài khoản và cam kết cung cấp thông tin chính xác. Bạn chịu trách nhiệm bảo mật thông tin đăng nhập cá nhân và mọi hoạt động diễn ra dưới tài khoản của mình.",
+            serviceLimitationsTitle: "Giới hạn trách nhiệm",
+            serviceLimitations: "EForum được cung cấp trên cơ sở nguyên trạng ('as is'). Chúng tôi không đảm bảo dịch vụ sẽ luôn hoạt động liên tục hoặc không có lỗi. Chúng tôi không chịu trách nhiệm pháp lý đối với bất kỳ mất mát dữ liệu hoặc thiệt hại phát sinh từ việc sử dụng dịch vụ.",
+            termAcceptanceTitle: "Chấp thuận điều khoản",
+            termAcceptance: "Bằng cách truy cập hoặc sử dụng EForum, bạn xác nhận đã đọc, hiểu và đồng ý bị ràng buộc bởi các điều khoản này. Chúng tôi có quyền cập nhật các điều khoản này và sẽ thông báo trước khi có thay đổi lớn.",
+            closing: "Vui lòng đọc kỹ các điều khoản này trước khi bắt đầu sử dụng dịch vụ của EForum."
         },
         stats: "Thống kê",
         likesCount: "Lượt thích",
@@ -252,20 +268,36 @@ const translations = {
         },
         policyContent: {
             title: "Site Policy",
-            userConduct: "Users are expected to engage respectfully and refrain from any form of harassment, hate speech, or inappropriate content.",
-            contentOwnership: "By submitting content, users grant EForum a license to display and promote their content on the platform. Users retain full ownership of their submissions."
+            intro: "Welcome to EForum. The policies below are established to guide member behavior, protect intellectual property rights, and ensure a safe and civilized academic community.",
+            userConductTitle: "User Conduct",
+            userConduct: "Members must interact respectfully. We strictly prohibit harassment, hate speech, personal attacks, plagiarism, fake news, advertising spam, and any content inappropriate for educational standards.",
+            contentOwnershipTitle: "Content Ownership",
+            contentOwnership: "You retain full ownership of all posts, documents, and comments you publish. By posting content on EForum, you grant us a non-exclusive license to display, distribute, and promote your content.",
+            moderationTitle: "Moderation & Reporting",
+            moderation: "We reserve the right to moderate, edit, or remove violating content without prior notice. Users who repeatedly violate our policies may have their accounts temporarily or permanently suspended.",
+            closing: "By creating an account and participating in EForum, you agree to comply with these community rules."
         },
         privacyContent: {
             title: "Privacy Policy",
-            intro: "At EForum, we respect and value your privacy.",
-            informationCollection: "We collect information that you provide when signing up, such as your name, email address, and preferences.",
-            dataUsage: "Your information is used to provide and enhance our services, personalize your experience, and communicate important updates."
+            intro: "At EForum, your safety and privacy are our top priorities. This document details how we collect, process, and secure your personal information.",
+            informationCollectionTitle: "Information We Collect",
+            informationCollection: "We collect information you provide directly, such as your display name, email address, encrypted password, and profile image. We also automatically log activity data (likes, comments, saved posts) and browser metadata to optimize platform performance.",
+            dataUsageTitle: "How We Use Data",
+            dataUsage: "Your data is used to run the platform, personalize your feed, send system updates, and prevent fraudulent activities. We commit to never selling or sharing your personal information with third parties for commercial advertising.",
+            dataProtectionTitle: "Your Data Rights",
+            dataProtection: "You have full rights to access, edit, or update your personal details in the account settings page at any time. You can also request permanent deletion of your account and removal of published blogs.",
+            closing: "If you have any questions regarding this privacy policy, please contact our administration via the support page."
         },
         termsOfServiceContent: {
             title: "Terms of Service",
-            intro: "These Terms of Service govern your use of EForum and outline the conditions for accessing our platform.",
-            accountRegistration: "Users must register for an account to access certain features. By creating an account, you agree to provide accurate information and keep it up to date.",
-            serviceLimitations: "EForum reserves the right to modify or discontinue services at any time, without prior notice."
+            intro: "These Terms of Service constitute a legal agreement between you and EForum regarding your access and use of our platform services.",
+            accountRegistrationTitle: "User Accounts",
+            accountRegistration: "To write articles or join discussions, you must register an account and agree to provide accurate information. You are responsible for keeping your login credentials secure and for all activities that occur under your account.",
+            serviceLimitationsTitle: "Limitation of Liability",
+            serviceLimitations: "EForum is provided on an 'as is' basis. We do not guarantee uninterrupted or error-free operations. We are not liable for any data loss or damages arising from your use of the platform.",
+            termAcceptanceTitle: "Acceptance of Terms",
+            termAcceptance: "By accessing or using EForum, you acknowledge that you have read, understood, and agree to be bound by these terms. We reserve the right to update these terms and will notify users of major changes.",
+            closing: "Please read these terms carefully before you start using EForum's services."
         },
         stats: "Stats",
         likesCount: "Likes",

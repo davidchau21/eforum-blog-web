@@ -5,170 +5,269 @@ import AnimationWrapper from "../common/page-animation";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-import { twMerge } from "tailwind-merge";
-
-const BentoCard = ({ children, className = "", delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.95 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    viewport={{ once: true }}
-    transition={{ duration: 0.7, delay, ease: [0.22, 1, 0.36, 1] }}
-    className={twMerge(
-      "bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-[32px] p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-xl transition-all duration-500 group",
-      className
-    )}
-  >
-    {children}
-  </motion.div>
-);
-
 const AboutPage = () => {
   const { theme } = useContext(ThemeContext);
   const { userAuth } = useContext(UserContext);
-  const translations = getTranslations(userAuth.language);
+  const language = userAuth?.language || "vi";
+  const translations = getTranslations(language);
   const navigate = useNavigate();
+
+  const isVi = language === "vi";
+
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1.0] },
+    },
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+      },
+    },
+  };
 
   return (
     <AnimationWrapper>
       <section
-        className={`min-h-screen py-20 px-[5vw] md:px-[10vw] ${theme === "light" ? "bg-[#F8FAFC]" : "bg-[#09090B]"} transition-colors duration-500 font-inter`}
+        className={`min-h-screen py-24 px-[6vw] md:px-[12vw] transition-colors duration-500 font-inter ${
+          theme === "light"
+            ? "bg-[#FCFCFC] text-slate-900"
+            : "bg-[#09090B] text-slate-100"
+        }`}
       >
-        {/* Header */}
-        <div className="max-w-7xl mx-auto mb-16 text-center md:text-left">
-          <div className="inline-block px-4 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 rounded-full border border-indigo-100 dark:border-indigo-500/20 mb-6">
-            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400">
-              Our Identity
-            </span>
+        {/* Subtle grid background for high-end editorial look */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px] pointer-events-none"></div>
+
+        <div className="max-w-5xl mx-auto relative z-10">
+          {/* Header Section */}
+          <div className="border-b border-slate-200 dark:border-slate-800 pb-12 mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-xs font-bold uppercase tracking-[0.4em] text-indigo-600 dark:text-indigo-400 mb-4"
+            >
+              {isVi ? "CHÚNG TÔI LÀ EFORUM" : "WE ARE EFORUM"}
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-4xl md:text-6xl font-extrabold tracking-tight font-jakarta mb-6 leading-tight"
+            >
+              {isVi
+                ? "Nơi tri thức hội tụ và lan tỏa."
+                : "Where knowledge converges and grows."}
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="text-lg md:text-xl text-slate-500 dark:text-slate-400 font-light max-w-3xl leading-relaxed"
+            >
+              {translations.aboutUsDes ||
+                (isVi
+                  ? "EForum được tạo ra nhằm xóa bỏ rào cản thông tin, cung cấp không gian học thuật mở và chất lượng cao cho cộng đồng học tập toàn cầu."
+                  : "EForum was created to break information barriers, providing an open, high-quality academic space for the global learning community.")}
+            </motion.p>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white tracking-tighter leading-none font-jakarta">
-            Empowering Scholars.
-          </h1>
-        </div>
 
-        {/* Bento Grid */}
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 auto-rows-auto">
-          {/* Hero: Mission */}
-          <BentoCard className="md:col-span-12 lg:col-span-8 flex flex-col justify-center min-h-[350px] border-l-8 border-l-indigo-600 overflow-hidden relative">
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-50 dark:bg-indigo-500/5 rounded-full blur-3xl"></div>
-            
-            <div className="relative z-10 space-y-6">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-indigo-600 opacity-60">
-                Our Mission
-              </h3>
-              <p className="text-3xl md:text-5xl font-bold leading-tight font-jakarta tracking-tight text-slate-900 dark:text-white">
-                {translations.aboutUsDes ||
-                  "Democratizing education by creating the world's most immersive academic community."}
-              </p>
-            </div>
-          </BentoCard>
-
-          {/* Stats */}
-          <BentoCard className="md:col-span-6 lg:col-span-4 bg-slate-900 dark:bg-[#111113] text-white border-none flex flex-col justify-center items-center text-center">
-            <div className="grid grid-cols-1 gap-10">
-              <div className="space-y-1">
-                <p className="text-5xl font-black text-emerald-400 font-jakarta tracking-tighter">
-                  10K+
-                </p>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Active Learners
+          {/* Story Rows (Alternating Layout) */}
+          <div className="space-y-24 mb-28">
+            {/* Row 1 */}
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center"
+            >
+              <div className="md:col-span-7 space-y-6">
+                <span className="text-[10px] font-bold tracking-[0.2em] text-indigo-500 dark:text-indigo-400 uppercase">
+                  {isVi ? "Tầm Nhìn" : "Our Vision"}
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-jakarta">
+                  {isVi
+                    ? "Nền tảng tri thức mở hàng đầu"
+                    : "The leading open knowledge platform"}
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed font-light">
+                  {isVi
+                    ? "Chúng tôi tin rằng giáo dục và tri thức nên được tiếp cận một cách tự do nhất. EForum nỗ lực xây dựng môi trường mở để bất kỳ ai cũng có thể chia sẻ tiếng nói chuyên môn, ý kiến nghiên cứu và những bài học bổ ích."
+                    : "We believe education and knowledge should be accessed as freely as possible. EForum strives to build an open environment where anyone can share expert voices, research insights, and valuable lessons."}
                 </p>
               </div>
-              <div className="w-12 h-[1px] bg-white/10 mx-auto"></div>
-              <div className="space-y-1">
-                <p className="text-5xl font-black text-indigo-400 font-jakarta tracking-tighter">
+              <div className="md:col-span-5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 relative overflow-hidden flex flex-col justify-center h-64">
+                <span className="text-6xl font-black text-indigo-500/20 absolute -right-4 -bottom-4 font-jakarta">
+                  10K
+                </span>
+                <p className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-2 font-jakarta">
+                  10,000+
+                </p>
+                <p className="text-xs tracking-wider uppercase text-slate-400 font-semibold">
+                  {isVi
+                    ? "Người dùng đồng hành cùng EForum"
+                    : "Scholars sharing on EForum"}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Row 2 */}
+            <motion.div
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, margin: "-100px" }}
+              className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-16 items-center"
+            >
+              <div className="md:col-span-5 order-last md:order-first bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 relative overflow-hidden flex flex-col justify-center h-64">
+                <span className="text-6xl font-black text-emerald-500/20 absolute -right-4 -bottom-4 font-jakarta">
+                  500
+                </span>
+                <p className="text-3xl font-bold text-slate-800 dark:text-slate-200 mb-2 font-jakarta">
                   500+
                 </p>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-                  Knowledge Tags
+                <p className="text-xs tracking-wider uppercase text-slate-400 font-semibold">
+                  {isVi
+                    ? "Thẻ chủ đề được thảo luận sâu rộng"
+                    : "Unique subject tags created"}
                 </p>
               </div>
-            </div>
-          </BentoCard>
-
-          {/* Who We Are */}
-          <BentoCard className="md:col-span-6 lg:col-span-5" delay={0.1}>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-500 mb-8">
-              The Community
-            </h3>
-            <p className="text-lg text-slate-600 dark:text-slate-400 font-medium leading-relaxed">
-              EForum isn't just a blog. It's a living ecosystem where students,
-              researchers, and experts converge to solve the problems of
-              tomorrow.
-            </p>
-            <div className="mt-8 pt-8 border-t border-slate-100 dark:border-white/5">
-              <button className="text-slate-900 dark:text-white font-bold text-xs uppercase tracking-widest flex items-center gap-3 group">
-                Explore Guidelines
-                <i className="fi fi-rr-arrow-right group-hover:translate-x-2 transition-transform"></i>
-              </button>
-            </div>
-          </BentoCard>
-
-          {/* Values */}
-          <BentoCard
-            className="md:col-span-6 lg:col-span-7 border-l-8 border-l-emerald-500 flex flex-col justify-between overflow-hidden relative"
-            delay={0.2}
-          >
-            <div className="absolute top-0 right-0 p-10 text-emerald-500/10">
-              <i className="fi fi-rr-bulb text-[120px]"></i>
-            </div>
-            <div className="relative z-10">
-              <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-600 opacity-60 mb-10">
-                Core Principles
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                <div className="space-y-2">
-                  <h4 className="font-black text-xl font-jakarta text-slate-900 dark:text-white">
-                    Open Source
-                  </h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                    Knowledge belongs to everyone. No paywalls, no barriers.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-black text-xl font-jakarta text-slate-900 dark:text-white">Integrity</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                    Peer-reviewed thinking and rigorous factual standards.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-black text-xl font-jakarta text-slate-900 dark:text-white">Velocity</h4>
-                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                    Fast-paced discussion for a fast-changing world.
-                  </p>
+              <div className="md:col-span-7 space-y-6">
+                <span className="text-[10px] font-bold tracking-[0.2em] text-emerald-500 dark:text-emerald-400 uppercase">
+                  {isVi ? "Cộng Đồng" : "Our Community"}
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight font-jakarta">
+                  {isVi
+                    ? "Nơi đối thoại văn minh, sâu sắc"
+                    : "A civilized and deep dialogue"}
+                </h2>
+                <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base leading-relaxed font-light">
+                  {isVi
+                    ? "Tại đây, chất lượng bài viết và tư duy phản biện được đặt lên hàng đầu. Mỗi thành viên đóng góp đều giúp xây dựng nên một thư viện tài liệu học tập khổng lồ và đáng tin cậy."
+                    : "Here, quality of posts and critical thinking are placed at the forefront. Every contributing member helps build a massive and trustworthy library of learning materials."}
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => navigate("/policy")}
+                    className="group inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400"
+                  >
+                    {isVi ? "Xem Quy Tắc Cộng Đồng" : "Explore Community Rules"}
+                    <i className="fi fi-rr-arrow-right group-hover:translate-x-1.5 transition-transform"></i>
+                  </button>
                 </div>
               </div>
-            </div>
-          </BentoCard>
+            </motion.div>
+          </div>
 
-          {/* Final CTA */}
-          <BentoCard
-            className="md:col-span-12 lg:col-span-12 flex flex-col md:flex-row items-center justify-between gap-12 border-l-8 border-l-indigo-600"
-            delay={0.3}
+          {/* Core Pillars (Three Columns with Thin Borders) */}
+          <div className="border-t border-slate-200 dark:border-slate-800 pt-16 mb-24">
+            <div className="text-center md:text-left mb-12">
+              <span className="text-xs font-bold uppercase tracking-[0.3em] text-slate-400">
+                {isVi ? "BA TRỤ CỘT HÀNH ĐỘNG" : "THREE CORE PILLARS"}
+              </span>
+            </div>
+
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-0 md:divide-x divide-slate-200 dark:divide-slate-800"
+            >
+              {/* Pillar 1 */}
+              <div className="space-y-4 md:px-6 first:pl-0 last:pr-0">
+                <div className="text-indigo-600 dark:text-indigo-400 text-3xl font-light">
+                  01
+                </div>
+                <h3 className="text-xl font-bold font-jakarta">
+                  {isVi ? "Tự Do Tri Thức" : "Knowledge Freedom"}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm leading-relaxed font-light">
+                  {isVi
+                    ? "Chia sẻ không giới hạn và hoàn toàn mở, đưa tri thức đến mọi góc của đời sống học thuật."
+                    : "Unlimited and completely open sharing, bringing knowledge to every corner of academic life."}
+                </p>
+              </div>
+
+              {/* Pillar 2 */}
+              <div className="space-y-4 md:px-6">
+                <div className="text-emerald-600 dark:text-emerald-400 text-3xl font-light">
+                  02
+                </div>
+                <h3 className="text-xl font-bold font-jakarta">
+                  {isVi ? "Liêm Chính Học Thuật" : "Academic Integrity"}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm leading-relaxed font-light">
+                  {isVi
+                    ? "Tôn trọng chất xám, nói không với tin giả, đạo văn và các nội dung kém văn minh."
+                    : "Respect intelligence, say no to fake news, plagiarism, and uncivilized content."}
+                </p>
+              </div>
+
+              {/* Pillar 3 */}
+              <div className="space-y-4 md:px-6">
+                <div className="text-indigo-600 dark:text-indigo-400 text-3xl font-light">
+                  03
+                </div>
+                <h3 className="text-xl font-bold font-jakarta">
+                  {isVi ? "Không Ngừng Cải Tiến" : "Continuous Growth"}
+                </h3>
+                <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm leading-relaxed font-light">
+                  {isVi
+                    ? "Tối ưu hóa công cụ viết và lưu trữ để giúp việc truyền tải thông tin đạt tốc độ cao nhất."
+                    : "Optimizing writing and storage tools to enable the fastest possible distribution of insights."}
+                </p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Bottom Interactive Invitation Banner */}
+          <motion.div
+            variants={fadeInUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="border border-slate-200 dark:border-slate-800 rounded-3xl p-10 md:p-12 text-center relative overflow-hidden"
           >
-            <div className="max-w-2xl">
-              <h3 className="text-3xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tighter font-jakarta leading-tight">
-                Your knowledge is the catalyst.
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div className="relative z-10 max-w-xl mx-auto space-y-6">
+              <h3 className="text-2xl md:text-3xl font-extrabold font-jakarta tracking-tight">
+                {isVi
+                  ? "Bạn đã sẵn sàng chia sẻ chưa?"
+                  : "Ready to share your voice?"}
               </h3>
-              <p className="text-lg text-slate-500 dark:text-slate-400 font-medium">
-                Become a contributor and join the ranks of the community's elite
-                scholars.
+              <p className="text-slate-500 dark:text-slate-400 text-sm font-light leading-relaxed">
+                {isVi
+                  ? "Hãy đăng ký và đồng hành cùng hàng ngàn tác giả chất lượng khác trên EForum ngay hôm nay."
+                  : "Sign up and join thousands of other high-quality writers on EForum today."}
               </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+                <button
+                  onClick={() => navigate("/signup")}
+                  className="px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-xl hover:bg-indigo-600 dark:hover:bg-indigo-400 hover:text-white transition-all text-xs tracking-wider uppercase"
+                >
+                  {isVi ? "Bắt đầu ngay" : "Get Started"}
+                </button>
+                <button
+                  onClick={() => navigate("/chat")}
+                  className="px-8 py-3.5 border border-slate-300 dark:border-slate-700 hover:border-slate-900 dark:hover:border-white font-bold rounded-xl transition-all text-xs tracking-wider uppercase text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white"
+                >
+                  {isVi ? "Trò chuyện" : "Join Discussion"}
+                </button>
+              </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-              <button
-                onClick={() => navigate("/signup")}
-                className="px-10 py-5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl uppercase tracking-widest text-xs"
-              >
-                Start Writing
-              </button>
-              <button
-                onClick={() => navigate("/chat")}
-                className="px-10 py-5 border-2 border-slate-900 dark:border-white text-slate-900 dark:text-white font-bold rounded-2xl hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition-all uppercase tracking-widest text-xs"
-              >
-                Join Discussion
-              </button>
-            </div>
-          </BentoCard>
+          </motion.div>
         </div>
       </section>
     </AnimationWrapper>
