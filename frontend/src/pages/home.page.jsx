@@ -194,6 +194,8 @@ const HomePage = () => {
     setPageState(getPageStateFromURL());
   }, [location.pathname]);
 
+  // IMPORTANT: avoid scroll jump when token changes after login.
+  // Only refetch when pageState changes; don't run this block just because access_token updates.
   useEffect(() => {
     setBlogs(null); // Reset blogs for the new tab
     if (pageState === "feed") {
@@ -215,7 +217,17 @@ const HomePage = () => {
     if (!adminBlogs) fetchAdminBlogs();
     fetchTrendingTopics();
     fetchTopContributors();
-  }, [pageState, access_token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageState]);
+
+  // When token changes (login/logout) we may need to refresh following tab only,
+  // but without forcing a global layout reset that can cause scroll jump.
+  useEffect(() => {
+    if (!access_token) return;
+    if (pageState !== translations.following) return;
+    fetchFollowingBlogs({ page: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [access_token]);
 
   useEffect(() => {
     fetchAlert();

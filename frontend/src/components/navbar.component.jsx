@@ -483,12 +483,11 @@ const Navbar = () => {
                   )}
                 </Link>
 
-                <div
-                  className="relative ml-2"
-                  onClick={handleUserNavPanel}
-                  ref={userNavRef}
-                >
-                  <button className="w-9 h-9 rounded-full ring-2 ring-transparent hover:ring-indigo-500/20 transition-all focus:outline-none focus:ring-indigo-500/40 cursor-pointer">
+                <div className="relative ml-2" ref={userNavRef}>
+                  <button
+                    onClick={handleUserNavPanel}
+                    className="w-9 h-9 rounded-full ring-2 ring-transparent hover:ring-indigo-500/20 transition-all focus:outline-none focus:ring-indigo-500/40 cursor-pointer"
+                  >
                     <img
                       src={profile_img}
                       className="w-full h-full object-cover rounded-full border border-grey"
