@@ -59,10 +59,31 @@ class UserService {
     );
   }
 
-  async searchUsers(query) {
-    return await User.find({ "personal_info.username": new RegExp(query, "i") })
-      .limit(50)
-      .select("personal_info.fullname personal_info.username personal_info.profile_img -_id");
+  async searchUsers(query = "", page = 1, limit = 20, loggedInUserId = null) {
+    const skipVal = (page - 1) * limit;
+
+    let filter = {
+      $or: [
+        { "personal_info.username": new RegExp(query, "i") },
+        { "personal_info.fullname": new RegExp(query, "i") },
+        { "personal_info.email": new RegExp(query, "i") }
+      ]
+    };
+
+    if (loggedInUserId) {
+      // Find all users the logged-in user is following
+      const followedDocs = await UserFollow.find({ follower: loggedInUserId }).select("following -_id");
+      const followedUserIds = followedDocs.map(doc => doc.following);
+
+      // Exclude logged-in user and any followed users
+      const excludeIds = [loggedInUserId, ...followedUserIds];
+      filter._id = { $nin: excludeIds };
+    }
+
+    return await User.find(filter)
+      .skip(skipVal)
+      .limit(limit)
+      .select("personal_info.fullname personal_info.username personal_info.profile_img personal_info.bio");
   }
 
   async getProfile(username) {

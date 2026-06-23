@@ -34,6 +34,7 @@ import SavedBlogsPage from "./pages/saved-blogs.page.jsx";
 import AboutPage from "./pages/about.page.jsx";
 import TrendingPage from "./pages/trending.page.jsx";
 import DocumentLibraryPage from "./pages/directory.page.jsx";
+import FriendsPage from "./pages/friends.page";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -126,6 +127,7 @@ const App = () => {
     "/editor",
     "/landing",
     "/feed",
+    "/friends",
   ];
   const shouldShowFooter = !excludedPaths.some((path) =>
     path === "/"
@@ -238,6 +240,7 @@ const App = () => {
                     }
                   />
                   <Route path="directory" element={<DocumentLibraryPage />} />
+                  <Route path="friends" element={<FriendsPage />} />
                   <Route path="*" element={<PageNotFound />} />
                 </Route>
               </Routes>

@@ -85,7 +85,6 @@ const Footer = () => {
     >
       {/* ── Main grid ── */}
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-12 lg:gap-24">
-
         {/* Brand block */}
         <div className="max-w-xs space-y-5">
           <Link
@@ -117,19 +116,36 @@ const Footer = () => {
 
           {/* Social icons */}
           <div className="flex gap-2 pt-1">
-            <SocialBtn to="https://www.facebook.com/" label="Facebook" icon="fi-brands-facebook" />
-            <SocialBtn to="https://twitter.com/" label="Twitter / X" icon="fi-brands-twitter" />
-            <SocialBtn to="https://www.youtube.com/" label="YouTube" icon="fi-brands-youtube" />
-            <SocialBtn to="https://github.com/davidchau21/edu-blog-web" label="GitHub" icon="fi-brands-github" />
+            <SocialBtn
+              to="https://www.facebook.com/"
+              label="Facebook"
+              icon="fi-brands-facebook"
+            />
+            <SocialBtn
+              to="https://twitter.com/"
+              label="Twitter / X"
+              icon="fi-brands-twitter"
+            />
+            <SocialBtn
+              to="https://www.youtube.com/"
+              label="YouTube"
+              icon="fi-brands-youtube"
+            />
+            <SocialBtn
+              to="https://github.com/davidchau21"
+              label="GitHub"
+              icon="fi-brands-github"
+            />
           </div>
         </div>
 
         {/* Link columns */}
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
-
           {/* Explore */}
           <nav aria-label="Explore navigation">
-            <SectionHeading>{translations.navigation || "Explore"}</SectionHeading>
+            <SectionHeading>
+              {translations.navigation || "Explore"}
+            </SectionHeading>
             <ul className="space-y-3">
               <NavLink to="/feed">Latest Feed</NavLink>
               <NavLink to="/trending">Trending</NavLink>
@@ -142,7 +158,9 @@ const Footer = () => {
             <SectionHeading>{translations.aboutUs || "Company"}</SectionHeading>
             <ul className="space-y-3">
               <NavLink to="/about">{translations.aboutUs || "About"}</NavLink>
-              <NavLink to="/contact">{translations.contact || "Contact"}</NavLink>
+              <NavLink to="/contact">
+                {translations.contact || "Contact"}
+              </NavLink>
             </ul>
           </nav>
 
@@ -150,8 +168,12 @@ const Footer = () => {
           <nav aria-label="Legal navigation">
             <SectionHeading>{translations.legal || "Legal"}</SectionHeading>
             <ul className="space-y-3">
-              <NavLink to="/privacy">{translations.privacy || "Privacy"}</NavLink>
-              <NavLink to="/terms-of-service">{translations.termsOfService || "Terms"}</NavLink>
+              <NavLink to="/privacy">
+                {translations.privacy || "Privacy"}
+              </NavLink>
+              <NavLink to="/terms-of-service">
+                {translations.termsOfService || "Terms"}
+              </NavLink>
               <NavLink to="/policy">{translations.policy || "Policy"}</NavLink>
             </ul>
           </nav>
@@ -165,18 +187,14 @@ const Footer = () => {
               <NavLink to="/settings/edit-profile">Profile</NavLink>
             </ul>
           </nav>
-
         </div>
       </div>
 
       {/* ── Bottom strip ── */}
       <div className="border-t border-[#E5E7EB] dark:border-[#27272A]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-center gap-2">
           <p className="font-[Roboto] text-[11px] text-[#9CA3AF] tracking-[0.08em]">
             © 2025 {translations.siteName || "EFORUM"}. All rights reserved.
-          </p>
-          <p className="font-[Roboto] text-[11px] text-[#9CA3AF] tracking-[0.08em]">
-            Made with ✨ for learners
           </p>
         </div>
       </div>

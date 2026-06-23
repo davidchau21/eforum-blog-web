@@ -297,6 +297,16 @@ const Navbar = () => {
                     </span>
                   </Link>
                   <Link
+                    to="/friends"
+                    className="flex items-center gap-3 text-black font-bold hover:text-indigo-500 text-sm"
+                    onClick={handleMenuClose}
+                  >
+                    <i className="fi fi-rr-users text-indigo-500 text-lg"></i>
+                    <span>
+                      {language === "vi" ? "Bạn bè" : "Friends"}
+                    </span>
+                  </Link>
+                  <Link
                     to="/settings/edit-profile"
                     className="flex items-center gap-3 text-black font-bold hover:text-indigo-500 text-sm"
                     onClick={handleMenuClose}

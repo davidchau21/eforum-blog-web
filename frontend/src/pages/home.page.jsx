@@ -350,6 +350,17 @@ const HomePage = () => {
               ></i>
               Popular
             </button>
+            <button
+              onClick={() => {
+                navigate("/friends");
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-dark-grey hover:bg-grey hover:text-black`}
+            >
+              <i
+                className={`fi fi-rr-users text-base mt-0.5`}
+              ></i>
+              {language === "vi" ? "Bạn bè" : "Friends"}
+            </button>
             <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-dark-grey hover:bg-grey hover:text-black">
               <i className="fi fi-rr-users text-base mt-0.5"></i>
               {translations.myGroups}

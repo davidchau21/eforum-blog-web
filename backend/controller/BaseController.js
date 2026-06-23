@@ -20,7 +20,7 @@ export class BaseController {
    */
   sendError(res, error, statusCode = 500) {
     const message = error.message || error || "Internal Server Error";
-    console.error(`[Error]: ${message}`);
+    // console.error(`[Error]: ${message}`);
     return res.status(statusCode).json({ error: message });
   }
 
