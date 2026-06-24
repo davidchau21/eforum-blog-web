@@ -41,6 +41,11 @@ const documentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    group: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "groups",
+      required: false,
+    },
   },
   {
     timestamps: true,

@@ -201,6 +201,12 @@ const Navbar = () => {
           >
             Directory
           </Link>
+          <Link
+            to="/groups"
+            className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all ${location.pathname.startsWith("/groups") || location.pathname.startsWith("/group/") ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
+          >
+            {language === "vi" ? "Nhóm" : "Groups"}
+          </Link>
         </div>
 
         <div className="flex items-center gap-4 md:gap-6 ml-auto">
@@ -364,6 +370,15 @@ const Navbar = () => {
               >
                 <i className="fi fi-rr-search-alt text-xl"></i>
                 <span>Academic Search</span>
+              </Link>
+
+              <Link
+                to="/groups"
+                className="flex items-center gap-3 text-black font-bold hover:text-indigo-500"
+                onClick={handleMenuClose}
+              >
+                <i className="fi fi-rr-users-alt text-xl"></i>
+                <span>{language === "vi" ? "Nhóm" : "Groups"}</span>
               </Link>
 
               <button

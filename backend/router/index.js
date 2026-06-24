@@ -13,6 +13,7 @@ import alertRouter from "./alertRouter.js";
 import notificationRouter from "./notificationRouter.js";
 import chatRouter from "./chatRouter.js";
 import documentRouter from "./documentRouter.js";
+import groupRouter from "./groupRouter.js";
 
 // Import admin routers
 import adminAlertRouter from "./admin/adminAlertRouter.js";
@@ -38,6 +39,7 @@ appRouter.use("/comments", commentRouter);
 appRouter.use("/search", searchRouter);
 appRouter.use("/chat", chatRouter);
 appRouter.use("/documents", documentRouter);
+appRouter.use("/groups", groupRouter);
 appRouter.use("/", authRouter);
 
 // Admin routes (mounted at /admin)

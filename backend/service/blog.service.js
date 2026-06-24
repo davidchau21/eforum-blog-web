@@ -9,14 +9,22 @@ import Collection from "../Schema/Collection.js";
 import UserFollow from "../Schema/UserFollow.js";
 import UserInterest from "../Schema/UserInterest.js";
 import EE from "../socket/eventManager.js";
+import GroupMember from "../Schema/GroupMember.js";
 
 class BlogService {
   /**
    * Create or update a blog post
    */
-  async createOrUpdateBlog({ authorId, title, des, banner, tags, content, draft, id }) {
+  async createOrUpdateBlog({ authorId, title, des, banner, tags, content, draft, id, groupId }) {
     if (!title.length) {
       throw new Error("You must provide a title");
+    }
+
+    if (groupId) {
+      const membership = await GroupMember.findOne({ group: groupId, user: authorId, status: "JOINED" });
+      if (!membership) {
+        throw new Error("Bạn không có quyền đăng bài trong nhóm này (chưa tham gia hoặc chưa được duyệt).");
+      }
     }
 
     if (!draft) {
@@ -42,17 +50,21 @@ class BlogService {
         .trim() + nanoid();
 
     if (id) {
+      const updateData = {
+        title,
+        des,
+        banner,
+        content,
+        tags,
+        draft: draft ? draft : false,
+      };
+      if (groupId !== undefined) {
+        updateData.group = groupId || null;
+      }
       await Blog.findOneAndUpdate(
         { blog_id },
         {
-          $set: {
-            title,
-            des,
-            banner,
-            content,
-            tags,
-            draft: draft ? draft : false,
-          },
+          $set: updateData,
         }
       );
       return { id: blog_id, message: "Blog updated successfully" };
@@ -71,6 +83,7 @@ class BlogService {
         draft: Boolean(draft),
         isActive: false, // Default to inactive until admin approves (if that's the flow)
         isDeleted: false,
+        group: groupId || null,
       });
 
       const savedBlog = await blog.save();
@@ -148,7 +161,7 @@ class BlogService {
    */
   async getLatestBlogs({ page = 1, limit = 6, userInterests = [], followingIds = [], currentUserId = null }) {
     // Basic implementation - can be enhanced with interests later
-    const blogs = await Blog.find({ draft: false, isActive: true })
+    const blogs = await Blog.find({ draft: false, isActive: true, group: null })
       .populate({
         path: "author",
         match: { "personal_info.role": { $ne: "ADMIN" } },
@@ -176,7 +189,7 @@ class BlogService {
 
     if (!following.length) return { blogs: [] };
 
-    const blogs = await Blog.find({ author: { $in: following }, draft: false, isActive: true })
+    const blogs = await Blog.find({ author: { $in: following }, draft: false, isActive: true, group: null })
       .skip((page - 1) * maxLimit)
       .limit(maxLimit)
       .sort({ publishedAt: -1 })
@@ -201,6 +214,7 @@ class BlogService {
       author: { $in: adminIds },
       draft: false,
       isActive: true,
+      group: null,
     })
       .populate(
         "author",
@@ -236,11 +250,11 @@ class BlogService {
   }
 
   async getAllLatestBlogsCount() {
-    return await Blog.countDocuments({ draft: false, isActive: true });
+    return await Blog.countDocuments({ draft: false, isActive: true, group: null });
   }
 
   async getTrendingBlogs() {
-    return await Blog.find({ draft: false, isActive: true })
+    return await Blog.find({ draft: false, isActive: true, group: null })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
       .sort({
         "activity.total_reads": -1,
@@ -264,7 +278,7 @@ class BlogService {
     }
 
     let maxLimit = limit ? limit : 2;
-    return await Blog.find({ ...findQuery, isActive: true })
+    return await Blog.find({ ...findQuery, isActive: true, group: null })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
       .sort({ publishedAt: -1 })
       .select("blog_id title des banner activity tags publishedAt")
@@ -281,7 +295,7 @@ class BlogService {
     } else if (author) {
       findQuery = { author, draft: false };
     }
-    return await Blog.countDocuments({ ...findQuery, isActive: true });
+    return await Blog.countDocuments({ ...findQuery, isActive: true, group: null });
   }
 
   async trackInterest(userId, tags) {

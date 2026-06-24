@@ -1,10 +1,18 @@
 import Document from "../Schema/Document.js";
 import { uploadDocumentFile } from "../integrations/supabase.js";
+import GroupMember from "../Schema/GroupMember.js";
 
 class DocumentService {
-  async uploadDocument(userId, file, title, description) {
+  async uploadDocument(userId, file, title, description, groupId = null) {
     if (!file) throw new Error("Vui lòng chọn file tài liệu.");
     if (!title || title.trim() === "") throw new Error("Vui lòng điền tiêu đề tài liệu.");
+
+    if (groupId) {
+      const membership = await GroupMember.findOne({ group: groupId, user: userId, status: "JOINED" });
+      if (!membership) {
+        throw new Error("Bạn không có quyền tải tài liệu lên nhóm này (chưa tham gia hoặc chưa được duyệt).");
+      }
+    }
 
     // Validate size and file type
     const allowedExtensions = ["pdf", "ppt", "pptx", "doc", "docx"];
@@ -30,6 +38,7 @@ class DocumentService {
       file_type: extension,
       file_size: file.size,
       author: userId,
+      group: groupId || null,
     });
 
     await newDoc.save();
@@ -38,7 +47,7 @@ class DocumentService {
 
   async getDocuments(searchQuery, sort, page = 1, limit = 6, authorId = null) {
     const skip = (page - 1) * limit;
-    const findQuery = {};
+    const findQuery = { group: null };
 
     if (authorId) {
       findQuery.author = authorId;

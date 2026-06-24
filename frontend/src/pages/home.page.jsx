@@ -25,6 +25,9 @@ const HomePage = () => {
   const [adminBlogs, setAdminBlogs] = useState(null);
   const [trendingTopics, setTrendingTopics] = useState([]);
   const [topContributors, setTopContributors] = useState([]);
+  const [joinedGroups, setJoinedGroups] = useState(null);
+  const [joinedGroupsPage, setJoinedGroupsPage] = useState(1);
+  const [joinedGroupsTotal, setJoinedGroupsTotal] = useState(0);
   const { userAuth } = useContext(UserContext);
   const { language, access_token } = userAuth;
   const translations = getTranslations(language);
@@ -174,6 +177,31 @@ const HomePage = () => {
       .catch(console.log);
   };
 
+  const fetchJoinedGroups = ({ page = 1, append = false }) => {
+    if (!access_token) return;
+    axios
+      .get(
+        `${import.meta.env.VITE_SERVER_DOMAIN}/groups/list?joinedOnly=true&page=${page}&limit=6`,
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      .then(({ data }) => {
+        if (append && joinedGroups) {
+          setJoinedGroups([...joinedGroups, ...data.list]);
+        } else {
+          setJoinedGroups(data.list);
+        }
+        setJoinedGroupsTotal(data.totalGroups);
+        setJoinedGroupsPage(page);
+      })
+      .catch((err) => {
+        console.error("Error fetching joined groups:", err);
+      });
+  };
+
   const loadBlogByCategory = (e) => {
     const category = e.target.innerText;
     setBlogs(null);
@@ -209,6 +237,15 @@ const HomePage = () => {
         setActiveTab(1);
         fetchFollowingBlogs({ page: 1 });
       }
+    } else if (pageState === "my-groups") {
+      if (!access_token) {
+        setPageState("feed");
+        setActiveTab(0);
+      } else {
+        setActiveTab(4);
+        setJoinedGroups(null);
+        fetchJoinedGroups({ page: 1, append: false });
+      }
     } else {
       setActiveTab(0);
       fetchBlogsByCategory({ page: 1 });
@@ -220,12 +257,15 @@ const HomePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageState]);
 
-  // When token changes (login/logout) we may need to refresh following tab only,
+  // When token changes (login/logout) we may need to refresh following tab or my-groups tab,
   // but without forcing a global layout reset that can cause scroll jump.
   useEffect(() => {
     if (!access_token) return;
-    if (pageState !== translations.following) return;
-    fetchFollowingBlogs({ page: 1 });
+    if (pageState === translations.following) {
+      fetchFollowingBlogs({ page: 1 });
+    } else if (pageState === "my-groups") {
+      fetchJoinedGroups({ page: 1, append: false });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [access_token]);
 
@@ -356,13 +396,20 @@ const HomePage = () => {
               }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-dark-grey hover:bg-grey hover:text-black`}
             >
-              <i
-                className={`fi fi-rr-users text-base mt-0.5`}
-              ></i>
+              <i className={`fi fi-rr-users text-base mt-0.5`}></i>
               {language === "vi" ? "Bạn bè" : "Friends"}
             </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm text-dark-grey hover:bg-grey hover:text-black">
-              <i className="fi fi-rr-users text-base mt-0.5"></i>
+            <button
+              onClick={() => {
+                if (!access_token) return navigate("/signin");
+                setActiveTab(4);
+                setPageState("my-groups");
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 text-sm ${pageState === "my-groups" ? "bg-indigo-500/10 text-indigo-500 font-bold" : "text-dark-grey hover:bg-grey hover:text-black"}`}
+            >
+              <i
+                className={`fi fi-rr-users text-base mt-0.5 ${pageState === "my-groups" ? "text-indigo-500" : ""}`}
+              ></i>
               {translations.myGroups}
             </button>
             <button
@@ -400,10 +447,16 @@ const HomePage = () => {
                       className={`w-2 h-2 rounded-full flex-shrink-0 transition-transform ${
                         isActive ? "scale-125" : ""
                       } ${
-                        i % 3 === 0 ? "bg-blue-400" : i % 3 === 1 ? "bg-emerald-400" : "bg-amber-400"
+                        i % 3 === 0
+                          ? "bg-blue-400"
+                          : i % 3 === 1
+                            ? "bg-emerald-400"
+                            : "bg-amber-400"
                       }`}
                     />
-                    <span className="capitalize truncate tracking-tight">{category}</span>
+                    <span className="capitalize truncate tracking-tight">
+                      {category}
+                    </span>
                   </button>
                 );
               })}
@@ -459,8 +512,12 @@ const HomePage = () => {
                     : "text-dark-grey hover:bg-grey/30 dark:hover:bg-zinc-800/50"
                 }`}
               >
-                <i className={`fi ${activeTab === 0 ? "fi-sr-home text-base" : "fi-rr-home text-base"} mt-0.5`}></i>
-                <span className="capitalize">{pageState === "feed" ? "Bản tin" : pageState}</span>
+                <i
+                  className={`fi ${activeTab === 0 ? "fi-sr-home text-base" : "fi-rr-home text-base"} mt-0.5`}
+                ></i>
+                <span className="capitalize">
+                  {pageState === "feed" ? "Bản tin" : pageState}
+                </span>
                 {activeTab === 0 && (
                   <motion.div
                     layoutId="activeTabIndicator"
@@ -482,13 +539,19 @@ const HomePage = () => {
                       : "text-dark-grey hover:bg-grey/30 dark:hover:bg-zinc-800/50"
                   }`}
                 >
-                  <i className={`fi ${activeTab === 1 ? "fi-sr-users text-base" : "fi-rr-users text-base"} mt-0.5`}></i>
+                  <i
+                    className={`fi ${activeTab === 1 ? "fi-sr-users text-base" : "fi-rr-users text-base"} mt-0.5`}
+                  ></i>
                   <span>Theo dõi</span>
                   {activeTab === 1 && (
                     <motion.div
                       layoutId="activeTabIndicator"
                       className="absolute bottom-0 left-0 w-full h-[3px] bg-indigo-600 dark:bg-indigo-400 rounded-full"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
                     />
                   )}
                 </button>
@@ -504,7 +567,9 @@ const HomePage = () => {
                     : "text-dark-grey hover:bg-grey/30 dark:hover:bg-zinc-800/50"
                 }`}
               >
-                <i className={`fi ${activeTab === 2 ? "fi-sr-arrow-trend-up text-base" : "fi-rr-arrow-trend-up text-base"} mt-0.5`}></i>
+                <i
+                  className={`fi ${activeTab === 2 ? "fi-sr-arrow-trend-up text-base" : "fi-rr-arrow-trend-up text-base"} mt-0.5`}
+                ></i>
                 <span>Xu hướng</span>
                 {activeTab === 2 && (
                   <motion.div
@@ -525,7 +590,9 @@ const HomePage = () => {
                     : "text-dark-grey hover:bg-grey/30 dark:hover:bg-zinc-800/50"
                 }`}
               >
-                <i className={`fi ${activeTab === 3 ? "fi-sr-megaphone text-base" : "fi-rr-megaphone text-base"} mt-0.5`}></i>
+                <i
+                  className={`fi ${activeTab === 3 ? "fi-sr-megaphone text-base" : "fi-rr-megaphone text-base"} mt-0.5`}
+                ></i>
                 <span>Tin tức</span>
                 {activeTab === 3 && (
                   <motion.div
@@ -579,7 +646,7 @@ const HomePage = () => {
                     isOpen={showWriteModal}
                     onClose={() => setShowWriteModal(false)}
                   />
-                  
+
                   {blogs == null ? (
                     <>
                       <BlogCardSkeleton key={1} />
@@ -600,34 +667,43 @@ const HomePage = () => {
                   ) : (
                     <NoDataMessage message="No blogs published" />
                   )}
-                  
-                  {blogs?.results?.length > 0 && blogs.results.length < blogs.totalDocs && (
-                    <LoadMoreDataBtn
-                      state={blogs}
-                      fetchDataFun={pageState === "feed" ? fetchLatestBlogs : fetchBlogsByCategory}
-                    />
-                  )}
 
-                  {blogs?.results?.length > 0 && blogs.results.length >= blogs.totalDocs && (
-                    <div className="flex flex-col items-center py-12 mt-8 border-t border-grey dark:border-zinc-800/80">
-                      <div className="w-14 h-14 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mb-5 text-emerald-500 shadow-sm">
-                        <i className="fi fi-rr-check text-2xl mt-1"></i>
+                  {blogs?.results?.length > 0 &&
+                    blogs.results.length < blogs.totalDocs && (
+                      <LoadMoreDataBtn
+                        state={blogs}
+                        fetchDataFun={
+                          pageState === "feed"
+                            ? fetchLatestBlogs
+                            : fetchBlogsByCategory
+                        }
+                      />
+                    )}
+
+                  {blogs?.results?.length > 0 &&
+                    blogs.results.length >= blogs.totalDocs && (
+                      <div className="flex flex-col items-center py-12 mt-8 border-t border-grey dark:border-zinc-800/80">
+                        <div className="w-14 h-14 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-full flex items-center justify-center mb-5 text-emerald-500 shadow-sm">
+                          <i className="fi fi-rr-check text-2xl mt-1"></i>
+                        </div>
+                        <p className="text-black dark:text-white font-bold text-lg mb-2">
+                          Bạn đã xem hết tin bài rồi! 🎉
+                        </p>
+                        <p className="text-dark-grey dark:text-grey text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
+                          Hãy quay lại sau để cập nhật thêm những kiến thức bổ
+                          ích nhé.
+                        </p>
+                        <button
+                          onClick={() =>
+                            window.scrollTo({ top: 0, behavior: "smooth" })
+                          }
+                          className="bg-black dark:bg-white text-white dark:text-black px-10 py-3.5 rounded-2xl font-bold text-sm hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center gap-2 group"
+                        >
+                          <i className="fi fi-rr-arrow-small-up text-xl group-hover:-translate-y-0.5 transition-transform"></i>
+                          Quay về đầu trang
+                        </button>
                       </div>
-                      <p className="text-black dark:text-white font-bold text-lg mb-2">
-                        Bạn đã xem hết tin bài rồi! 🎉
-                      </p>
-                      <p className="text-dark-grey dark:text-grey text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
-                        Hãy quay lại sau để cập nhật thêm những kiến thức bổ ích nhé.
-                      </p>
-                      <button
-                        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                        className="bg-black dark:bg-white text-white dark:text-black px-10 py-3.5 rounded-2xl font-bold text-sm hover:opacity-90 transition-all shadow-xl active:scale-95 flex items-center gap-2 group"
-                      >
-                        <i className="fi fi-rr-arrow-small-up text-xl group-hover:-translate-y-0.5 transition-transform"></i>
-                        Quay về đầu trang
-                      </button>
-                    </div>
-                  )}
+                    )}
                 </div>
               )}
 
@@ -659,12 +735,218 @@ const HomePage = () => {
                     <NoDataMessage message="Chưa có bài đăng nào từ những người bạn theo dõi." />
                   )}
 
-                  {followingBlogs?.results?.length > 0 && followingBlogs.results.length < followingBlogs.totalDocs && (
-                    <LoadMoreDataBtn
-                      state={followingBlogs}
-                      fetchDataFun={fetchFollowingBlogs}
-                    />
+                  {followingBlogs?.results?.length > 0 &&
+                    followingBlogs.results.length <
+                      followingBlogs.totalDocs && (
+                      <LoadMoreDataBtn
+                        state={followingBlogs}
+                        fetchDataFun={fetchFollowingBlogs}
+                      />
+                    )}
+                </div>
+              )}
+
+              {activeTab === 4 && (
+                <div className="space-y-6">
+                  {/* Dashboard Header Widget */}
+                  <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-r from-indigo-900/90 to-purple-900/90 dark:from-indigo-950/80 dark:to-purple-950/80 text-white p-8 shadow-xl border border-white/10 mb-8">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/15 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
+
+                    <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-indigo-300 bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-500/30">
+                          My Workspace
+                        </span>
+                        <h2 className="text-2xl md:text-3xl font-black font-jakarta tracking-tight leading-tight">
+                          Cộng Đồng Của Bạn
+                        </h2>
+                        <p className="text-xs text-indigo-200/80 max-w-md font-medium leading-relaxed font-inter">
+                          Nơi bạn tham gia học tập, thảo luận, nộp tài liệu và
+                          làm việc nhóm cùng các thành viên khác.
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4 shrink-0 bg-white/5 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/10">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-lg text-indigo-300">
+                          <i className="fi fi-rr-users"></i>
+                        </div>
+                        <div>
+                          <p className="text-xs text-indigo-200 font-bold uppercase tracking-wider">
+                            Đã gia nhập
+                          </p>
+                          <p className="text-xl font-black leading-tight font-jakarta">
+                            {joinedGroupsTotal} nhóm
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {joinedGroups == null ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className="bg-white dark:bg-zinc-900/60 rounded-3xl border border-grey dark:border-zinc-800/80 p-5 space-y-4 animate-pulse"
+                        >
+                          <div className="h-28 bg-slate-200 dark:bg-zinc-800 rounded-2xl w-full"></div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-zinc-800 shrink-0"></div>
+                            <div className="space-y-2 flex-grow">
+                              <div className="h-4 bg-slate-200 dark:bg-zinc-800 rounded w-2/3"></div>
+                              <div className="h-3 bg-slate-200 dark:bg-zinc-800 rounded w-1/2"></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : joinedGroups.length ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {joinedGroups.map((group, i) => {
+                        const getRoleRingClass = (role) => {
+                          switch (role) {
+                            case "OWNER":
+                              return "ring-4 ring-amber-450 dark:ring-amber-500/80 shadow-md shadow-amber-500/10";
+                            case "DEPUTY":
+                              return "ring-4 ring-indigo-500 dark:ring-indigo-400/80 shadow-md shadow-indigo-500/10";
+                            case "MODERATOR":
+                              return "ring-4 ring-emerald-500 dark:ring-emerald-400/80 shadow-md shadow-emerald-500/10";
+                            default:
+                              return "ring-2 ring-slate-200 dark:ring-zinc-800";
+                          }
+                        };
+
+                        const getRoleText = (role) => {
+                          switch (role) {
+                            case "OWNER":
+                              return "Trưởng nhóm";
+                            case "DEPUTY":
+                              return "Phó nhóm";
+                            case "MODERATOR":
+                              return "Kiểm duyệt";
+                            default:
+                              return "Thành viên";
+                          }
+                        };
+
+                        return (
+                          <AnimationWrapper
+                            transition={{ duration: 0.4, delay: i * 0.05 }}
+                            key={group._id}
+                          >
+                            <div className="bg-white dark:bg-[#111113]/60 backdrop-blur-md border border-slate-200/60 dark:border-white/5 rounded-[32px] overflow-hidden shadow-sm hover:shadow-[0_20px_50px_rgba(99,102,241,0.06)] dark:hover:border-indigo-500/30 hover:-translate-y-2 transition-all duration-300 flex flex-col h-[280px] group">
+                              {/* Banner */}
+                              <div className="h-24 w-full overflow-hidden relative bg-slate-100 dark:bg-zinc-800/50">
+                                <img
+                                  src={group.banner}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                  alt={group.name}
+                                />
+                                <div className="absolute top-3 right-3 z-10">
+                                  <span
+                                    className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider backdrop-blur-md bg-black/30 border border-white/10 text-white`}
+                                  >
+                                    {group.isPrivate ? "Riêng tư" : "Công khai"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="p-5 flex flex-col flex-grow relative justify-between">
+                                {/* Overlapping Avatar */}
+                                <div className="flex items-end justify-between -mt-11 mb-2 shrink-0">
+                                  <div
+                                    className={`w-14 h-14 rounded-2xl overflow-hidden bg-slate-200 mask-squircle border-4 border-white dark:border-[#111113] ${getRoleRingClass(group.myMembership?.role)}`}
+                                  >
+                                    <img
+                                      src={group.avatar}
+                                      className="w-full h-full object-cover"
+                                      alt=""
+                                    />
+                                  </div>
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                                      group.myMembership?.role === "OWNER"
+                                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                                        : group.myMembership?.role === "DEPUTY"
+                                          ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
+                                          : group.myMembership?.role ===
+                                              "MODERATOR"
+                                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                                            : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/5"
+                                    }`}
+                                  >
+                                    {getRoleText(group.myMembership?.role)}
+                                  </span>
+                                </div>
+
+                                <div className="space-y-1 flex-grow">
+                                  <h3 className="text-sm font-black text-slate-900 dark:text-white leading-tight font-jakarta line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                    {group.name}
+                                  </h3>
+                                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                                    Người tạo:{" "}
+                                    {group.creator?.personal_info?.fullname ||
+                                      "Không rõ"}
+                                  </p>
+                                  <p className="text-slate-500 dark:text-slate-400 text-xs line-clamp-2 leading-relaxed mt-1">
+                                    {group.description}
+                                  </p>
+                                </div>
+
+                                <div className="pt-3 mt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
+                                  <div className="flex items-center gap-1.5 text-slate-450 dark:text-slate-500">
+                                    <i className="fi fi-rr-users text-xs"></i>
+                                    <span className="text-[10px] font-bold">
+                                      {group.totalMembers} thành viên
+                                    </span>
+                                  </div>
+
+                                  <button
+                                    onClick={() =>
+                                      navigate(`/group/${group._id}`)
+                                    }
+                                    className="text-[10px] font-black uppercase tracking-wider px-4 py-2 rounded-xl transition-all bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/10 hover:shadow-indigo-500/25 hover:scale-105 active:scale-95"
+                                  >
+                                    Vào Workspace
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </AnimationWrapper>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="py-20 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#111113]/60 backdrop-blur-md rounded-[32px] border border-slate-200/60 dark:border-white/5 p-8 shadow-sm">
+                      <i className="fi fi-rr-users text-3xl mb-2 block text-slate-300 dark:text-zinc-700"></i>
+                      <p className="text-xs font-medium">
+                        Bạn chưa tham gia nhóm học tập nào.
+                      </p>
+                      <button
+                        onClick={() => navigate("/groups")}
+                        className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-4 rounded-xl transition-all"
+                      >
+                        Khám phá các nhóm
+                      </button>
+                    </div>
                   )}
+
+                  {joinedGroups?.length > 0 &&
+                    joinedGroups.length < joinedGroupsTotal && (
+                      <div className="flex justify-center mt-6">
+                        <button
+                          onClick={() =>
+                            fetchJoinedGroups({
+                              page: joinedGroupsPage + 1,
+                              append: true,
+                            })
+                          }
+                          className="text-dark-grey hover:text-black dark:text-grey/80 dark:hover:text-white p-2.5 px-5 bg-white dark:bg-zinc-900 border border-grey dark:border-zinc-800 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-sm active:scale-95"
+                        >
+                          Tải thêm nhóm
+                        </button>
+                      </div>
+                    )}
                 </div>
               )}
 
@@ -769,9 +1051,12 @@ const HomePage = () => {
                   };
 
                   const getAvatarRing = (idx) => {
-                    if (idx === 0) return "ring-2 ring-amber-400 shadow-sm shadow-amber-400/20";
-                    if (idx === 1) return "ring-2 ring-slate-300 shadow-sm shadow-slate-300/10";
-                    if (idx === 2) return "ring-2 ring-amber-600/45 shadow-sm shadow-amber-600/10";
+                    if (idx === 0)
+                      return "ring-2 ring-amber-400 shadow-sm shadow-amber-400/20";
+                    if (idx === 1)
+                      return "ring-2 ring-slate-300 shadow-sm shadow-slate-300/10";
+                    if (idx === 2)
+                      return "ring-2 ring-amber-600/45 shadow-sm shadow-amber-600/10";
                     return "ring-1 ring-grey";
                   };
 
@@ -801,7 +1086,9 @@ const HomePage = () => {
                         <div className="text-[11px] text-dark-grey font-medium flex items-center gap-1">
                           <span className="font-black text-indigo-500">
                             {user.account_info.total_reads > 1000
-                              ? (user.account_info.total_reads / 1000).toFixed(1) + "K"
+                              ? (user.account_info.total_reads / 1000).toFixed(
+                                  1,
+                                ) + "K"
                               : user.account_info.total_reads}
                           </span>
                           <span>REP</span>
@@ -856,22 +1143,19 @@ const HomePage = () => {
                 className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
                 href="#"
               >
-                <i className="fi fi-rr-shield text-xs"></i>{" "}
-                Community Guidelines
+                <i className="fi fi-rr-shield text-xs"></i> Community Guidelines
               </a>
               <a
                 className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
                 href="#"
               >
-                <i className="fi fi-rr-interrogation text-xs"></i>{" "}
-                Support
+                <i className="fi fi-rr-interrogation text-xs"></i> Support
               </a>
               <a
                 className="text-dark-grey hover:text-black transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
                 href="#"
               >
-                <i className="fi fi-rr-comment-alt text-xs"></i>{" "}
-                Feedback
+                <i className="fi fi-rr-comment-alt text-xs"></i> Feedback
               </a>
             </nav>
           </div>

@@ -59,31 +59,110 @@ class UserService {
     );
   }
 
-  async searchUsers(query = "", page = 1, limit = 20, loggedInUserId = null) {
+  async searchUsers(query = "", page = 1, limit = 20, loggedInUserId = null, forGroupInvite = false) {
     const skipVal = (page - 1) * limit;
 
-    let filter = {
-      $or: [
-        { "personal_info.username": new RegExp(query, "i") },
-        { "personal_info.fullname": new RegExp(query, "i") },
-        { "personal_info.email": new RegExp(query, "i") }
-      ]
-    };
+    // Normal search path (excluding followed users, etc. - used for friend discovery)
+    if (!forGroupInvite) {
+      let filter = {
+        $or: [
+          { "personal_info.username": new RegExp(query, "i") },
+          { "personal_info.fullname": new RegExp(query, "i") },
+          { "personal_info.email": new RegExp(query, "i") }
+        ]
+      };
 
-    if (loggedInUserId) {
-      // Find all users the logged-in user is following
-      const followedDocs = await UserFollow.find({ follower: loggedInUserId }).select("following -_id");
-      const followedUserIds = followedDocs.map(doc => doc.following);
+      if (loggedInUserId) {
+        const followedDocs = await UserFollow.find({ follower: loggedInUserId }).select("following -_id");
+        const followedUserIds = followedDocs.map(doc => doc.following);
+        const excludeIds = [loggedInUserId, ...followedUserIds];
+        filter._id = { $nin: excludeIds };
+      }
 
-      // Exclude logged-in user and any followed users
-      const excludeIds = [loggedInUserId, ...followedUserIds];
-      filter._id = { $nin: excludeIds };
+      return await User.find(filter)
+        .skip(skipVal)
+        .limit(limit)
+        .select("personal_info.fullname personal_info.username personal_info.profile_img personal_info.bio");
     }
 
-    return await User.find(filter)
-      .skip(skipVal)
-      .limit(limit)
-      .select("personal_info.fullname personal_info.username personal_info.profile_img personal_info.bio");
+    // Group Invite search path: Prioritize friends (mutual follows) and followers, combined with search
+    if (loggedInUserId) {
+      // 1. Fetch user follows to determine relationships
+      const followings = await UserFollow.find({ follower: loggedInUserId }).select("following -_id");
+      const followingIds = followings.map(f => f.following.toString());
+
+      const followers = await UserFollow.find({ following: loggedInUserId }).select("follower -_id");
+      const followerIds = followers.map(f => f.follower.toString());
+
+      const mutualSet = new Set(followingIds.filter(id => followerIds.includes(id)));
+      const followerSet = new Set(followerIds.filter(id => !mutualSet.has(id)));
+
+      // 2. If search query is empty, return mutual friends and followers directly
+      if (!query.trim()) {
+        const allSortedIds = [
+          ...Array.from(mutualSet),
+          ...Array.from(followerSet)
+        ];
+        
+        if (allSortedIds.length === 0) return [];
+        
+        const paginatedIds = allSortedIds.slice(skipVal, skipVal + limit);
+        const users = await User.find({ _id: { $in: paginatedIds } })
+          .select("personal_info.fullname personal_info.username personal_info.profile_img personal_info.bio");
+
+        // Sort to match paginatedIds order
+        const usersMap = {};
+        users.forEach(u => {
+          usersMap[u._id.toString()] = u;
+        });
+
+        return paginatedIds.map(id => usersMap[id]).filter(Boolean);
+      }
+
+      // 3. If there is a search query, search all matching users and prioritize
+      const filter = {
+        $or: [
+          { "personal_info.username": new RegExp(query, "i") },
+          { "personal_info.fullname": new RegExp(query, "i") },
+          { "personal_info.email": new RegExp(query, "i") }
+        ],
+        _id: { $ne: loggedInUserId } // Exclude self
+      };
+
+      const matchedUsers = await User.find(filter)
+        .select("personal_info.fullname personal_info.username personal_info.profile_img personal_info.bio");
+
+      const friends = [];
+      const followersOnly = [];
+      const others = [];
+
+      for (const u of matchedUsers) {
+        const uIdStr = u._id.toString();
+        if (mutualSet.has(uIdStr)) {
+          friends.push(u);
+        } else if (followerSet.has(uIdStr)) {
+          followersOnly.push(u);
+        } else {
+          others.push(u);
+        }
+      }
+
+      const allSorted = [...friends, ...followersOnly, ...others];
+      return allSorted.slice(skipVal, skipVal + limit);
+    } else {
+      // Fallback if not logged in (anonymous users cannot invite, but return basic matches)
+      let filter = {
+        $or: [
+          { "personal_info.username": new RegExp(query, "i") },
+          { "personal_info.fullname": new RegExp(query, "i") },
+          { "personal_info.email": new RegExp(query, "i") }
+        ]
+      };
+      return await User.find(filter)
+        .skip(skipVal)
+        .limit(limit)
+        .select("personal_info.fullname personal_info.username personal_info.profile_img personal_info.bio");
+    }
   }
 
   async getProfile(username) {
