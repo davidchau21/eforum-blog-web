@@ -18,9 +18,9 @@ const getHeaders = (token, contentType = "application/json") => {
 /**
  * Fetch a paginated list of groups with a search query.
  */
-export const listGroups = async (searchQuery, pageNum, limit, token) => {
+export const listGroups = async (searchQuery, pageNum, limit, token, filter = "all") => {
   const { data } = await axios.get(
-    `${API_BASE}/groups/list?search=${searchQuery}&page=${pageNum}&limit=${limit}`,
+    `${API_BASE}/groups/list?search=${searchQuery}&page=${pageNum}&limit=${limit}&filter=${filter}`,
     getHeaders(token)
   );
   return data;

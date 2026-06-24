@@ -20,13 +20,13 @@ class GroupService {
       avatar: avatar || "",
       banner: banner || "",
       isPrivate: !!isPrivate,
-      rules: Array.isArray(rules) && rules.length > 0 
-        ? rules.map(r => r.trim()).filter(Boolean) 
+      rules: Array.isArray(rules) && rules.length > 0
+        ? rules.map(r => r.trim()).filter(Boolean)
         : [
-            "Tôn trọng các thành viên khác, không công kích cá nhân.",
-            "Chia sẻ tài liệu học tập chất lượng, ghi rõ nguồn nếu sưu tầm.",
-            "Không đăng bài quảng cáo, spam, hoặc tin nhắn rác."
-          ],
+          "Tôn trọng các thành viên khác, không công kích cá nhân.",
+          "Chia sẻ tài liệu học tập chất lượng, ghi rõ nguồn nếu sưu tầm.",
+          "Không đăng bài quảng cáo, spam, hoặc tin nhắn rác."
+        ],
       creator: userId,
     });
 
@@ -65,16 +65,23 @@ class GroupService {
   /**
    * Get paginated list of public groups (or search them)
    */
-  async getGroups(searchQuery, page = 1, limit = 10, userId = null, joinedOnly = false) {
+  async getGroups(searchQuery, page = 1, limit = 10, userId = null, filter = "all") {
     const skip = (page - 1) * limit;
     const findQuery = {};
 
-    if (joinedOnly && userId) {
+    const activeFilter = filter === true || filter === "true" ? "mine" : filter;
+
+    if (activeFilter === "mine" && userId) {
       const userMemberships = await GroupMember.find({ user: userId, status: "JOINED" });
       const joinedGroupIds = userMemberships.map((m) => m.group);
       findQuery._id = { $in: joinedGroupIds };
     } else {
       findQuery.isDisabled = { $ne: true };
+      if (activeFilter === "public") {
+        findQuery.isPrivate = false;
+      } else if (activeFilter === "private") {
+        findQuery.isPrivate = true;
+      }
     }
 
     // In search, we match name or description
@@ -589,13 +596,13 @@ class GroupService {
 
     // Delete group metadata
     await Group.deleteOne({ _id: groupId });
-    
+
     // Clean up members, posts, documents associated
     await GroupMember.deleteMany({ group: groupId });
     await Document.deleteMany({ group: groupId });
     await Blog.deleteMany({ group: groupId });
 
-    return { success: true, message: "Xóa nhóm thành công vĩnh viễn." };
+    return { success: true, message: "Xóa nhóm thành công." };
   }
 
   /**

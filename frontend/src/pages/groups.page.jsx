@@ -43,6 +43,7 @@ const GroupsPage = () => {
         pageNum,
         limit,
         userAuth.access_token,
+        activeFilter
       );
       setGroups(data.list);
       setTotalGroups(data.totalGroups);
@@ -57,7 +58,7 @@ const GroupsPage = () => {
 
   useEffect(() => {
     fetchGroups(1);
-  }, [searchQuery, userAuth.access_token]);
+  }, [searchQuery, activeFilter, userAuth.access_token]);
 
   const handlePageChange = (pageNum) => {
     fetchGroups(pageNum);
@@ -84,14 +85,6 @@ const GroupsPage = () => {
       toast.error(err.response?.data?.error || "Lỗi khi tạo nhóm.");
     }
   };
-
-  const filteredGroups = groups.filter((group) => {
-    if (activeFilter === "public") return !group.isPrivate;
-    if (activeFilter === "private") return group.isPrivate;
-    if (activeFilter === "mine") return group.myMembership !== null;
-
-    return true;
-  });
 
   return (
     <AnimationWrapper>
@@ -172,8 +165,8 @@ const GroupsPage = () => {
             <div className="col-span-full py-20 flex justify-center">
               <div className="w-10 h-10 border-4 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
-          ) : filteredGroups.length > 0 ? (
-            filteredGroups.map((group) => (
+          ) : groups.length > 0 ? (
+            groups.map((group) => (
               <GroupCard key={group._id} group={group} navigate={navigate} />
             ))
           ) : (

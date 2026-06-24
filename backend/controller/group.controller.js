@@ -14,14 +14,20 @@ class GroupController extends BaseController {
 
   async getGroups(req, res) {
     try {
-      const { search, page, limit, joinedOnly } = req.query;
+      const { search, page, limit, joinedOnly, filter } = req.query;
       const userId = req.user ? req.user.id : null;
+
+      let filterVal = filter || "all";
+      if (joinedOnly === "true" || joinedOnly === true) {
+        filterVal = "mine";
+      }
+
       const result = await groupService.getGroups(
         search,
         page ? parseInt(page) : 1,
         limit ? parseInt(limit) : 10,
         userId,
-        joinedOnly === "true" || joinedOnly === true
+        filterVal
       );
       return this.sendSuccess(res, result);
     } catch (error) {

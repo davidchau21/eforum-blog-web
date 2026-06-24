@@ -297,7 +297,7 @@ const GroupDetailsPage = () => {
   const handleDeleteGroup = async () => {
     try {
       const data = await deleteGroup(id, userAuth.access_token);
-      toast.success(data.message || "Xóa nhóm thành công vĩnh viễn.");
+      toast.success(data.message || "Xóa nhóm thành công.");
       navigate("/groups");
     } catch (err) {
       toast.error(err.response?.data?.error || "Lỗi khi xóa nhóm.");
