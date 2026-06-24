@@ -2,6 +2,7 @@ import { useState } from "react";
 import { uploadImage } from "../../common/aws";
 import { toast } from "react-hot-toast";
 import { GroupConfirmModal } from "./group-confirm-modal.component";
+import groupBannerDefault from "../../imgs/group-banner-default.png";
 
 /* eslint-disable react/prop-types */
 export const GroupSettingsTab = ({
@@ -17,6 +18,7 @@ export const GroupSettingsTab = ({
   handleDeleteGroup,
 }) => {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+  const initialsUrl = `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(groupEditForm.name || "Group")}&backgroundColor=b3c5fc`;
 
   return (
     <div className="bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-[32px] p-6 shadow-sm flex flex-col md:flex-row gap-8 min-h-[480px]">
@@ -136,15 +138,15 @@ export const GroupSettingsTab = ({
                     </label>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-800 border border-slate-200/60 dark:border-white/5 shrink-0 flex items-center justify-center">
-                        {groupEditForm.avatar ? (
-                          <img
-                            src={groupEditForm.avatar}
-                            className="w-full h-full object-cover"
-                            alt="avatar"
-                          />
-                        ) : (
-                          <i className="fi fi-rr-picture text-slate-400"></i>
-                        )}
+                        <img
+                          src={groupEditForm.avatar || initialsUrl}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = initialsUrl;
+                          }}
+                          className="w-full h-full object-cover"
+                          alt="avatar"
+                        />
                       </div>
                       <label className="flex-grow cursor-pointer">
                         <span className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-slate-200/60 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all text-xs font-bold text-slate-600 dark:text-slate-350 text-center">
@@ -185,15 +187,15 @@ export const GroupSettingsTab = ({
                     </label>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-zinc-800 border border-slate-200/60 dark:border-white/5 shrink-0 flex items-center justify-center">
-                        {groupEditForm.banner ? (
-                          <img
-                            src={groupEditForm.banner}
-                            className="w-full h-full object-cover"
-                            alt="banner"
-                          />
-                        ) : (
-                          <i className="fi fi-rr-picture text-slate-400"></i>
-                        )}
+                        <img
+                          src={groupEditForm.banner || groupBannerDefault}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = groupBannerDefault;
+                          }}
+                          className="w-full h-full object-cover"
+                          alt="banner"
+                        />
                       </div>
                       <label className="flex-grow cursor-pointer">
                         <span className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-slate-200/60 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all text-xs font-bold text-slate-600 dark:text-slate-350 text-center">

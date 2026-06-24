@@ -14,6 +14,7 @@ import { GroupSettingsTab } from "../components/groups/group-settings-tab.compon
 import { GroupAboutTab } from "../components/groups/group-about-tab.component";
 import { GroupUploadDocModal } from "../components/groups/group-upload-doc-modal.component";
 import { GroupInviteModal } from "../components/groups/group-invite-modal.component";
+import groupBannerDefault from "../imgs/group-banner-default.png";
 
 // Group API services
 import {
@@ -251,7 +252,12 @@ const GroupDetailsPage = () => {
 
   const handleChangeRole = async (userId, newRole) => {
     try {
-      const data = await changeMemberRole(id, userId, newRole, userAuth.access_token);
+      const data = await changeMemberRole(
+        id,
+        userId,
+        newRole,
+        userAuth.access_token,
+      );
       toast.success(data.message || "Cập nhật vai trò thành công.");
       fetchGroupDetails();
       fetchMembers();
@@ -268,7 +274,11 @@ const GroupDetailsPage = () => {
         ...settings,
         ...groupEditForm,
       };
-      const data = await updateGroupSettings(id, payload, userAuth.access_token);
+      const data = await updateGroupSettings(
+        id,
+        payload,
+        userAuth.access_token,
+      );
       setSettings(data.settings);
       if (data.group) {
         setGroup(data.group);
@@ -355,7 +365,7 @@ const GroupDetailsPage = () => {
           {/* Subtle colored glow overlay in background */}
           <div className="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -bottom-12 -right-12 w-32 h-32 bg-indigo-500/10 dark:bg-indigo-500/5 rounded-full blur-3xl pointer-events-none"></div>
-          
+
           <div className="w-16 h-16 rounded-3xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-2xl mx-auto mb-6 border border-amber-500/20">
             <i className="fi fi-rr-ban"></i>
           </div>
@@ -363,7 +373,9 @@ const GroupDetailsPage = () => {
             Nhóm học tập tạm thời bị vô hiệu hóa
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-8">
-            Cộng đồng học tập này đã tạm thời bị vô hiệu hóa bởi ban quản trị nhóm. Hiện tại thành viên thường không thể truy cập tài liệu hay nội dung thảo luận.
+            Cộng đồng học tập này đã tạm thời bị vô hiệu hóa bởi ban quản trị
+            nhóm. Hiện tại thành viên thường không thể truy cập tài liệu hay nội
+            dung thảo luận.
           </p>
           <button
             onClick={() => navigate("/groups")}
@@ -397,14 +409,19 @@ const GroupDetailsPage = () => {
           <div className="w-full bg-amber-500/10 dark:bg-amber-500/5 border-b border-amber-500/20 py-3.5 px-5 flex items-center justify-center gap-3 text-amber-600 dark:text-amber-400 font-jakarta text-xs font-bold transition-all">
             <i className="fi fi-rr-exclamation text-sm shrink-0"></i>
             <span>
-              Nhóm này đang bị vô hiệu hóa tạm thời. Chỉ có trưởng/phó nhóm mới nhìn thấy và quản lý cài đặt nhóm này.
+              Nhóm này đang bị vô hiệu hóa tạm thời. Chỉ có trưởng/phó nhóm mới
+              nhìn thấy và quản lý cài đặt nhóm này.
             </span>
           </div>
         )}
         {/* Cover & Banner Section */}
         <div className="relative w-full h-[320px] md:h-[400px] overflow-hidden bg-slate-200 dark:bg-zinc-800">
           <img
-            src={group.banner}
+            src={group.banner || groupBannerDefault}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = groupBannerDefault;
+            }}
             className="w-full h-full object-cover"
             alt="Group Banner"
           />
@@ -420,15 +437,22 @@ const GroupDetailsPage = () => {
                     ? isOwner
                       ? "border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.5)]"
                       : isDeputy
-                      ? "border-indigo-400 shadow-[0_0_20px_rgba(129,140,248,0.5)]"
-                      : isMod
-                      ? "border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)]"
-                      : "border-slate-300 shadow-[0_0_15px_rgba(255,255,255,0.25)]"
+                        ? "border-indigo-400 shadow-[0_0_20px_rgba(129,140,248,0.5)]"
+                        : isMod
+                          ? "border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)]"
+                          : "border-slate-300 shadow-[0_0_15px_rgba(255,255,255,0.25)]"
                     : "border-white/20 shadow-2xl"
                 } overflow-hidden bg-slate-300 shrink-0`}
               >
                 <img
-                  src={group.avatar}
+                  src={
+                    group.avatar ||
+                    `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(group.name || "Group")}&backgroundColor=b3c5fc`
+                  }
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(group.name || "Group")}&backgroundColor=b3c5fc`;
+                  }}
                   className="w-full h-full object-cover"
                   alt=""
                 />
@@ -456,19 +480,19 @@ const GroupDetailsPage = () => {
                         isOwner
                           ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                           : isDeputy
-                          ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
-                          : isMod
-                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                          : "bg-white/10 text-slate-350 border border-white/10"
+                            ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                            : isMod
+                              ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                              : "bg-white/10 text-slate-350 border border-white/10"
                       }`}
                     >
                       {isOwner
                         ? "Trưởng nhóm"
                         : isDeputy
-                        ? "Phó nhóm"
-                        : isMod
-                        ? "Kiểm duyệt viên"
-                        : "Thành viên"}
+                          ? "Phó nhóm"
+                          : isMod
+                            ? "Kiểm duyệt viên"
+                            : "Thành viên"}
                     </span>
                   )}
                 </div>
@@ -498,16 +522,16 @@ const GroupDetailsPage = () => {
                   group.myMembership?.status === "JOINED"
                     ? "bg-white/10 hover:bg-white/20 border border-white/20 text-white"
                     : group.myMembership?.status === "PENDING"
-                    ? "bg-amber-500/20 border border-amber-500/30 text-amber-300 cursor-not-allowed"
-                    : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25"
+                      ? "bg-amber-500/20 border border-amber-500/30 text-amber-300 cursor-not-allowed"
+                      : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25"
                 }`}
                 disabled={group.myMembership?.status === "PENDING"}
               >
                 {group.myMembership?.status === "JOINED"
                   ? "Rời nhóm"
                   : group.myMembership?.status === "PENDING"
-                  ? "Chờ duyệt..."
-                  : "Tham gia nhóm"}
+                    ? "Chờ duyệt..."
+                    : "Tham gia nhóm"}
               </button>
             </div>
           </div>

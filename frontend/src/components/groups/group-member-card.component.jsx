@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import useGetConversations from "../../hook/useGetConversations";
+import useConversation from "../../zustand/useConversation";
 
 /* eslint-disable react/prop-types */
 export const GroupMemberCard = ({
@@ -16,6 +18,21 @@ export const GroupMemberCard = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showHoverCard, setShowHoverCard] = useState(false);
   const isSelf = member.user?.personal_info?.username === userAuth?.username;
+
+  const navigate = useNavigate();
+  const { conversations } = useGetConversations();
+  const { setSelectedConversation } = useConversation();
+
+  const handleStartChat = () => {
+    if (!userAuth?.access_token) {
+      return navigate("/signin");
+    }
+    const preloadedConv = (conversations || []).find(
+      (c) => c._id === member.user?._id
+    );
+    setSelectedConversation(preloadedConv || member.user);
+    navigate("/chat");
+  };
 
   const getRoleDetails = (role) => {
     switch (role) {
@@ -238,7 +255,7 @@ export const GroupMemberCard = ({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="absolute left-6 bottom-full mb-3 z-50 w-72 bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-md border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 shadow-2xl pointer-events-none font-inter text-left"
+              className="absolute left-6 bottom-full mb-3 z-50 w-72 bg-white/95 dark:bg-[#18181b]/95 backdrop-blur-md border border-slate-200/80 dark:border-white/10 rounded-2xl p-4 shadow-2xl pointer-events-auto font-inter text-left"
             >
               <div className="flex items-start gap-3.5">
                 <img
@@ -287,6 +304,22 @@ export const GroupMemberCard = ({
                   </p>
                 </div>
               </div>
+
+              {/* Message button */}
+              {!isSelf && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleStartChat();
+                  }}
+                  className="w-full mt-4 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer"
+                >
+                  <i className="fi fi-rr-paper-plane text-[10px]"></i>
+                  Nhắn tin ngay
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

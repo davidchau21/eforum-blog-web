@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import groupBannerDefault from "../../imgs/group-banner-default.png";
 
 /* eslint-disable react/prop-types */
 export const GroupCard = ({ group, navigate }) => {
@@ -6,6 +7,7 @@ export const GroupCard = ({ group, navigate }) => {
   const isOwner = myRole === "OWNER";
   const isDeputy = myRole === "DEPUTY";
   const isMod = myRole === "MODERATOR";
+  const initialsUrl = `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(group.name || "Group")}&backgroundColor=b3c5fc`;
 
   let glowRing = "border-white dark:border-[#111113]";
   let roleLabel = "";
@@ -19,15 +21,19 @@ export const GroupCard = ({ group, navigate }) => {
     } else if (isDeputy) {
       glowRing = "border-indigo-400 shadow-[0_0_12px_rgba(129,140,248,0.4)]";
       roleLabel = "Phó nhóm";
-      roleClass = "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
+      roleClass =
+        "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20";
     } else if (isMod) {
       glowRing = "border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.4)]";
       roleLabel = "Kiểm duyệt";
-      roleClass = "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
+      roleClass =
+        "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20";
     } else {
-      glowRing = "border-slate-300 dark:border-zinc-700 shadow-[0_0_10px_rgba(148,163,184,0.2)]";
+      glowRing =
+        "border-slate-300 dark:border-zinc-700 shadow-[0_0_10px_rgba(148,163,184,0.2)]";
       roleLabel = "Thành viên";
-      roleClass = "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/5";
+      roleClass =
+        "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/5";
     }
   }
 
@@ -42,7 +48,11 @@ export const GroupCard = ({ group, navigate }) => {
       {/* Banner */}
       <div className="h-36 w-full overflow-hidden relative bg-slate-100 dark:bg-zinc-800">
         <img
-          src={group.banner}
+          src={group.banner || groupBannerDefault}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = groupBannerDefault;
+          }}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           alt={group.name}
         />
@@ -79,7 +89,15 @@ export const GroupCard = ({ group, navigate }) => {
         <div
           className={`w-16 h-16 rounded-2xl border-[3px] ${glowRing} overflow-hidden -mt-14 mb-4 shadow-lg bg-slate-200 transition-all duration-300 shrink-0 z-10`}
         >
-          <img src={group.avatar} className="w-full h-full object-cover" alt="" />
+          <img
+            src={group.avatar || initialsUrl}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = initialsUrl;
+            }}
+            className="w-full h-full object-cover"
+            alt=""
+          />
         </div>
 
         <div className="space-y-3 flex-grow">

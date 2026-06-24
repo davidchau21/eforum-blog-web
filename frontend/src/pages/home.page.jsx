@@ -17,6 +17,7 @@ import { UserContext } from "../App";
 import { motion, AnimatePresence } from "framer-motion";
 import WritePostCard from "../components/write-post-card.component";
 import WriteModal from "../components/write-modal.component";
+import groupBannerDefault from "../imgs/group-banner-default.png";
 
 const HomePage = () => {
   const [blogs, setBlogs] = useState(null);
@@ -829,6 +830,8 @@ const HomePage = () => {
                           }
                         };
 
+                        const initialsUrl = `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(group.name || "Group")}&backgroundColor=b3c5fc`;
+
                         return (
                           <AnimationWrapper
                             transition={{ duration: 0.4, delay: i * 0.05 }}
@@ -838,7 +841,11 @@ const HomePage = () => {
                               {/* Banner */}
                               <div className="h-24 w-full overflow-hidden relative bg-slate-100 dark:bg-zinc-800/50">
                                 <img
-                                  src={group.banner}
+                                  src={group.banner || groupBannerDefault}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = groupBannerDefault;
+                                  }}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                   alt={group.name}
                                 />
@@ -858,7 +865,11 @@ const HomePage = () => {
                                     className={`w-14 h-14 rounded-2xl overflow-hidden bg-slate-200 mask-squircle border-4 border-white dark:border-[#111113] ${getRoleRingClass(group.myMembership?.role)}`}
                                   >
                                     <img
-                                      src={group.avatar}
+                                      src={group.avatar || initialsUrl}
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = initialsUrl;
+                                      }}
                                       className="w-full h-full object-cover"
                                       alt=""
                                     />
