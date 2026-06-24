@@ -3,12 +3,30 @@ import mongoose, { Schema } from "mongoose";
 const notificationSchema = mongoose.Schema({
     type: {
         type: String,
-        enum: ["like", "comment", "reply", "share", "message", "follow"],
+        enum: [
+            "like", 
+            "comment", 
+            "reply", 
+            "share", 
+            "message", 
+            "follow",
+            "group_join_request",
+            "group_join_approve",
+            "group_role_change",
+            "group_new_post"
+        ],
         required: true
     },
     blog: {
         type: Schema.Types.ObjectId,
         ref: 'blogs'
+    },
+    group: {
+        type: Schema.Types.ObjectId,
+        ref: 'groups'
+    },
+    role: {
+        type: String
     },
     notification_for: {
         type: Schema.Types.ObjectId,

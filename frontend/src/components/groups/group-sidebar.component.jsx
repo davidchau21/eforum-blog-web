@@ -5,6 +5,7 @@ export const GroupSidebar = ({
   managementTeam = [],
   isJoined = false,
   onInviteClick,
+  handleToggleMute,
 }) => {
   return (
     <div className="lg:col-span-3 space-y-6">
@@ -109,6 +110,18 @@ export const GroupSidebar = ({
               >
                 <i className="fi fi-rr-user-add text-xs"></i>
                 Mời thành viên
+              </button>
+              <button
+                type="button"
+                onClick={handleToggleMute}
+                className={`w-full py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5 font-jakarta ${
+                  group?.myMembership?.muteNotifications
+                    ? "bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20"
+                    : "bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-300"
+                }`}
+              >
+                <i className={`fi ${group?.myMembership?.muteNotifications ? "fi-rr-bell-ring" : "fi-rr-bell-slash"} text-xs`}></i>
+                {group?.myMembership?.muteNotifications ? "Bật thông báo" : "Tắt thông báo"}
               </button>
             </div>
           ) : (

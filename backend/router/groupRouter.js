@@ -12,6 +12,7 @@ groupRouter.get("/id/:id", isAuthenticateOptional, (req, res) => groupController
 groupRouter.post("/create", isAuthenticate, (req, res) => groupController.createGroup(req, res));
 groupRouter.post("/id/:id/join", isAuthenticate, (req, res) => groupController.joinGroup(req, res));
 groupRouter.post("/id/:id/leave", isAuthenticate, (req, res) => groupController.leaveGroup(req, res));
+groupRouter.post("/id/:id/toggle-mute", isAuthenticate, (req, res) => groupController.toggleMuteNotifications(req, res));
 
 // Membership administration
 groupRouter.get("/id/:id/members", isAuthenticateOptional, (req, res) => groupController.getMembers(req, res));

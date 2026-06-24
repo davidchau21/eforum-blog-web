@@ -11,6 +11,29 @@ import UserInterest from "../Schema/UserInterest.js";
 import EE from "../socket/eventManager.js";
 import GroupMember from "../Schema/GroupMember.js";
 
+async function notifyGroupMembersOfNewPost(blog, authorId) {
+  try {
+    const groupMembers = await GroupMember.find({
+      group: blog.group,
+      status: "JOINED",
+      user: { $ne: authorId },
+      muteNotifications: { $ne: true }
+    });
+
+    for (const member of groupMembers) {
+      EE.emit("publish-notification", {
+        type: "group_new_post",
+        user: authorId,
+        notification_for: member.user,
+        group: blog.group,
+        blog: blog._id
+      });
+    }
+  } catch (err) {
+    console.error("Failed to send group new post notifications:", err.message);
+  }
+}
+
 class BlogService {
   /**
    * Create or update a blog post
@@ -61,12 +84,22 @@ class BlogService {
       if (groupId !== undefined) {
         updateData.group = groupId || null;
       }
+
+      const oldBlog = await Blog.findOne({ blog_id });
+      const wasDraft = oldBlog ? oldBlog.draft : false;
+
       await Blog.findOneAndUpdate(
         { blog_id },
         {
           $set: updateData,
         }
       );
+
+      const newBlog = await Blog.findOne({ blog_id });
+      if (newBlog && !newBlog.draft && wasDraft && newBlog.group) {
+        await notifyGroupMembersOfNewPost(newBlog, authorId);
+      }
+
       return { id: blog_id, message: "Blog updated successfully" };
     } else {
       const author = await User.findById(authorId);
@@ -93,6 +126,10 @@ class BlogService {
         { _id: authorId },
         { $inc: { "account_info.total_posts": incrementVal } }
       );
+
+      if (!savedBlog.draft && savedBlog.group) {
+        await notifyGroupMembersOfNewPost(savedBlog, authorId);
+      }
 
       return { id: savedBlog.blog_id };
     }

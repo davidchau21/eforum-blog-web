@@ -2,6 +2,7 @@ import Group from "../Schema/Group.js";
 import GroupMember from "../Schema/GroupMember.js";
 import Blog from "../Schema/Blog.js";
 import Document from "../Schema/Document.js";
+import EE from "../socket/eventManager.js";
 
 class GroupService {
   /**
@@ -121,7 +122,7 @@ class GroupService {
       });
 
       const membershipMap = memberships.reduce((map, m) => {
-        map[m.group.toString()] = { role: m.role, status: m.status };
+        map[m.group.toString()] = { role: m.role, status: m.status, muteNotifications: !!m.muteNotifications };
         return map;
       }, {});
 
@@ -165,7 +166,7 @@ class GroupService {
     let membership = null;
     if (userId) {
       membership = await GroupMember.findOne({ group: groupId, user: userId });
-      groupObj.myMembership = membership ? { role: membership.role, status: membership.status } : null;
+      groupObj.myMembership = membership ? { role: membership.role, status: membership.status, muteNotifications: !!membership.muteNotifications } : null;
     }
 
     if (group.isDisabled) {
@@ -213,6 +214,23 @@ class GroupService {
 
     await newMember.save();
 
+    if (isPrivate) {
+      const groupAdmins = await GroupMember.find({
+        group: groupId,
+        role: { $in: ["OWNER", "DEPUTY"] },
+        status: "JOINED",
+        muteNotifications: { $ne: true }
+      });
+      for (const admin of groupAdmins) {
+        EE.emit("publish-notification", {
+          type: "group_join_request",
+          user: userId,
+          notification_for: admin.user,
+          group: groupId
+        });
+      }
+    }
+
     return {
       status: newMember.status,
       message: isPrivate
@@ -244,8 +262,9 @@ class GroupService {
       }
     }
 
+    const isPending = member.status === "PENDING";
     await GroupMember.deleteOne({ _id: member._id });
-    return { success: true, message: "Rời nhóm thành công." };
+    return { success: true, message: isPending ? "Hủy yêu cầu tham gia thành công." : "Rời nhóm thành công." };
   }
 
   /**
@@ -323,6 +342,14 @@ class GroupService {
 
     targetMember.status = "JOINED";
     await targetMember.save();
+
+    // Trigger join approval notification to approved user
+    EE.emit("publish-notification", {
+      type: "group_join_approve",
+      user: requesterId,
+      notification_for: targetUserId,
+      group: groupId
+    });
 
     return { success: true, message: "Đã duyệt thành viên thành công." };
   }
@@ -432,6 +459,15 @@ class GroupService {
 
     targetMember.role = newRole;
     await targetMember.save();
+
+    // Trigger role change notification to target user
+    EE.emit("publish-notification", {
+      type: "group_role_change",
+      user: requesterId,
+      notification_for: targetUserId,
+      group: groupId,
+      role: newRole
+    });
 
     return { success: true, message: `Cập nhật vai trò thành công sang ${newRole}.` };
   }
@@ -637,6 +673,25 @@ class GroupService {
 
     await newMember.save();
     return { success: true, message: "Đã thêm thành viên mới vào nhóm thành công." };
+  }
+
+  /**
+   * Toggle mute notifications for a group member
+   */
+  async toggleMuteNotifications(groupId, userId) {
+    const member = await GroupMember.findOne({ group: groupId, user: userId, status: "JOINED" });
+    if (!member) {
+      throw new Error("Bạn không phải thành viên nhóm.");
+    }
+    member.muteNotifications = !member.muteNotifications;
+    await member.save();
+    return {
+      success: true,
+      muteNotifications: member.muteNotifications,
+      message: member.muteNotifications
+        ? "Đã tắt thông báo của nhóm này."
+        : "Đã bật thông báo của nhóm này."
+    };
   }
 }
 

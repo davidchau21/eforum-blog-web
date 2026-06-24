@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ThemeContext, UserContext } from "../App";
 import AnimationWrapper from "../common/page-animation";
 import { motion } from "framer-motion";
@@ -31,11 +31,13 @@ import {
   uploadGroupDocument,
   triggerDownload,
   deleteGroup,
+  toggleMuteGroupNotifications,
 } from "../services/group.service";
 
 const GroupDetailsPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { theme } = useContext(ThemeContext);
   const { userAuth } = useContext(UserContext);
 
@@ -196,6 +198,17 @@ const GroupDetailsPage = () => {
     }
   }, [id, userAuth.access_token]);
 
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && ["discussion", "documents", "members", "settings", "about"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+    const subParam = searchParams.get("sub");
+    if (subParam && ["all", "admin", "member", "pending"].includes(subParam)) {
+      setMemberFilter(subParam);
+    }
+  }, [searchParams]);
+
   const handleToggleJoin = async () => {
     if (!userAuth.access_token) {
       return navigate("/signin");
@@ -301,6 +314,29 @@ const GroupDetailsPage = () => {
       navigate("/groups");
     } catch (err) {
       toast.error(err.response?.data?.error || "Lỗi khi xóa nhóm.");
+    }
+  };
+
+  const handleToggleMute = async () => {
+    if (!userAuth.access_token) {
+      return navigate("/signin");
+    }
+
+    try {
+      const data = await toggleMuteGroupNotifications(id, userAuth.access_token);
+      toast.success(data.message || "Đã cập nhật cài đặt thông báo.");
+      
+      setGroup((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          myMembership: prev.myMembership
+            ? { ...prev.myMembership, muteNotifications: data.muteNotifications }
+            : null
+        };
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Lỗi khi thao tác.");
     }
   };
 
@@ -522,15 +558,14 @@ const GroupDetailsPage = () => {
                   group.myMembership?.status === "JOINED"
                     ? "bg-white/10 hover:bg-white/20 border border-white/20 text-white"
                     : group.myMembership?.status === "PENDING"
-                      ? "bg-amber-500/20 border border-amber-500/30 text-amber-300 cursor-not-allowed"
+                      ? "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-450 hover:text-rose-300"
                       : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25"
                 }`}
-                disabled={group.myMembership?.status === "PENDING"}
               >
                 {group.myMembership?.status === "JOINED"
                   ? "Rời nhóm"
                   : group.myMembership?.status === "PENDING"
-                    ? "Chờ duyệt..."
+                    ? "Hủy yêu cầu"
                     : "Tham gia nhóm"}
               </button>
             </div>
@@ -566,7 +601,10 @@ const GroupDetailsPage = () => {
                 return (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      setSearchParams({ tab: tab.id });
+                    }}
                     className={`flex-1 py-3 px-4 rounded-xl text-xs font-black relative flex items-center justify-center gap-2 transition-all duration-300 z-10 ${
                       isActive
                         ? "text-white dark:text-slate-950"
@@ -636,7 +674,14 @@ const GroupDetailsPage = () => {
                   memberSearch={memberSearch}
                   setMemberSearch={setMemberSearch}
                   memberFilter={memberFilter}
-                  setMemberFilter={setMemberFilter}
+                  setMemberFilter={(filterVal) => {
+                    setMemberFilter(filterVal);
+                    setSearchParams((prev) => {
+                      const newParams = new URLSearchParams(prev);
+                      newParams.set("sub", filterVal);
+                      return newParams;
+                    });
+                  }}
                   adminMembers={adminMembers}
                   regularMembers={regularMembers}
                   filteredMembers={filteredMembers}
@@ -675,6 +720,7 @@ const GroupDetailsPage = () => {
             managementTeam={managementTeam}
             isJoined={isJoined}
             onInviteClick={() => setIsInviteModalOpen(true)}
+            handleToggleMute={handleToggleMute}
           />
         </div>
 

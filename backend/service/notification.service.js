@@ -29,8 +29,9 @@ class NotificationService {
       .populate("comment", "comment")
       .populate("replied_on_comment", "comment")
       .populate("reply", "comment")
+      .populate("group", "name banner avatar")
       .sort({ createdAt: -1 })
-      .select("createdAt type seen reply");
+      .select("createdAt type seen reply group role user blog");
 
     await Notification.updateMany(
       { _id: { $in: notifications.map((n) => n._id) }, seen: false },

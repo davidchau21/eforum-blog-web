@@ -114,6 +114,18 @@ export const leaveGroup = async (id, token) => {
 };
 
 /**
+ * Toggle mute notifications status for a group.
+ */
+export const toggleMuteGroupNotifications = async (id, token) => {
+  const { data } = await axios.post(
+    `${API_BASE}/groups/id/${id}/toggle-mute`,
+    {},
+    getHeaders(token)
+  );
+  return data;
+};
+
+/**
  * Approve a member's pending request.
  */
 export const approveRequest = async (id, userId, token) => {

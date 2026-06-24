@@ -22,6 +22,10 @@ const groupMemberSchema = new mongoose.Schema(
       enum: ["PENDING", "JOINED"],
       default: "JOINED",
     },
+    muteNotifications: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

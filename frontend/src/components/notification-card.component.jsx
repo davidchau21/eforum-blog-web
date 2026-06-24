@@ -21,6 +21,8 @@ const NotificationCard = ({ data, index, notificationState }) => {
       personal_info: { fullname, username, profile_img },
     },
     blog,
+    group,
+    role,
     _id: notification_id,
     metadata,
   } = data;
@@ -137,7 +139,12 @@ const NotificationCard = ({ data, index, notificationState }) => {
                 type === "like" ? "fi-sr-heart text-rose-500" : 
                 type === "comment" ? "fi-sr-comment-dots text-indigo-500" : 
                 type === "reply" ? "fi-sr-reply text-emerald-500" : 
-                "fi-sr-share text-amber-500"
+                type === "share" ? "fi-sr-share text-amber-500" :
+                type === "group_join_request" ? "fi-sr-user-add text-indigo-500" :
+                type === "group_join_approve" ? "fi-sr-checkbox text-emerald-500" :
+                type === "group_role_change" ? "fi-sr-crown text-amber-500" :
+                type === "group_new_post" ? "fi-sr-document text-rose-500" :
+                "fi-sr-bell text-slate-500"
              } text-[10px]`}></i>
           </div>
         </div>
@@ -162,11 +169,41 @@ const NotificationCard = ({ data, index, notificationState }) => {
                       ? translations.sharedYourBlog
                       : type === "message"
                         ? translations.sentYouAMessage || "sent you a message"
-                        : ""}
+                        : type === "group_join_request"
+                          ? translations.groupJoinRequest || "yêu cầu tham gia nhóm học tập"
+                          : type === "group_join_approve"
+                            ? translations.groupJoinApprove || "đã đồng ý yêu cầu tham gia nhóm học tập"
+                            : type === "group_role_change"
+                              ? `${translations.groupRoleChange || "đã thay đổi vai trò của bạn thành"} ${role}`
+                              : type === "group_new_post"
+                                ? translations.groupNewPost || "đã đăng bài viết mới trong nhóm học tập"
+                                : ""}
             </span>
           </h1>
 
-          {type === "message" ? (
+          {type === "group_new_post" && blog_id ? (
+            <div className="p-4 mt-3 rounded-2xl bg-grey border border-grey/50">
+              <Link
+                to={`/blog/${blog_id}`}
+                className="text-xs font-bold text-indigo-600 hover:underline line-clamp-1 mb-1"
+              >
+                {`"${blog_title}"`}
+              </Link>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Nhóm: <Link to={`/group/${group?._id}`} className="hover:underline font-bold text-indigo-500">{group?.name || "Chi tiết nhóm"}</Link>
+              </p>
+            </div>
+          ) : (type === "group_join_request" || type === "group_join_approve" || type === "group_role_change") && group ? (
+            <div className="p-4 mt-3 rounded-2xl bg-grey border border-grey/50">
+              <Link
+                to={type === "group_join_request" ? `/group/${group?._id}?tab=members&sub=pending` : `/group/${group?._id}`}
+                className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1.5"
+              >
+                <i className="fi fi-rr-users"></i>
+                {group?.name || "Chi tiết nhóm"}
+              </Link>
+            </div>
+          ) : type === "message" ? (
             <div className="p-4 mt-3 rounded-2xl bg-grey border border-grey/50">
               <Link
                 to={`/chat`}
@@ -258,7 +295,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
                     {translations.delete}
                     </button>
                 </>
-                ) : type === "share" || type === "like" || type === "message" ? (
+                ) : type === "share" || type === "like" || type === "message" || type === "group_join_request" || type === "group_join_approve" || type === "group_role_change" || type === "group_new_post" ? (
                 <button
                     className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 px-2 py-1 rounded-md transition-all"
                     onClick={(e) => handleDelete(notification_id, type, e.target)}

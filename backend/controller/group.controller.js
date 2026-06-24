@@ -192,6 +192,17 @@ class GroupController extends BaseController {
       return this.sendError(res, error.message, 400);
     }
   }
+
+  async toggleMuteNotifications(req, res) {
+    try {
+      const groupId = req.params.id;
+      const userId = req.user.id;
+      const result = await groupService.toggleMuteNotifications(groupId, userId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
 }
 
 export default new GroupController();
