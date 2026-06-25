@@ -4,8 +4,11 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import AnimationWrapper from "../common/page-animation";
 import { getTranslations } from "../../translations";
-import { UserContext } from "../App";
+import { UserContext, ThemeContext } from "../App";
 import SupportChat from "../components/support-chat.component";
+import { CreateGroupModal } from "../components/groups/create-group-modal.component";
+import { createGroup } from "../services/group.service";
+import { toast } from "react-hot-toast";
 
 // ── Service Layer ───────────────────────────────────────────────────────────
 import {
@@ -46,6 +49,7 @@ const CATEGORIES = [
 // ─────────────────────────────────────────────────────────────────────────────
 const HomePage = () => {
   const { userAuth } = useContext(UserContext);
+  const { theme } = useContext(ThemeContext);
   const { language, access_token } = userAuth;
   const translations = getTranslations(language);
   const location = useLocation();
@@ -67,10 +71,53 @@ const HomePage = () => {
   const [joinedGroupsPage, setJoinedGroupsPage] = useState(1);
   const [joinedGroupsTotal, setJoinedGroupsTotal] = useState(0);
 
+  // ── Group Creation state ────────────────────────────────────────────────
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = useState(false);
+  const [groupForm, setGroupForm] = useState({
+    name: "",
+    description: "",
+    avatar: "",
+    banner: "",
+    isPrivate: false,
+  });
+
+  const handleCreateGroupSubmit = async (e) => {
+    e.preventDefault();
+    if (!groupForm.name.trim()) return;
+
+    try {
+      await createGroup(groupForm, access_token);
+      toast.success("Tạo nhóm mới thành công!");
+
+      // Refresh groups list
+      setJoinedGroups(null);
+      fetchJoinedGroups(1, access_token)
+        .then(({ list, totalGroups }) => {
+          setJoinedGroups(list);
+          setJoinedGroupsTotal(totalGroups);
+          setJoinedGroupsPage(1);
+        })
+        .catch(console.log);
+
+      setIsCreateGroupModalOpen(false);
+      setGroupForm({
+        name: "",
+        description: "",
+        avatar: "",
+        banner: "",
+        isPrivate: false,
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Lỗi khi tạo nhóm.");
+    }
+  };
+
   // ── UI state ────────────────────────────────────────────────────────────
-  const [pageState, setPageState] = useState(
-    location.pathname === "/feed/following" ? translations.following : "feed",
-  );
+  const [pageState, setPageState] = useState(() => {
+    if (location.pathname === "/feed/following") return translations.following;
+    if (location.pathname === "/feed/my-groups") return "my-groups";
+    return "feed";
+  });
   const [activeTab, setActiveTab] = useState(0);
   const [showWriteModal, setShowWriteModal] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -93,10 +140,14 @@ const HomePage = () => {
 
   // ── Sync URL ↔ pageState ────────────────────────────────────────────────
   useEffect(() => {
-    setPageState(
-      location.pathname === "/feed/following" ? translations.following : "feed",
-    );
-  }, [location.pathname]);
+    if (location.pathname === "/feed/following") {
+      setPageState(translations.following);
+    } else if (location.pathname === "/feed/my-groups") {
+      setPageState("my-groups");
+    } else {
+      setPageState("feed");
+    }
+  }, [location.pathname, translations.following]);
 
   // ── Main data fetch when pageState changes ──────────────────────────────
   useEffect(() => {
@@ -117,8 +168,7 @@ const HomePage = () => {
       }
     } else if (pageState === "my-groups") {
       if (!access_token) {
-        setPageState("feed");
-        setActiveTab(0);
+        navigate("/signin");
       } else {
         setActiveTab(4);
         setJoinedGroups(null);
@@ -275,8 +325,6 @@ const HomePage = () => {
         <HomeLeftSidebar
           pageState={pageState}
           setPageState={setPageState}
-          setBlogs={setBlogs}
-          setActiveTab={setActiveTab}
           categories={CATEGORIES}
           tags={tags}
           translations={translations}
@@ -317,6 +365,7 @@ const HomePage = () => {
               loadBlogByCategory={loadBlogByCategory}
               translations={translations}
               navigate={navigate}
+              setIsCreateGroupModalOpen={setIsCreateGroupModalOpen}
             />
           </div>
         </main>
@@ -333,6 +382,16 @@ const HomePage = () => {
       </section>
 
       <SupportChat />
+
+      <CreateGroupModal
+        isOpen={isCreateGroupModalOpen}
+        onClose={() => setIsCreateGroupModalOpen(false)}
+        groupForm={groupForm}
+        setGroupForm={setGroupForm}
+        handleCreateGroup={handleCreateGroupSubmit}
+        theme={theme}
+        token={access_token}
+      />
 
       {/* Scroll-to-top FAB */}
       <AnimatePresence>

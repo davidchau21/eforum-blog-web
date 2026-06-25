@@ -3,8 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 const HomeLeftSidebar = ({
   pageState,
   setPageState,
-  setBlogs,
-  setActiveTab,
   categories,
   tags,
   translations,
@@ -68,8 +66,7 @@ const HomeLeftSidebar = ({
         <button
           onClick={() => {
             if (!access_token) return navigate("/signin");
-            setActiveTab(4);
-            setPageState("my-groups");
+            navigate("/feed/my-groups");
           }}
           className={navBtnClass(pageState === "my-groups")}
         >

@@ -185,6 +185,7 @@ const App = () => {
                 <Route path="/" element={<Navbar />}>
                   <Route path="feed" element={<HomePage />}>
                     <Route path="following" element={<HomePage />} />
+                    <Route path="my-groups" element={<HomePage />} />
                   </Route>
                   <Route
                     path="feed/saved"
