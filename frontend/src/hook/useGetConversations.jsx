@@ -10,6 +10,11 @@ const useGetConversations = () => {
   const { userAuth } = useContext(UserContext);
 
   useEffect(() => {
+    if (!userAuth || !userAuth.access_token) {
+      setLoading(false);
+      return;
+    }
+
     axios
       .get(import.meta.env.VITE_SERVER_DOMAIN + "/users", {
         headers: {
@@ -20,10 +25,23 @@ const useGetConversations = () => {
         setConversations(data);
         setLoading(false);
       })
-      .catch(({ response }) => {
-        toast.error(response.data.error);
+      .catch((err) => {
+        const errMsg = err.response?.data?.error || "";
+        const status = err.response?.status;
+        if (
+          status === 401 ||
+          status === 403 ||
+          errMsg.toLowerCase().includes("token") ||
+          errMsg.toLowerCase().includes("session")
+        ) {
+          console.error("Session expired in useGetConversations:", errMsg);
+          setLoading(false);
+          return;
+        }
+        toast.error(errMsg || "Lỗi khi tải danh sách cuộc trò chuyện.");
+        setLoading(false);
       });
-  }, [userAuth.access_token]);
+  }, [userAuth?.access_token]);
 
   return { loading, conversations };
 };

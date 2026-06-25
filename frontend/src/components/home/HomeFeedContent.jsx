@@ -92,7 +92,7 @@ const HomeFeedContent = ({
               {blogs.results.map((blog, i) => (
                 <AnimationWrapper
                   transition={{ duration: 1, delay: i * 0.1 }}
-                  key={i}
+                  key={blog.blog_id || blog._id || i}
                 >
                   <BlogPostCard content={blog} author={blog.author} />
                 </AnimationWrapper>
@@ -155,7 +155,7 @@ const HomeFeedContent = ({
               {followingBlogs.results.map((blog, i) => (
                 <AnimationWrapper
                   transition={{ duration: 1, delay: i * 0.1 }}
-                  key={i}
+                  key={blog.blog_id || blog._id || i}
                 >
                   <BlogPostCard content={blog} author={blog.author} />
                 </AnimationWrapper>

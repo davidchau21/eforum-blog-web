@@ -38,32 +38,18 @@ async function notifyGroupMembersOfNewPost(blog, authorId) {
 class BlogService {
   async getForbiddenGroupIds(userId) {
     const privateGroups = await Group.find({ isPrivate: true }).select("_id");
-    const privateGroupIds = privateGroups.map(g => g._id.toString());
-    
-    if (!userId) {
-      return privateGroupIds;
-    }
-    
-    const joinedMemberships = await GroupMember.find({
-      user: userId,
-      group: { $in: privateGroupIds },
-      status: "JOINED"
-    }).select("group");
-    
-    const joinedGroupIds = new Set(joinedMemberships.map(m => m.group.toString()));
-    
-    return privateGroupIds.filter(id => !joinedGroupIds.has(id));
+    return privateGroups.map(g => g._id.toString());
   }
 
   async attachGroupMemberships(blogs, userId) {
     if (!blogs || !blogs.length) return blogs;
-    
+
     const groupIds = blogs
       .map(b => b.group?._id || b.group)
       .filter(Boolean);
-      
+
     if (!groupIds.length) return blogs;
-    
+
     let memberships = [];
     if (userId) {
       memberships = await GroupMember.find({
@@ -71,12 +57,12 @@ class BlogService {
         group: { $in: groupIds }
       });
     }
-    
+
     const membershipMap = {};
     memberships.forEach(m => {
       membershipMap[m.group.toString()] = m;
     });
-    
+
     return blogs.map(blog => {
       const blogObj = blog.toObject ? blog.toObject() : blog;
       if (blogObj.group) {
@@ -100,7 +86,7 @@ class BlogService {
     if (groupId) {
       const groupDoc = await Group.findById(groupId);
       if (!groupDoc) throw new Error("Nhóm không tồn tại.");
-      
+
       const membership = await GroupMember.findOne({ group: groupId, user: authorId, status: "JOINED" });
       if (!membership) {
         throw new Error("Bạn không có quyền đăng bài trong nhóm này (chưa tham gia hoặc chưa được duyệt).");
@@ -307,7 +293,8 @@ class BlogService {
     const populatedBlogs = await this.attachGroupMemberships(blogs, currentUserId);
 
     const filteredBlogs = populatedBlogs
-      .filter((blog) => blog.author && blog.author.personal_info.role !== "ADMIN")
+      .map((blog) => (blog.toObject ? blog.toObject() : blog))
+      .filter((blog) => blog.author && blog.author.personal_info?.role !== "ADMIN")
       .map((blog) => {
         const isFollowingAuthor = currentUserId && followingIds.includes(blog.author._id.toString());
         return { ...blog, isFollowingAuthor };
@@ -348,7 +335,7 @@ class BlogService {
     const followDocs = await UserFollow.find({ follower: userId }).select("following -_id");
     const following = followDocs.map((item) => item.following);
     if (!following.length) return 0;
-    
+
     const forbiddenGroupIds = await this.getForbiddenGroupIds(userId);
     return await Blog.countDocuments({
       author: { $in: following },
