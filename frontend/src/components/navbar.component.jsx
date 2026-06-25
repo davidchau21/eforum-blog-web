@@ -148,7 +148,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="bg-white w-full h-[80px] flex items-center justify-between px-4 lg:px-8 border-b border-grey sticky top-0 z-50 transition-colors duration-300">
+      <nav className="bg-white dark:bg-zinc-900 w-full h-[80px] flex items-center justify-between px-4 lg:px-8 border-b border-grey dark:border-zinc-800 sticky top-0 z-50 transition-colors duration-300">
         {/* Left Section: Logo & Search */}
         <div className="flex items-center gap-6 lg:gap-10">
           <Link
@@ -163,50 +163,77 @@ const Navbar = () => {
             />
           </Link>
 
-          <div className="hidden md:flex items-center bg-grey border border-grey rounded-full px-4 py-2.5 w-64 lg:w-[400px] group focus-within:ring-2 focus-within:ring-indigo-500/10 focus-within:border-indigo-400 transition-all">
-            <i className="fi fi-rr-search text-black/60 text-sm"></i>
+          <div className="hidden md:flex items-center bg-grey dark:bg-zinc-800 border border-grey dark:border-zinc-700 rounded-full px-4 py-2.5 w-64 lg:w-[360px] group focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-400 transition-all">
+            <i className="fi fi-rr-search text-black/50 dark:text-zinc-400 text-sm"></i>
             <input
               type="search"
               placeholder="Search ⌘K"
-              className="bg-transparent border-none outline-none w-full ml-3 text-sm placeholder:text-black/50 text-black font-bold"
+              className="bg-transparent border-none outline-none w-full ml-3 text-sm placeholder:text-black/40 dark:placeholder:text-zinc-500 text-black dark:text-zinc-100 font-semibold"
               onKeyDown={handleSearch}
             />
           </div>
         </div>
 
-        {/* Center Section: Navigation Links */}
-        <div className="hidden lg:flex items-center gap-8 absolute left-1/2 -translate-x-1/2 h-full">
-          <Link
-            to="/feed"
-            onClick={handleExploreClick}
-            className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all ${location.pathname === "/feed" ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
-          >
-            Explore
-          </Link>
-          <Link
-            to="/trending"
-            className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all ${location.pathname === "/trending" ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
-          >
-            Trending
-          </Link>
-          <Link
-            to="/search-google"
-            className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all gap-2 ${location.pathname === "/search-google" ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
-          >
-            Academic Search
-          </Link>
-          <Link
-            to="/directory"
-            className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all ${location.pathname === "/directory" ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
-          >
-            Directory
-          </Link>
-          <Link
-            to="/groups"
-            className={`h-full flex items-center border-b-2 font-bold text-sm px-1 transition-all ${location.pathname.startsWith("/groups") || location.pathname.startsWith("/group/") ? "border-indigo-600 text-indigo-600" : "border-transparent text-black/70 hover:text-indigo-600"}`}
-          >
-            {language === "vi" ? "Nhóm" : "Groups"}
-          </Link>
+        {/* Center Section: Navigation Links — Pill Style */}
+        <div className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2">
+          <div className="flex items-center bg-grey/70 dark:bg-zinc-800/60 rounded-full p-1 gap-0.5 border border-grey dark:border-zinc-700/60">
+            <Link
+              to="/feed"
+              onClick={handleExploreClick}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 ${
+                location.pathname === "/feed"
+                  ? "bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm"
+                  : "text-black/55 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 hover:bg-white/50 dark:hover:bg-zinc-700/50"
+              }`}
+            >
+              <i className="fi fi-rr-home text-[11px] leading-none" />
+              Explore
+            </Link>
+            <Link
+              to="/trending"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 ${
+                location.pathname === "/trending"
+                  ? "bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm"
+                  : "text-black/55 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 hover:bg-white/50 dark:hover:bg-zinc-700/50"
+              }`}
+            >
+              <i className="fi fi-rr-chart-histogram text-[11px] leading-none" />
+              Trending
+            </Link>
+            <Link
+              to="/search-google"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 ${
+                location.pathname === "/search-google"
+                  ? "bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm"
+                  : "text-black/55 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 hover:bg-white/50 dark:hover:bg-zinc-700/50"
+              }`}
+            >
+              <i className="fi fi-rr-graduation-cap text-[11px] leading-none" />
+              Academic
+            </Link>
+            <Link
+              to="/directory"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 ${
+                location.pathname === "/directory"
+                  ? "bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm"
+                  : "text-black/55 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 hover:bg-white/50 dark:hover:bg-zinc-700/50"
+              }`}
+            >
+              <i className="fi fi-rr-address-book text-[11px] leading-none" />
+              Directory
+            </Link>
+            <Link
+              to="/groups"
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 ${
+                location.pathname.startsWith("/groups") || location.pathname.startsWith("/group/")
+                  ? "bg-white dark:bg-zinc-700 text-indigo-600 shadow-sm"
+                  : "text-black/55 dark:text-zinc-400 hover:text-black dark:hover:text-zinc-100 hover:bg-white/50 dark:hover:bg-zinc-700/50"
+              }`}
+            >
+              <i className="fi fi-rr-users-alt text-[11px] leading-none" />
+              {language === "vi" ? "Nhóm" : "Groups"}
+            </Link>
+          </div>
         </div>
 
         <div className="flex items-center gap-4 md:gap-6 ml-auto">
@@ -447,7 +474,7 @@ const Navbar = () => {
             )}
 
             <button
-              className="w-10 h-10 rounded-full text-black/60 hover:text-black hover:bg-grey flex items-center justify-center transition-all"
+              className="w-10 h-10 rounded-full text-black/60 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-grey dark:hover:bg-zinc-800 flex items-center justify-center transition-all"
               onClick={changeTheme}
             >
               <i
@@ -460,7 +487,7 @@ const Navbar = () => {
             </button>
 
             <button
-              className="w-10 h-10 rounded-full text-black/60 hover:text-black hover:bg-grey flex items-center justify-center transition-all mr-2"
+              className="w-10 h-10 rounded-full text-black/60 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-grey dark:hover:bg-zinc-800 flex items-center justify-center transition-all mr-2"
               onClick={changeLanguage}
             >
               <img
@@ -474,7 +501,7 @@ const Navbar = () => {
               <div className="flex items-center gap-1">
                 <div className="relative" ref={notifRef}>
                   <button
-                    className="w-10 h-10 rounded-full text-black/60 hover:text-black hover:bg-grey flex items-center justify-center transition-all"
+                    className="w-10 h-10 rounded-full text-black/60 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-grey dark:hover:bg-zinc-800 flex items-center justify-center transition-all"
                     onClick={() => setNotifPanel((prev) => !prev)}
                   >
                     <i className="fi fi-rr-bell text-xl mt-1"></i>
@@ -498,7 +525,7 @@ const Navbar = () => {
 
                 <Link
                   to="/chat"
-                  className="w-10 h-10 rounded-full text-black/60 hover:text-black hover:bg-grey flex items-center justify-center transition-all relative"
+                  className="w-10 h-10 rounded-full text-black/60 dark:text-zinc-400 hover:text-black dark:hover:text-white hover:bg-grey dark:hover:bg-zinc-800 flex items-center justify-center transition-all relative"
                 >
                   <i className="fi fi-rr-comment-alt text-xl mt-1"></i>
                   {unread_messages > 0 && (
