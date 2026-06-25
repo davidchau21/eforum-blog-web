@@ -5,6 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   BlogCardSkeleton,
   MinimalBlogSkeleton,
+  TrendingTopicsSkeleton,
+  TopContributorsSkeleton,
 } from "../components/skeleton.component";
 import BlogPostCard from "../components/blog-post.component";
 import MinimalBlogPost from "../components/nobanner-blog-post.component";
@@ -1039,9 +1041,7 @@ const HomePage = () => {
                   </div>
                 ))
               ) : (
-                <div className="text-dark-grey text-sm normal-case">
-                  Loading topics...
-                </div>
+                <TrendingTopicsSkeleton />
               )}
             </div>
           </div>
@@ -1112,9 +1112,7 @@ const HomePage = () => {
                   );
                 })
               ) : (
-                <div className="text-dark-grey text-sm normal-case">
-                  Loading contributors...
-                </div>
+                <TopContributorsSkeleton />
               )}
             </div>
           </div>

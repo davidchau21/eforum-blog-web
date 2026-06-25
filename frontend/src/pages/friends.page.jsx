@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { UserContext, ThemeContext } from "../App";
 import AnimationWrapper from "../common/page-animation";
 import Loader from "../components/loader.component";
 import NoDataMessage from "../components/nodata.component";
+import { TrendingTopicsSkeleton, TopContributorsSkeleton } from "../components/skeleton.component";
 
 const FriendListItem = ({ user, loggedInUsername, access_token }) => {
     const { personal_info: { fullname, username, profile_img, bio } } = user;
@@ -380,9 +381,7 @@ const FriendsPage = () => {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-dark-grey text-sm normal-case">
-                                    Loading topics...
-                                </div>
+                                <TrendingTopicsSkeleton />
                             )}
                         </div>
                     </div>
@@ -441,9 +440,7 @@ const FriendsPage = () => {
                                     );
                                 })
                             ) : (
-                                <div className="text-dark-grey text-sm normal-case">
-                                    Loading contributors...
-                                </div>
+                                <TopContributorsSkeleton />
                             )}
                         </div>
                     </div>

@@ -16,6 +16,7 @@ import { GroupUploadDocModal } from "../components/groups/group-upload-doc-modal
 import { GroupInviteModal } from "../components/groups/group-invite-modal.component";
 import { GroupMemberModal } from "../components/groups/group-member-modal.component";
 import groupBannerDefault from "../imgs/group-banner-default.png";
+import { GroupDetailsSkeleton } from "../components/skeleton.component";
 
 // Group API services
 import {
@@ -448,11 +449,7 @@ const GroupDetailsPage = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#09090B] transition-colors duration-500">
-        <div className="w-10 h-10 border-4 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <GroupDetailsSkeleton />;
   }
 
   if (isDisabledError) {

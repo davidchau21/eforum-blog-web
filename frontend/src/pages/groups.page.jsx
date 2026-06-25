@@ -8,6 +8,7 @@ import Pagination from "../components/pagination.component";
 // Extracted Subcomponents & Services
 import { GroupCard } from "../components/groups/group-card.component";
 import { CreateGroupModal } from "../components/groups/create-group-modal.component";
+import { GroupCardSkeleton } from "../components/skeleton.component";
 import { listGroups, createGroup } from "../services/group.service";
 
 const GroupsPage = () => {
@@ -162,9 +163,9 @@ const GroupsPage = () => {
         {/* Group Grid */}
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {loading ? (
-            <div className="col-span-full py-20 flex justify-center">
-              <div className="w-10 h-10 border-4 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></div>
-            </div>
+            Array.from({ length: 6 }).map((_, i) => (
+              <GroupCardSkeleton key={i} />
+            ))
           ) : groups.length > 0 ? (
             groups.map((group) => (
               <GroupCard key={group._id} group={group} navigate={navigate} />
