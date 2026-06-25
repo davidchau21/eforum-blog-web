@@ -86,11 +86,11 @@ const GroupBlogEditor = ({ isModal = false }) => {
           const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
           draft.data = { ...draft.data, content: updatedContent };
           localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-        }
+        },
       });
 
       editorCore.current = editor;
-      setTextEditor(editor); 
+      setTextEditor(editor);
     }
   }, []);
 
@@ -126,13 +126,13 @@ const GroupBlogEditor = ({ isModal = false }) => {
         toast.success(
           language === "vi"
             ? "Đã tải ảnh banner lên!"
-            : "Banner image loaded successfully!"
+            : "Banner image loaded successfully!",
         );
       } else {
         toast.error(
           language === "vi"
             ? "Vui lòng kéo thả file ảnh (.png, .jpg, .jpeg)!"
-            : "Please drop an image file (.png, .jpg, .jpeg)!"
+            : "Please drop an image file (.png, .jpg, .jpeg)!",
         );
       }
     }
@@ -159,11 +159,15 @@ const GroupBlogEditor = ({ isModal = false }) => {
           if (file) {
             e.preventDefault();
             const previewURL = URL.createObjectURL(file);
-            setBlog((prev) => ({ ...prev, banner: previewURL, bannerFile: file }));
+            setBlog((prev) => ({
+              ...prev,
+              banner: previewURL,
+              bannerFile: file,
+            }));
             toast.success(
               language === "vi"
                 ? "Đã dán ảnh banner thành công!"
-                : "Banner image pasted successfully!"
+                : "Banner image pasted successfully!",
             );
             break;
           }
@@ -340,14 +344,14 @@ const GroupBlogEditor = ({ isModal = false }) => {
           </p>
 
           <div className="flex gap-4 ml-auto">
-            <button 
-              className="whitespace-nowrap bg-purple text-white rounded-full py-2 px-6 text-[15px] font-semibold hover:bg-purple/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-purple/10 shrink-0" 
+            <button
+              className="whitespace-nowrap bg-purple text-white rounded-full py-2 px-6 text-[15px] font-semibold hover:bg-purple/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-purple/10 shrink-0"
               onClick={handlePublishEvent}
             >
               {currentTranslations.publish}
             </button>
-            <button 
-              className="whitespace-nowrap bg-grey/80 dark:bg-grey/30 text-black dark:text-white rounded-full py-2 px-6 text-[15px] font-semibold hover:bg-grey dark:hover:bg-grey/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shrink-0" 
+            <button
+              className="whitespace-nowrap bg-grey/80 dark:bg-grey/30 text-black dark:text-white rounded-full py-2 px-6 text-[15px] font-semibold hover:bg-grey dark:hover:bg-grey/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shrink-0"
               onClick={handleSaveDraft}
             >
               {currentTranslations.saveDraft}
@@ -379,10 +383,10 @@ const GroupBlogEditor = ({ isModal = false }) => {
       <AnimationWrapper>
         <section className={isModal ? "py-0" : "pb-20 md:pb-0"}>
           <div className="mx-auto max-w-[900px] w-full mt-6">
-            <div 
+            <div
               className={`relative aspect-video rounded-2xl overflow-hidden transition-all duration-300 border-2 ${
-                isDragging 
-                  ? "border-purple bg-purple/5 scale-[0.99] shadow-lg" 
+                isDragging
+                  ? "border-purple bg-purple/5 scale-[0.99] shadow-lg"
                   : "border-grey/80 dark:border-grey/30 bg-grey/30 hover:bg-grey/50 hover:border-purple/30"
               } flex flex-col items-center justify-center`}
               onDragOver={handleDragOver}
@@ -390,8 +394,15 @@ const GroupBlogEditor = ({ isModal = false }) => {
               onDrop={handleDrop}
             >
               {blog.banner ? (
-                <label htmlFor="uploadBanner" className="cursor-pointer block w-full h-full relative group">
-                  <img src={blog.banner} className="w-full h-full object-cover" onError={handleError} />
+                <label
+                  htmlFor="uploadBanner"
+                  className="cursor-pointer block w-full h-full relative group"
+                >
+                  <img
+                    src={blog.banner}
+                    className="w-full h-full object-cover"
+                    onError={handleError}
+                  />
                   <input
                     id="uploadBanner"
                     type="file"
@@ -403,12 +414,17 @@ const GroupBlogEditor = ({ isModal = false }) => {
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-2">
                     <i className="fi fi-rr-edit text-2xl animate-pulse"></i>
                     <span className="text-sm font-semibold">
-                      {language === "vi" ? "Thay đổi ảnh banner (Kéo thả hoặc dán ảnh mới)" : "Change banner image (Drag & drop or paste new)"}
+                      {language === "vi"
+                        ? "Thay đổi ảnh banner (Kéo thả hoặc dán ảnh mới)"
+                        : "Change banner image (Drag & drop or paste new)"}
                     </span>
                   </div>
                 </label>
               ) : (
-                <label htmlFor="uploadBanner" className="cursor-pointer flex flex-col items-center justify-center p-8 text-center w-full h-full select-none group">
+                <label
+                  htmlFor="uploadBanner"
+                  className="cursor-pointer flex flex-col items-center justify-center p-8 text-center w-full h-full select-none group"
+                >
                   <input
                     id="uploadBanner"
                     type="file"
@@ -420,11 +436,13 @@ const GroupBlogEditor = ({ isModal = false }) => {
                     <i className="fi fi-rr-picture text-3xl"></i>
                   </div>
                   <h3 className="text-lg font-bold text-black dark:text-white mb-2">
-                    {language === "vi" ? "Thêm ảnh banner cho bài viết" : "Add a blog banner image"}
+                    {language === "vi"
+                      ? "Thêm ảnh banner cho bài viết"
+                      : "Add a blog banner image"}
                   </h3>
                   <p className="text-sm text-dark-grey max-w-sm mb-4 leading-relaxed">
-                    {language === "vi" 
-                      ? "Kéo thả ảnh vào đây, nhấn để chọn từ máy, hoặc nhấn Ctrl+V để dán ảnh trực tiếp từ clipboard" 
+                    {language === "vi"
+                      ? "Kéo thả ảnh vào đây, nhấn để chọn từ máy, hoặc nhấn Ctrl+V để dán ảnh trực tiếp từ clipboard"
                       : "Drag & drop image here, click to browse, or press Ctrl+V to paste directly from clipboard"}
                   </p>
                   <div className="flex gap-2 items-center justify-center text-xs text-purple font-medium bg-purple/10 px-3 py-1.5 rounded-full border border-purple/20">
@@ -441,10 +459,14 @@ const GroupBlogEditor = ({ isModal = false }) => {
                     <i className="fi fi-rr-upload-bubble text-4xl"></i>
                   </div>
                   <p className="text-xl font-bold text-black dark:text-white">
-                    {language === "vi" ? "Thả ảnh để tải lên banner" : "Drop image to upload banner"}
+                    {language === "vi"
+                      ? "Thả ảnh để tải lên banner"
+                      : "Drop image to upload banner"}
                   </p>
                   <p className="text-sm text-dark-grey mt-1">
-                    {language === "vi" ? "Hỗ trợ PNG, JPG, JPEG" : "Supports PNG, JPG, JPEG"}
+                    {language === "vi"
+                      ? "Hỗ trợ PNG, JPG, JPEG"
+                      : "Supports PNG, JPG, JPEG"}
                   </p>
                 </div>
               )}
@@ -459,7 +481,7 @@ const GroupBlogEditor = ({ isModal = false }) => {
             <textarea
               defaultValue={title}
               placeholder={currentTranslations.blogTitlePlaceholder}
-              className="text-4xl md:text-5xl font-gelasio font-semibold w-full h-20 outline-none resize-none mt-2 leading-tight placeholder:opacity-30 bg-white text-black dark:text-white transition-all"
+              className="text-2xl md:text-3xl font-gelasio font-semibold w-full h-20 outline-none resize-none mt-2 leading-tight placeholder:opacity-30 bg-white text-black dark:text-white transition-all"
               onKeyDown={handleTitleKeyDown}
               onChange={handleTitleChange}
             ></textarea>

@@ -20,14 +20,12 @@ export const GroupDiscussionTab = ({
 
   if (showLockScreen) {
     return (
-      <GroupPrivateLock
-        group={group}
-        handleToggleJoin={handleToggleJoin}
-      />
+      <GroupPrivateLock group={group} handleToggleJoin={handleToggleJoin} />
     );
   }
 
-  const activeBlogsList = discussionFilter === "published" ? blogs : pendingBlogs;
+  const activeBlogsList =
+    discussionFilter === "published" ? blogs : pendingBlogs;
 
   return (
     <div className="space-y-6">
@@ -106,10 +104,12 @@ export const GroupDiscussionTab = ({
                   </span>
                   <span className="w-1 h-1 bg-slate-300 dark:bg-zinc-700 rounded-full"></span>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                    {new Date(blog.publishedAt || blog.createdAt).toLocaleDateString()}
+                    {new Date(
+                      blog.publishedAt || blog.createdAt,
+                    ).toLocaleDateString()}
                   </span>
                 </div>
-                <h3 className="text-xl font-black font-jakarta text-slate-900 dark:text-white leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                <h3 className="text-md font-bold font-jakarta text-slate-900 dark:text-white leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                   {blog.title}
                 </h3>
                 <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed font-medium">
@@ -127,7 +127,10 @@ export const GroupDiscussionTab = ({
                     </span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-white/5 mt-2" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-white/5 mt-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <button
                       onClick={() => handleApproveBlog(blog._id)}
                       className="py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white transition-all hover:scale-105 active:scale-95 cursor-pointer"
@@ -159,8 +162,8 @@ export const GroupDiscussionTab = ({
       ) : (
         <div className="py-20 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-3xl">
           <i className="fi fi-rr-comments text-3xl mb-2 block text-slate-300 dark:text-zinc-750"></i>
-          {discussionFilter === "published" 
-            ? "Chưa có bài viết thảo luận nào trong nhóm này." 
+          {discussionFilter === "published"
+            ? "Chưa có bài viết thảo luận nào trong nhóm này."
             : "Không có bài viết nào đang chờ duyệt."}
         </div>
       )}

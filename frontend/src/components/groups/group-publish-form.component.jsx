@@ -347,7 +347,10 @@ const GroupPublishForm = ({ isModal = false }) => {
           )}
 
           {!isModal && (
-            <button className="btn-dark px-8 mt-8" onClick={publishBlog}>
+            <button 
+              className="whitespace-nowrap bg-purple text-white rounded-full py-3 px-8 mt-8 text-[15px] font-semibold hover:bg-purple/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-purple/10" 
+              onClick={publishBlog}
+            >
               Publish
             </button>
           )}
