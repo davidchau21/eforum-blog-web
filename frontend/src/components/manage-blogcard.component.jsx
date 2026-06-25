@@ -92,7 +92,7 @@ export const ManagePublishedBlogCard = ({ blog }) => {
           </div>
           <div className="flex items-center gap-2 mt-5">
             <Link 
-              to={`/editor/${blog_id}`} 
+              to={blog.group ? `/group-editor/${blog_id}` : `/editor/${blog_id}`} 
               className="text-[13px] font-medium text-indigo-600 hover:bg-indigo-500/10 px-3 py-1.5 rounded-lg transition-all"
             >
               Edit
@@ -184,7 +184,7 @@ export const ManageDraftBlogPost = ({ blog }) => {
 
           <div className="flex items-center gap-2 mt-5">
             <Link 
-              to={`/editor/${blog_id}`} 
+              to={blog.group ? `/group-editor/${blog_id}` : `/editor/${blog_id}`} 
               className="text-[13px] font-medium text-indigo-600 hover:bg-indigo-500/10 px-3 py-1.5 rounded-lg transition-all"
             >
               Edit

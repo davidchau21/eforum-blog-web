@@ -6,9 +6,9 @@ class DocumentController extends BaseController {
     try {
       const userId = req.user.id;
       const file = req.file; // standard single file upload
-      const { title, description } = req.body;
+      const { title, description, group } = req.body;
 
-      const result = await documentService.uploadDocument(userId, file, title, description);
+      const result = await documentService.uploadDocument(userId, file, title, description, group);
       return this.sendSuccess(res, result, 201);
     } catch (error) {
       return this.sendError(res, error.message, 400);

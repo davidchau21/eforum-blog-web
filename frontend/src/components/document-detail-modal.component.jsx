@@ -52,6 +52,15 @@ const DocumentDetailModal = ({
   const handleDownload = async () => {
     if (!doc) return;
 
+    if (!access_token) {
+      toast.error(
+        language === "en"
+          ? "Please sign in to download this document."
+          : "Vui lòng đăng nhập để tải tài liệu này."
+      );
+      return;
+    }
+
     try {
       // Trigger database download counter increment
       await axios.post(
@@ -141,13 +150,53 @@ const DocumentDetailModal = ({
         ) : (
           <>
             {/* Left Column: Embedded Viewer */}
-            <div className="flex-1 bg-grey/40 dark:bg-zinc-950/40 p-4 md:p-6 flex items-center justify-center min-h-[300px] md:h-full">
+            <div className="flex-1 bg-grey/40 dark:bg-zinc-950/40 p-4 md:p-6 flex items-center justify-center min-h-[300px] md:h-full relative overflow-hidden">
               {doc.file_url ? (
-                <iframe
-                  src={getViewerUrl()}
-                  className="w-full h-full border-none rounded-2xl bg-white shadow-inner min-h-[300px] md:min-h-0"
-                  title={doc.title}
-                />
+                <>
+                  <iframe
+                    src={getViewerUrl()}
+                    className={`w-full h-full border-none rounded-2xl bg-white shadow-inner min-h-[300px] md:min-h-0 ${!access_token ? "pointer-events-none select-none blur-[2px]" : ""}`}
+                    title={doc.title}
+                  />
+                  {!access_token && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-white/40 dark:from-zinc-900 dark:via-zinc-900/95 dark:to-zinc-900/40 z-10 flex flex-col items-center justify-center p-6 text-center backdrop-blur-[2.5px]">
+                      <div className="bg-white/85 dark:bg-zinc-950/85 backdrop-blur-md p-8 rounded-3xl border border-grey/40 dark:border-zinc-800 shadow-xl max-w-sm flex flex-col items-center gap-5 animate-zoom-in">
+                        {/* Brand Logo / Icon */}
+                        <div className="w-16 h-16 rounded-full bg-indigo-50 dark:bg-indigo-950/30 flex items-center justify-center border border-indigo-100 dark:border-indigo-900/50">
+                          <i className="fi fi-rr-lock text-3xl text-indigo-600 dark:text-indigo-400"></i>
+                        </div>
+                        
+                        <div>
+                          <h3 className="font-extrabold text-lg text-black dark:text-white mb-2">
+                            {language === "en" ? "Unlock Full Resource" : "Mở khóa tài liệu"}
+                          </h3>
+                          <p className="text-xs text-dark-grey leading-relaxed">
+                            {language === "en" 
+                              ? "Sign in or register an EForum account to read and download this document." 
+                              : "Đăng nhập hoặc đăng ký tài khoản EForum để đọc và tải xuống toàn bộ tài liệu này."}
+                          </p>
+                        </div>
+                        
+                        <div className="w-full flex flex-col gap-2.5">
+                          <a
+                            href="/signin"
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-2xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2"
+                          >
+                            <i className="fi fi-rr-sign-in-alt text-sm"></i>
+                            {language === "en" ? "Sign In" : "Đăng nhập"}
+                          </a>
+                          <a
+                            href="/signup"
+                            className="w-full bg-transparent hover:bg-grey/20 dark:hover:bg-white/5 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900/50 py-3 rounded-2xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center gap-2"
+                          >
+                            <i className="fi fi-rr-user-add text-sm"></i>
+                            {language === "en" ? "Create Free Account" : "Đăng ký tài khoản"}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center text-dark-grey">
                   <i className="fi fi-rr-circle-exclamation text-3xl mb-2 block text-indigo-500"></i>
@@ -248,13 +297,23 @@ const DocumentDetailModal = ({
 
               {/* Actions Footer */}
               <div className="flex flex-col gap-3 pt-6 mt-6 border-t border-grey/50 dark:border-zinc-800/50">
-                <button
-                  onClick={handleDownload}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-2xl text-sm font-extrabold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/10 cursor-pointer"
-                >
-                  <i className="fi fi-rr-download-to-device text-base mt-0.5"></i>
-                  Tải tài liệu về máy
-                </button>
+                {access_token ? (
+                  <button
+                    onClick={handleDownload}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 rounded-2xl text-sm font-extrabold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/10 cursor-pointer"
+                  >
+                    <i className="fi fi-rr-download-to-device text-base mt-0.5"></i>
+                    {language === "en" ? "Download Document" : "Tải tài liệu về máy"}
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="w-full bg-zinc-100 dark:bg-zinc-800/50 text-zinc-400 dark:text-zinc-500 py-3.5 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-700/60 cursor-not-allowed select-none"
+                  >
+                    <i className="fi fi-rr-lock text-base mt-0.5"></i>
+                    {language === "en" ? "Sign In to Download" : "Đăng nhập để tải tài liệu"}
+                  </button>
+                )}
 
                 {isAuthor && (
                   <button

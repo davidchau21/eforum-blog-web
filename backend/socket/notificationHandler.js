@@ -8,7 +8,7 @@ import { getReceiverSocketId, io } from "./socket.js";
  */
 EE.on("publish-notification", async (data) => {
     try {
-        const { type, blog, notification_for, user, comment, reply, replied_on_comment, metadata } = data;
+        const { type, blog, notification_for, user, comment, reply, replied_on_comment, metadata, group, role } = data;
 
         // 1. Save to Database (Background Persistence)
         const notification = new Notification({
@@ -19,7 +19,9 @@ EE.on("publish-notification", async (data) => {
             comment,
             reply,
             replied_on_comment,
-            metadata
+            metadata,
+            group,
+            role
         });
 
         const savedNotification = await notification.save();
@@ -27,7 +29,8 @@ EE.on("publish-notification", async (data) => {
         // Populate user info for the frontend to display immediately
         const populatedNotification = await Notification.findById(savedNotification._id)
             .populate("user", "personal_info.fullname personal_info.username personal_info.profile_img")
-            .populate("blog", "title blog_id");
+            .populate("blog", "title blog_id")
+            .populate("group", "name banner avatar");
 
         // 2. Publish to Socket.io (Real-time Foreground)
         const receiverSocketId = getReceiverSocketId(notification_for);

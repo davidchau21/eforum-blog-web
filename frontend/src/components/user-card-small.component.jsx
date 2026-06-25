@@ -9,19 +9,19 @@ const UserCardSmall = ({ user }) => {
   return (
     <Link
       to={`/user/${username}`}
-      className="flex gap-5 items-center mb-5 border-b border-grey pb-5 last:border-none"
+      className="flex gap-3.5 items-center mb-4 border-b border-grey/50 pb-4 last:border-none last:pb-0"
     >
       <img
         src={profile_img}
-        className="w-14 h-14 rounded-full object-cover"
+        className="w-10 h-10 rounded-full object-cover border border-slate-200/20"
         alt={fullname}
       />
 
       <div>
-        <h1 className="font-medium text-xl line-clamp-1">{fullname}</h1>
-        <p className="text-dark-grey text-sm">@{username}</p>
+        <h1 className="font-semibold text-sm text-slate-800 dark:text-slate-200 line-clamp-1">{fullname}</h1>
+        <p className="text-dark-grey text-xs">@{username}</p>
         {bio && (
-          <p className="text-dark-grey mt-1 text-sm line-clamp-1">{bio}</p>
+          <p className="text-dark-grey mt-0.5 text-xs line-clamp-1 font-light">{bio}</p>
         )}
       </div>
     </Link>

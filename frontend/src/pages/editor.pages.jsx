@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { UserContext } from "../App";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import BlogEditor from "../components/blog-editor.component";
 import PublishForm from "../components/publish-form.component";
 import { createContext } from 'react';
@@ -12,6 +12,8 @@ import { EditorContext, blogStructure } from "../contexts/EditorContext";
 const Editor = () => {
 
     let { blog_id } = useParams();
+    const [searchParams] = useSearchParams();
+    const groupId = searchParams.get("groupId");
 
     const [ blog, setBlog ] = useState(blogStructure)
     const [ editorState, setEditorState ] = useState("editor");
@@ -23,6 +25,9 @@ const Editor = () => {
     useEffect(() => {
 
         if(!blog_id){
+            if (groupId) {
+                setBlog((prev) => ({ ...prev, group: groupId }));
+            }
             return setLoading(false);
         }
 

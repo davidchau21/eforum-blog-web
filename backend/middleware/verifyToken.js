@@ -147,3 +147,20 @@ export const requireDynamicPermission = (requiredCode) => {
     }
   };
 };
+
+export const isAuthenticateOptional = async (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, accessTokenSecret);
+    req.user = decoded;
+  } catch (e) {
+    // Ignore invalid tokens
+  }
+  next();
+};

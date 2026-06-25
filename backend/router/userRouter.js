@@ -1,5 +1,5 @@
 import express from "express";
-import { isAuthenticate } from "../middleware/verifyToken.js";
+import { isAuthenticate, isAuthenticateOptional } from "../middleware/verifyToken.js";
 import userController from "../controller/user.controller.js";
 
 const router = express.Router();
@@ -7,7 +7,7 @@ const router = express.Router();
 // Sidebar & Social routes
 router.get("/", isAuthenticate, (req, res) => userController.getUserForSidebar(req, res));
 router.post("/follow-user", isAuthenticate, (req, res) => userController.toggleFollow(req, res));
-router.post("/search-users", (req, res) => userController.searchUsers(req, res));
+router.post("/search-users", isAuthenticateOptional, (req, res) => userController.searchUsers(req, res));
 router.post("/get-profile", (req, res) => userController.getProfile(req, res));
 router.post("/update-profile-img", isAuthenticate, (req, res) => userController.updateProfileImg(req, res));
 router.patch("/update-profile", isAuthenticate, (req, res) => userController.updateProfile(req, res));

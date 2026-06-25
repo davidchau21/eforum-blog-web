@@ -12,6 +12,8 @@ const NotificationCardCompact = ({ data, onClick }) => {
       personal_info: { fullname, username, profile_img },
     },
     blog,
+    group,
+    role,
   } = data;
 
   const {
@@ -52,14 +54,38 @@ const NotificationCardCompact = ({ data, onClick }) => {
         return translations.sharedYourBlog;
       case "message":
         return translations.sentYouAMessage || "sent a message";
+      case "group_join_request":
+        return translations.groupJoinRequest || "yêu cầu tham gia nhóm học tập";
+      case "group_join_approve":
+        return translations.groupJoinApprove || "đã đồng ý yêu cầu tham gia nhóm học tập";
+      case "group_role_change":
+        return `${translations.groupRoleChange || "đã thay đổi vai trò của bạn thành"} ${role}`;
+      case "group_new_post":
+        return translations.groupNewPost || "đã đăng bài viết mới trong nhóm học tập";
       default:
         return "";
     }
   };
 
+  const getNotificationLink = () => {
+    if (type === "message") {
+      return "/chat";
+    }
+    if (type === "group_join_request") {
+      return `/group/${group?._id}?tab=members&sub=pending`;
+    }
+    if (type === "group_join_approve" || type === "group_role_change") {
+      return `/group/${group?._id}`;
+    }
+    if (type === "group_new_post" || blog_id) {
+      return `/blog/${blog_id}`;
+    }
+    return "#";
+  };
+
   return (
     <Link
-      to={type === "message" ? "/chat" : `/blog/${blog_id}`}
+      to={getNotificationLink()}
       onClick={onClick}
       className={`flex gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors border-b border-subtle last:border-0 ${!seen ? "bg-emerald-500/5" : ""}`}
     >
@@ -80,9 +106,9 @@ const NotificationCardCompact = ({ data, onClick }) => {
           <span className="text-body ml-1">{getActionText()}</span>
         </p>
 
-        {blog_title && (
+        {(blog_title || group?.name) && (
           <p className="text-xs text-body font-medium truncate italic">
-            "{blog_title}"
+            {blog_title ? `"${blog_title}"` : group?.name}
           </p>
         )}
 

@@ -5,9 +5,12 @@ import bannerDefault from "../imgs/banner-default.png";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
 import { SocketContext } from "../socket/SocketContext";
-import { UserContext } from "../App";
+import { ThemeContext, UserContext } from "../App";
+import { GroupMemberModal } from "./groups/group-member-modal.component";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { joinGroup } from "../services/group.service";
+
 import {
   TwitterShareButton,
   FacebookShareButton,
@@ -23,6 +26,7 @@ const BlogPostCard = ({ content, author }) => {
   const { onlineUsers } = useContext(SocketContext) || { onlineUsers: [] };
   const { userAuth, userAuth: { access_token, language } = {} } =
     useContext(UserContext) || {};
+  const { theme } = useContext(ThemeContext) || {};
   const translations = getTranslations(language);
   let {
     publishedAt,
@@ -91,6 +95,30 @@ const BlogPostCard = ({ content, author }) => {
   const [selectedCollectionId, setSelectedCollectionId] = useState(null);
   const [showNewCollectionInput, setShowNewCollectionInput] = useState(false);
   const [newColName, setNewColName] = useState("");
+
+  const [groupMembership, setGroupMembership] = useState(
+    content.group?.myMembership || null
+  );
+
+  const handleJoinGroup = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!access_token) {
+      return toast.error("Vui lòng đăng nhập để tham gia nhóm.");
+    }
+
+    joinGroup(content.group._id, access_token)
+      .then((data) => {
+        setGroupMembership({ status: data.status || "JOINED", role: "MEMBER" });
+        toast.success(data.message || "Đã tham gia nhóm thành công!");
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error(err.response?.data?.error || "Không thể tham gia nhóm.");
+      });
+  };
+  const [showMemberModal, setShowMemberModal] = useState(false);
 
   const shareMenuRef = useRef(null);
   const saveMenuRef = useRef(null);
@@ -332,19 +360,62 @@ const BlogPostCard = ({ content, author }) => {
 
         <div className="p-5 flex flex-col flex-1">
           <div className="flex items-center justify-between mb-3">
-            <Link
-              to={`/user/${username}`}
-              className="flex items-center gap-2 group/author"
-            >
-              <img
-                src={profile_img}
-                className="w-6 h-6 rounded-full object-cover ring-1 ring-grey"
-              />
-              <span className="text-[13px] font-bold text-black group-hover/author:text-indigo-500 transition-colors line-clamp-1">
-                {fullname}
-              </span>
-            </Link>
+            {content.group ? (
+              <div className="flex items-center gap-2.5">
+                <div className="relative shrink-0 w-8 h-8">
+                  <Link to={`/group/${content.group._id}`}>
+                    <img
+                      src={content.group.avatar || profile_img}
+                      className="w-8 h-8 rounded-lg object-cover ring-1 ring-grey"
+                      alt={content.group.name}
+                    />
+                  </Link>
+                  <Link
+                    to={`/user/${username}`}
+                    className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full overflow-hidden border border-white shadow-sm"
+                  >
+                    <img src={profile_img} className="w-full h-full object-cover" />
+                  </Link>
+                </div>
+                <div className="flex flex-col">
+                  <Link
+                    to={`/group/${content.group._id}`}
+                    className="text-[12.5px] font-extrabold text-black hover:text-indigo-500 transition-colors leading-none truncate max-w-[100px]"
+                  >
+                    {content.group.name}
+                  </Link>
+                  <div className="flex items-center gap-1 text-[10px] text-dark-grey mt-0.5 leading-none">
+                    <span>By</span>
+                    <Link to={`/user/${username}`} className="font-bold hover:text-indigo-500 truncate max-w-[60px]">
+                      {fullname}
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                to={`/user/${username}`}
+                className="flex items-center gap-2 group/author"
+              >
+                <img
+                  src={profile_img}
+                  className="w-6 h-6 rounded-full object-cover ring-1 ring-grey"
+                  alt={fullname}
+                />
+                <span className="text-[13px] font-bold text-black group-hover/author:text-indigo-500 transition-colors line-clamp-1">
+                  {fullname}
+                </span>
+              </Link>
+            )}
             <div className="flex items-center gap-2">
+              {content.group && (!groupMembership || groupMembership.status !== "JOINED") && (
+                <button
+                  onClick={handleJoinGroup}
+                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all"
+                >
+                  Tham gia
+                </button>
+              )}
               <span className="text-dark-grey text-xs whitespace-nowrap opacity-60 font-medium">
                 {getDisplayDate(publishedAt)}
               </span>
@@ -439,23 +510,81 @@ const BlogPostCard = ({ content, author }) => {
       {/* Content */}
       <div className="w-full">
         {/* Author Row */}
-        <div className="flex items-center justify-between mb-3">
-          <Link
-            to={`/user/${username}`}
-            className="flex items-center gap-2 group/author"
-          >
-            <img
-              src={profile_img}
-              className="w-6 h-6 rounded-full object-cover ring-1 ring-grey"
-            />
-            <span className="text-[13px] font-bold text-black group-hover/author:text-indigo-500 transition-colors">
-              {fullname}
-            </span>
-          </Link>
+        <div className="flex items-center justify-between mb-4">
+          {content.group ? (
+            <div className="flex items-center gap-3">
+              <div className="relative shrink-0 w-10 h-10">
+                <Link to={`/group/${content.group._id}`}>
+                  <img
+                    src={content.group.avatar || profile_img}
+                    className="w-10 h-10 rounded-xl object-cover border border-grey"
+                    alt={content.group.name}
+                  />
+                </Link>
+                <div
+                  className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full overflow-hidden border-2 border-white shadow-md cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowMemberModal(true);
+                  }}
+                >
+                  <img src={profile_img} className="w-full h-full object-cover" />
+                </div>
+              </div>
+              <div className="flex flex-col justify-center">
+                <Link
+                  to={`/group/${content.group._id}`}
+                  className="text-[14px] font-extrabold text-black hover:text-indigo-500 transition-colors leading-tight"
+                >
+                  {content.group.name}
+                </Link>
+                <div className="flex items-center gap-1.5 text-xs text-dark-grey mt-0.5 leading-none font-medium">
+                  <span>Posted by</span>
+                  <span
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setShowMemberModal(true);
+                    }}
+                    className="font-bold hover:text-indigo-500 transition-colors cursor-pointer"
+                  >
+                    {fullname}
+                  </span>
+                  <span>•</span>
+                  <span className="opacity-75">{getDisplayDate(publishedAt)}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to={`/user/${username}`}
+                className="flex items-center gap-2 group/author"
+              >
+                <img
+                  src={profile_img}
+                  className="w-7 h-7 rounded-full object-cover ring-1 ring-grey"
+                  alt={fullname}
+                />
+                <span className="text-[13.5px] font-bold text-black group-hover/author:text-indigo-500 transition-colors">
+                  {fullname}
+                </span>
+              </Link>
+              <span className="text-dark-grey text-xs opacity-60 font-medium ml-2">
+                {getDisplayDate(publishedAt)}
+              </span>
+            </div>
+          )}
           <div className="flex items-center gap-2">
-            <span className="text-dark-grey text-xs opacity-60 font-medium">
-              {getDisplayDate(publishedAt)}
-            </span>
+            {content.group && (!groupMembership || groupMembership.status !== "JOINED") && (
+              <button
+                onClick={handleJoinGroup}
+                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+              >
+                Tham gia
+              </button>
+            )}
             <button className="text-dark-grey hover:text-black w-6 h-6 flex items-center justify-center rounded transition-colors opacity-40 hover:opacity-100">
               <i className="fi fi-rr-menu-dots text-sm"></i>
             </button>
@@ -765,6 +894,17 @@ const BlogPostCard = ({ content, author }) => {
             </div>
           </div>
         </div>
+      )}
+
+      {content.group && showMemberModal && (
+        <GroupMemberModal
+          isOpen={showMemberModal}
+          onClose={() => setShowMemberModal(false)}
+          member={{ role: "MEMBER", user: author }}
+          groupId={content.group._id}
+          token={access_token}
+          theme={theme}
+        />
       )}
     </div>
   );

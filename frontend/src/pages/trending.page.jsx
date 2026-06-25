@@ -3,9 +3,8 @@ import axios from "axios";
 import AnimationWrapper from "../common/page-animation";
 import { ThemeContext, UserContext } from "../App";
 import { getTranslations } from "../../translations";
-import { MinimalBlogSkeleton } from "../components/skeleton.component";
+import { MinimalBlogSkeleton, TopContributorsSkeleton } from "../components/skeleton.component";
 import MinimalBlogPost from "../components/nobanner-blog-post.component";
-import NoDataMessage from "../components/nodata.component";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -164,15 +163,23 @@ const TrendingPage = () => {
                 Trending Tags
               </h3>
               <div className="flex flex-wrap gap-2">
-                {trendingTopics.map((tag, i) => (
-                  <button
-                    key={i}
-                    onClick={() => navigate(`/search/${tag}`)}
-                    className="px-3 py-2 bg-slate-50 dark:bg-white/5 hover:bg-indigo-600 text-slate-600 dark:text-slate-300 hover:text-white text-[11px] font-bold rounded-xl transition-all border border-slate-100 dark:border-white/5 shadow-sm"
-                  >
-                    #{tag}
-                  </button>
-                ))}
+                {trendingTopics.length ? (
+                  trendingTopics.map((tag, i) => (
+                    <button
+                      key={i}
+                      onClick={() => navigate(`/search/${tag}`)}
+                      className="px-3 py-2 bg-slate-50 dark:bg-white/5 hover:bg-indigo-600 text-slate-600 dark:text-slate-300 hover:text-white text-[11px] font-bold rounded-xl transition-all border border-slate-100 dark:border-white/5 shadow-sm"
+                    >
+                      #{tag}
+                    </button>
+                  ))
+                ) : (
+                  <div className="flex flex-wrap gap-2 w-full animate-pulse">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="w-16 h-8 bg-grey/30 dark:bg-zinc-800/50 rounded-xl" />
+                    ))}
+                  </div>
+                )}
               </div>
             </BentoCard>
 
@@ -182,32 +189,36 @@ const TrendingPage = () => {
                 Elite Scholars
               </h3>
               <div className="space-y-6">
-                {topContributors.slice(0, 3).map((user, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-4 group cursor-pointer"
-                    onClick={() =>
-                      navigate(`/user/${user.personal_info.username}`)
-                    }
-                  >
-                    <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/5">
-                      <img
-                        src={user.personal_info.profile_img}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900 dark:text-white font-jakarta truncate group-hover:text-indigo-500 transition-colors">
-                        {user.personal_info.fullname}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">
-                          Rep: {user.account_info.total_reads}
-                        </span>
+                {topContributors.length ? (
+                  topContributors.slice(0, 3).map((user, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-4 group cursor-pointer"
+                      onClick={() =>
+                        navigate(`/user/${user.personal_info.username}`)
+                      }
+                    >
+                      <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-100 dark:bg-white/5">
+                        <img
+                          src={user.personal_info.profile_img}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900 dark:text-white font-jakarta truncate group-hover:text-indigo-500 transition-colors">
+                          {user.personal_info.fullname}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400 font-bold uppercase">
+                            Rep: {user.account_info.total_reads}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <TopContributorsSkeleton />
+                )}
               </div>
             </BentoCard>
           </div>

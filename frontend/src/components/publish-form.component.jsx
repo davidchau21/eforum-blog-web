@@ -158,6 +158,7 @@ const PublishForm = ({ isModal = false }) => {
         content,
         tags,
         draft: false,
+        groupId: blog?.group || null,
       };
 
       try {
@@ -201,7 +202,11 @@ const PublishForm = ({ isModal = false }) => {
         });
 
         setTimeout(() => {
-          navigate("/dashboard/blogs");
+          if (blog?.group) {
+            navigate(`/group/${blog.group}?tab=discussion`);
+          } else {
+            navigate("/dashboard/blogs");
+          }
         }, 500);
       } catch (error) {
         if (e && e.target) e.target.classList.remove("disable");
@@ -226,6 +231,7 @@ const PublishForm = ({ isModal = false }) => {
       selectedSubjectTag,
       tags,
       title,
+      blog,
     ],
   );
 
@@ -447,7 +453,10 @@ const PublishForm = ({ isModal = false }) => {
           )}
 
           {!isModal && (
-            <button className="btn-dark px-8" onClick={publishBlog}>
+            <button 
+              className="whitespace-nowrap bg-purple text-white rounded-full py-3 px-8 mt-8 text-[15px] font-semibold hover:bg-purple/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-purple/10" 
+              onClick={publishBlog}
+            >
               Publish
             </button>
           )}

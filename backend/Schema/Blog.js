@@ -69,6 +69,11 @@ const blogSchema = mongoose.Schema(
       default: false,
     },
     reportUser: { type: Schema.Types.ObjectId, required: false, ref: "users" },
+    group: {
+      type: Schema.Types.ObjectId,
+      ref: "groups",
+      required: false,
+    },
   },
   {
     timestamps: {

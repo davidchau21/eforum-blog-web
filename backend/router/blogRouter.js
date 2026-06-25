@@ -1,17 +1,17 @@
 import express from "express";
-import { isAuthenticate } from "../middleware/verifyToken.js";
+import { isAuthenticate, isAuthenticateOptional } from "../middleware/verifyToken.js";
 import userBlogController from "../controller/userBlog.controller.js";
 import adminBlogController from "../controller/admin/adminBlog.controller.js";
-
+ 
 const blogRouter = express.Router();
-
+ 
 // Public routes
-blogRouter.post("/latest-blogs", (req, res) => userBlogController.getLatestBlogs(req, res));
-blogRouter.post("/all-latest-blogs-count", (req, res) => userBlogController.getAllLatestBlogsCount(req, res));
-blogRouter.get("/trending-blogs", (req, res) => userBlogController.getTrendingBlogs(req, res));
-blogRouter.post("/search-blogs", (req, res) => userBlogController.searchBlogs(req, res));
-blogRouter.post("/search-blogs-count", (req, res) => userBlogController.searchBlogsCount(req, res));
-blogRouter.post("/get-blog", (req, res) => userBlogController.getBlog(req, res));
+blogRouter.post("/latest-blogs", isAuthenticateOptional, (req, res) => userBlogController.getLatestBlogs(req, res));
+blogRouter.post("/all-latest-blogs-count", isAuthenticateOptional, (req, res) => userBlogController.getAllLatestBlogsCount(req, res));
+blogRouter.get("/trending-blogs", isAuthenticateOptional, (req, res) => userBlogController.getTrendingBlogs(req, res));
+blogRouter.post("/search-blogs", isAuthenticateOptional, (req, res) => userBlogController.searchBlogs(req, res));
+blogRouter.post("/search-blogs-count", isAuthenticateOptional, (req, res) => userBlogController.searchBlogsCount(req, res));
+blogRouter.post("/get-blog", isAuthenticateOptional, (req, res) => userBlogController.getBlog(req, res));
 blogRouter.get("/admin-blogs", (req, res) => userBlogController.getAdminBlogs(req, res));
 blogRouter.get("/trending-topics", (req, res) => userBlogController.getTrendingTopics(req, res));
 blogRouter.get("/top-contributors", (req, res) => userBlogController.getTopContributors(req, res));

@@ -1,9 +1,13 @@
+import { useContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { getTranslations } from "../../translations";
+import { UserContext } from "../App";
 
 /* eslint-disable react/prop-types */
 const DocumentCard = ({ doc, onClick, language }) => {
+  const { userAuth } = useContext(UserContext);
+  const { access_token } = userAuth;
   const {
     title,
     description,
@@ -57,6 +61,14 @@ const DocumentCard = ({ doc, onClick, language }) => {
 
   const handleQuickDownload = async (e) => {
     e.stopPropagation(); // Stop click from opening details modal
+    if (!access_token) {
+      toast.error(
+        language === "en"
+          ? "Please sign in to download this document."
+          : "Vui lòng đăng nhập để tải tài liệu này."
+      );
+      return;
+    }
     try {
       // Trigger database download counter increment
       await axios.post(
@@ -151,13 +163,15 @@ const DocumentCard = ({ doc, onClick, language }) => {
         </div>
 
         {/* Quick Download Button */}
-        <button
-          onClick={handleQuickDownload}
-          className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-all duration-250 border border-emerald-500/20 active:scale-90"
-          title="Tải nhanh tài liệu"
-        >
-          <i className="fi fi-rr-download text-sm mt-0.5"></i>
-        </button>
+        {access_token && (
+          <button
+            onClick={handleQuickDownload}
+            className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-600 hover:bg-emerald-600 hover:text-white flex items-center justify-center transition-all duration-250 border border-emerald-500/20 active:scale-90"
+            title="Tải nhanh tài liệu"
+          >
+            <i className="fi fi-rr-download text-sm mt-0.5"></i>
+          </button>
+        )}
       </div>
     </div>
   );

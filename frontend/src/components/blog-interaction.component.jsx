@@ -325,7 +325,7 @@ const BlogInteraction = () => {
           {/* Edit if author */}
           {username == author_username && (
             <Link
-              to={`/editor/${blog_id}`}
+              to={blog.group ? `/group-editor/${blog_id}` : `/editor/${blog_id}`}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-grey hover:text-purple transition-all duration-200"
             >
               <i className="fi fi-rr-edit text-base leading-none"></i>

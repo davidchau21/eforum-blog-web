@@ -34,6 +34,10 @@ import SavedBlogsPage from "./pages/saved-blogs.page.jsx";
 import AboutPage from "./pages/about.page.jsx";
 import TrendingPage from "./pages/trending.page.jsx";
 import DocumentLibraryPage from "./pages/directory.page.jsx";
+import FriendsPage from "./pages/friends.page";
+import GroupsPage from "./pages/groups.page.jsx";
+import GroupDetailsPage from "./pages/group-details.page.jsx";
+import GroupEditor from "./pages/group-editor.pages.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -126,6 +130,11 @@ const App = () => {
     "/editor",
     "/landing",
     "/feed",
+    "/friends",
+    "/groups",
+    "/group",
+    "/group-editor",
+    "/user",
   ];
   const shouldShowFooter = !excludedPaths.some((path) =>
     path === "/"
@@ -157,9 +166,26 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/group-editor"
+                  element={
+                    <ProtectedRoute access_token={userAuth.access_token}>
+                      <GroupEditor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/group-editor/:blog_id"
+                  element={
+                    <ProtectedRoute access_token={userAuth.access_token}>
+                      <GroupEditor />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route path="/" element={<Navbar />}>
                   <Route path="feed" element={<HomePage />}>
                     <Route path="following" element={<HomePage />} />
+                    <Route path="my-groups" element={<HomePage />} />
                   </Route>
                   <Route
                     path="feed/saved"
@@ -238,6 +264,9 @@ const App = () => {
                     }
                   />
                   <Route path="directory" element={<DocumentLibraryPage />} />
+                  <Route path="friends" element={<FriendsPage />} />
+                  <Route path="groups" element={<GroupsPage />} />
+                  <Route path="group/:id" element={<GroupDetailsPage />} />
                   <Route path="*" element={<PageNotFound />} />
                 </Route>
               </Routes>

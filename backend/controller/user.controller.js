@@ -25,8 +25,9 @@ class UserController extends BaseController {
 
   async searchUsers(req, res) {
     try {
-      const { query } = req.body;
-      const users = await userService.searchUsers(query);
+      const { query, page, limit, forGroupInvite } = req.body;
+      const loggedInUserId = req.user ? req.user.id : null;
+      const users = await userService.searchUsers(query, page, limit, loggedInUserId, !!forGroupInvite);
       return this.sendSuccess(res, { users });
     } catch (error) {
       return this.sendError(res, error.message);
