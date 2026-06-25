@@ -137,14 +137,15 @@ class GroupController extends BaseController {
   async getGroupBlogs(req, res) {
     try {
       const groupId = req.params.id;
-      const { search, page, limit } = req.query;
+      const { search, page, limit, author } = req.query;
       const userId = req.user ? req.user.id : null;
       const result = await groupService.getGroupBlogs(
         groupId,
         search,
         page ? parseInt(page) : 1,
         limit ? parseInt(limit) : 6,
-        userId
+        userId,
+        author
       );
       return this.sendSuccess(res, result);
     } catch (error) {

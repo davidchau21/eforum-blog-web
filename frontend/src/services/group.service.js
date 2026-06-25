@@ -68,11 +68,15 @@ export const updateGroupSettings = async (id, payload, token) => {
 /**
  * Fetch blog posts associated with a group.
  */
-export const getGroupBlogs = async (id, token) => {
-  const { data } = await axios.get(
-    `${API_BASE}/groups/id/${id}/blogs`,
-    getHeaders(token)
-  );
+export const getGroupBlogs = async (id, token, author = null, limit = null) => {
+  let url = `${API_BASE}/groups/id/${id}/blogs`;
+  const params = [];
+  if (author) params.push(`author=${author}`);
+  if (limit) params.push(`limit=${limit}`);
+  if (params.length > 0) {
+    url += `?${params.join("&")}`;
+  }
+  const { data } = await axios.get(url, getHeaders(token));
   return data;
 };
 

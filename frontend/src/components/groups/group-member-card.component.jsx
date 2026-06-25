@@ -14,6 +14,7 @@ export const GroupMemberCard = ({
   handleChangeRole,
   openConfirmModal,
   canManage,
+  onMemberClick,
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showHoverCard, setShowHoverCard] = useState(false);
@@ -219,9 +220,12 @@ export const GroupMemberCard = ({
         onMouseEnter={() => setShowHoverCard(true)}
         onMouseLeave={() => setShowHoverCard(false)}
       >
-        <Link
-          to={`/user/${member.user?.personal_info?.username}`}
-          className="flex items-center gap-3 group/member"
+        <div
+          onClick={(e) => {
+            e.preventDefault();
+            if (onMemberClick) onMemberClick(member);
+          }}
+          className="flex items-center gap-3 group/member cursor-pointer"
         >
           <div
             className={`w-9 h-9 rounded-lg border-[2px] ${memberAvatarRing} overflow-hidden bg-slate-100 dark:bg-zinc-800 shrink-0 transition-all duration-300 group-hover/member:scale-105`}
@@ -245,7 +249,7 @@ export const GroupMemberCard = ({
               @{member.user?.personal_info?.username}
             </p>
           </div>
-        </Link>
+        </div>
 
         {/* Hover Card / Popover */}
         <AnimatePresence>

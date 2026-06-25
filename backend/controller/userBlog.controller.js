@@ -103,8 +103,8 @@ class UserBlogController extends BaseController {
   async getLatestBlogs(req, res) {
     try {
       const { page } = req.body;
-      // Note: We can expand this to include followingIds and interests
-      const result = await blogService.getLatestBlogs({ page });
+      const currentUserId = req.user ? req.user.id : null;
+      const result = await blogService.getLatestBlogs({ page, currentUserId });
       return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, error.message);
@@ -113,7 +113,8 @@ class UserBlogController extends BaseController {
 
   async getAllLatestBlogsCount(req, res) {
     try {
-      const count = await blogService.getAllLatestBlogsCount();
+      const currentUserId = req.user ? req.user.id : null;
+      const count = await blogService.getAllLatestBlogsCount(currentUserId);
       return this.sendSuccess(res, { totalDocs: count });
     } catch (error) {
       return this.sendError(res, error.message);
@@ -122,7 +123,8 @@ class UserBlogController extends BaseController {
 
   async getTrendingBlogs(req, res) {
     try {
-      const blogs = await blogService.getTrendingBlogs();
+      const currentUserId = req.user ? req.user.id : null;
+      const blogs = await blogService.getTrendingBlogs(currentUserId);
       return this.sendSuccess(res, { blogs });
     } catch (error) {
       return this.sendError(res, error.message);
@@ -131,7 +133,8 @@ class UserBlogController extends BaseController {
 
   async searchBlogs(req, res) {
     try {
-      const blogs = await blogService.searchBlogs(req.body);
+      const currentUserId = req.user ? req.user.id : null;
+      const blogs = await blogService.searchBlogs({ ...req.body, currentUserId });
       return this.sendSuccess(res, { blogs });
     } catch (error) {
       return this.sendError(res, error.message);
@@ -140,7 +143,8 @@ class UserBlogController extends BaseController {
 
   async searchBlogsCount(req, res) {
     try {
-      const count = await blogService.searchBlogsCount(req.body);
+      const currentUserId = req.user ? req.user.id : null;
+      const count = await blogService.searchBlogsCount({ ...req.body, currentUserId });
       return this.sendSuccess(res, { totalDocs: count });
     } catch (error) {
       return this.sendError(res, error.message);

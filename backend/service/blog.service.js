@@ -36,6 +36,58 @@ async function notifyGroupMembersOfNewPost(blog, authorId) {
 }
 
 class BlogService {
+  async getForbiddenGroupIds(userId) {
+    const privateGroups = await Group.find({ isPrivate: true }).select("_id");
+    const privateGroupIds = privateGroups.map(g => g._id.toString());
+    
+    if (!userId) {
+      return privateGroupIds;
+    }
+    
+    const joinedMemberships = await GroupMember.find({
+      user: userId,
+      group: { $in: privateGroupIds },
+      status: "JOINED"
+    }).select("group");
+    
+    const joinedGroupIds = new Set(joinedMemberships.map(m => m.group.toString()));
+    
+    return privateGroupIds.filter(id => !joinedGroupIds.has(id));
+  }
+
+  async attachGroupMemberships(blogs, userId) {
+    if (!blogs || !blogs.length) return blogs;
+    
+    const groupIds = blogs
+      .map(b => b.group?._id || b.group)
+      .filter(Boolean);
+      
+    if (!groupIds.length) return blogs;
+    
+    let memberships = [];
+    if (userId) {
+      memberships = await GroupMember.find({
+        user: userId,
+        group: { $in: groupIds }
+      });
+    }
+    
+    const membershipMap = {};
+    memberships.forEach(m => {
+      membershipMap[m.group.toString()] = m;
+    });
+    
+    return blogs.map(blog => {
+      const blogObj = blog.toObject ? blog.toObject() : blog;
+      if (blogObj.group) {
+        if (typeof blogObj.group === 'object') {
+          blogObj.group.myMembership = membershipMap[blogObj.group._id.toString()] || null;
+        }
+      }
+      return blogObj;
+    });
+  }
+
   /**
    * Create or update a blog post
    */
@@ -170,10 +222,25 @@ class BlogService {
         "author",
         "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role"
       )
+      .populate("group", "name avatar banner isPrivate")
       .select("title des content banner activity publishedAt blog_id tags isReport isActive draft group");
 
     if (!blog) {
       throw new Error("Blog not found");
+    }
+
+    if (blog.group && blog.group.isPrivate) {
+      if (!userId) {
+        throw new Error("Bài viết thuộc nhóm riêng tư. Vui lòng đăng nhập và tham gia nhóm để xem.");
+      }
+      const membership = await GroupMember.findOne({
+        group: blog.group._id,
+        user: userId,
+        status: "JOINED"
+      });
+      if (!membership) {
+        throw new Error("Bài viết thuộc nhóm riêng tư. Bạn cần tham gia nhóm để xem.");
+      }
     }
 
     if (incrementVal > 0 && blog.author) {
@@ -217,23 +284,33 @@ class BlogService {
    * Get latest blogs for feed
    */
   async getLatestBlogs({ page = 1, limit = 6, userInterests = [], followingIds = [], currentUserId = null }) {
-    // Basic implementation - can be enhanced with interests later
-    const blogs = await Blog.find({ draft: false, isActive: true })
+    const forbiddenGroupIds = await this.getForbiddenGroupIds(currentUserId);
+    const blogs = await Blog.find({
+      draft: false,
+      isActive: true,
+      $or: [
+        { group: null },
+        { group: { $nin: forbiddenGroupIds } }
+      ]
+    })
       .populate({
         path: "author",
         match: { "personal_info.role": { $ne: "ADMIN" } },
         select: "personal_info.profile_img personal_info.username personal_info.fullname",
       })
+      .populate("group", "name avatar banner isPrivate")
       .sort({ publishedAt: -1 })
-      .select("blog_id title des banner activity tags publishedAt")
+      .select("blog_id title des banner activity tags publishedAt group")
       .skip((page - 1) * limit)
       .limit(limit);
 
-    const filteredBlogs = blogs
+    const populatedBlogs = await this.attachGroupMemberships(blogs, currentUserId);
+
+    const filteredBlogs = populatedBlogs
       .filter((blog) => blog.author && blog.author.personal_info.role !== "ADMIN")
       .map((blog) => {
         const isFollowingAuthor = currentUserId && followingIds.includes(blog.author._id.toString());
-        return { ...blog.toObject(), isFollowingAuthor };
+        return { ...blog, isFollowingAuthor };
       });
 
     return { blogs: filteredBlogs };
@@ -246,21 +323,42 @@ class BlogService {
 
     if (!following.length) return { blogs: [] };
 
-    const blogs = await Blog.find({ author: { $in: following }, draft: false, isActive: true })
+    const forbiddenGroupIds = await this.getForbiddenGroupIds(userId);
+    const blogs = await Blog.find({
+      author: { $in: following },
+      draft: false,
+      isActive: true,
+      $or: [
+        { group: null },
+        { group: { $nin: forbiddenGroupIds } }
+      ]
+    })
       .skip((page - 1) * maxLimit)
       .limit(maxLimit)
       .sort({ publishedAt: -1 })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
-      .select("blog_id title des banner activity tags publishedAt");
+      .populate("group", "name avatar banner isPrivate")
+      .select("blog_id title des banner activity tags publishedAt group");
 
-    return { blogs };
+    const populatedBlogs = await this.attachGroupMemberships(blogs, userId);
+    return { blogs: populatedBlogs };
   }
 
   async getFollowingBlogsCount(userId) {
     const followDocs = await UserFollow.find({ follower: userId }).select("following -_id");
     const following = followDocs.map((item) => item.following);
     if (!following.length) return 0;
-    return await Blog.countDocuments({ author: { $in: following }, draft: false, isActive: true });
+    
+    const forbiddenGroupIds = await this.getForbiddenGroupIds(userId);
+    return await Blog.countDocuments({
+      author: { $in: following },
+      draft: false,
+      isActive: true,
+      $or: [
+        { group: null },
+        { group: { $nin: forbiddenGroupIds } }
+      ]
+    });
   }
 
   async getAdminBlogs() {
@@ -305,12 +403,28 @@ class BlogService {
     return contributors;
   }
 
-  async getAllLatestBlogsCount() {
-    return await Blog.countDocuments({ draft: false, isActive: true });
+  async getAllLatestBlogsCount(currentUserId = null) {
+    const forbiddenGroupIds = await this.getForbiddenGroupIds(currentUserId);
+    return await Blog.countDocuments({
+      draft: false,
+      isActive: true,
+      $or: [
+        { group: null },
+        { group: { $nin: forbiddenGroupIds } }
+      ]
+    });
   }
 
-  async getTrendingBlogs() {
-    return await Blog.find({ draft: false, isActive: true })
+  async getTrendingBlogs(currentUserId = null) {
+    const forbiddenGroupIds = await this.getForbiddenGroupIds(currentUserId);
+    return await Blog.find({
+      draft: false,
+      isActive: true,
+      $or: [
+        { group: null },
+        { group: { $nin: forbiddenGroupIds } }
+      ]
+    })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
       .sort({
         "activity.total_reads": -1,
@@ -323,7 +437,7 @@ class BlogService {
       .limit(10);
   }
 
-  async searchBlogs({ tag, query, author, page, limit, eliminate_blog }) {
+  async searchBlogs({ tag, query, author, page, limit, eliminate_blog, currentUserId = null }) {
     let findQuery;
     if (tag) {
       findQuery = { tags: tag, draft: false, blog_id: { $ne: eliminate_blog } };
@@ -333,16 +447,27 @@ class BlogService {
       findQuery = { author, draft: false };
     }
 
+    const forbiddenGroupIds = await this.getForbiddenGroupIds(currentUserId);
     let maxLimit = limit ? limit : 2;
-    return await Blog.find({ ...findQuery, isActive: true })
+    const blogs = await Blog.find({
+      ...findQuery,
+      isActive: true,
+      $or: [
+        { group: null },
+        { group: { $nin: forbiddenGroupIds } }
+      ]
+    })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
+      .populate("group", "name avatar banner isPrivate")
       .sort({ publishedAt: -1 })
-      .select("blog_id title des banner activity tags publishedAt")
+      .select("blog_id title des banner activity tags publishedAt group")
       .skip((page - 1) * maxLimit)
       .limit(maxLimit);
+
+    return await this.attachGroupMemberships(blogs, currentUserId);
   }
 
-  async searchBlogsCount({ tag, author, query }) {
+  async searchBlogsCount({ tag, author, query, currentUserId = null }) {
     let findQuery;
     if (tag) {
       findQuery = { tags: tag, draft: false };
@@ -351,7 +476,15 @@ class BlogService {
     } else if (author) {
       findQuery = { author, draft: false };
     }
-    return await Blog.countDocuments({ ...findQuery, isActive: true });
+    const forbiddenGroupIds = await this.getForbiddenGroupIds(currentUserId);
+    return await Blog.countDocuments({
+      ...findQuery,
+      isActive: true,
+      $or: [
+        { group: null },
+        { group: { $nin: forbiddenGroupIds } }
+      ]
+    });
   }
 
   async trackInterest(userId, tags) {
@@ -430,6 +563,7 @@ class BlogService {
       .skip(skipDocs)
       .limit(maxLimit)
       .sort({ publishedAt: -1 })
+      .populate("group", "name avatar banner")
       .select("title banner publishedAt blog_id activity des draft isActive group -_id");
   }
 
@@ -542,6 +676,14 @@ class BlogService {
         $unwind: "$authorData"
       },
       {
+        $lookup: {
+          from: "groups",
+          localField: "blogData.group",
+          foreignField: "_id",
+          as: "groupData"
+        }
+      },
+      {
         $sort: { createdAt: sortOrder }
       },
       {
@@ -555,6 +697,17 @@ class BlogService {
           tags: "$blogData.tags",
           publishedAt: "$blogData.publishedAt",
           collection_id: 1,
+          group: {
+            $cond: {
+              if: { $gt: [{ $size: "$groupData" }, 0] },
+              then: {
+                _id: { $arrayElemAt: ["$groupData._id", 0] },
+                name: { $arrayElemAt: ["$groupData.name", 0] },
+                avatar: { $arrayElemAt: ["$groupData.avatar", 0] }
+              },
+              else: null
+            }
+          },
           author: {
             _id: "$authorData._id",
             personal_info: {

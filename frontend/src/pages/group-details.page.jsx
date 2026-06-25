@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { ThemeContext, UserContext } from "../App";
 import AnimationWrapper from "../common/page-animation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "react-hot-toast";
 
 // Extracted Subcomponents
@@ -14,6 +14,7 @@ import { GroupSettingsTab } from "../components/groups/group-settings-tab.compon
 import { GroupAboutTab } from "../components/groups/group-about-tab.component";
 import { GroupUploadDocModal } from "../components/groups/group-upload-doc-modal.component";
 import { GroupInviteModal } from "../components/groups/group-invite-modal.component";
+import { GroupMemberModal } from "../components/groups/group-member-modal.component";
 import groupBannerDefault from "../imgs/group-banner-default.png";
 
 // Group API services
@@ -57,6 +58,8 @@ const GroupDetailsPage = () => {
   // Modals / Panels
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [selectedMemberForModal, setSelectedMemberForModal] = useState(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
   const [docForm, setDocForm] = useState({ title: "", description: "" });
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -393,11 +396,16 @@ const GroupDetailsPage = () => {
     }
   };
 
+  const handleMemberClick = (member) => {
+    setSelectedMemberForModal(member);
+  };
+
   const handleUploadDocument = async (e) => {
     e.preventDefault();
     if (!docForm.title.trim() || !selectedFile) {
       return toast.error("Vui lòng nhập tiêu đề và chọn file tài liệu.");
     }
+    0;
 
     const formData = new FormData();
     formData.append("file", selectedFile);
@@ -505,20 +513,17 @@ const GroupDetailsPage = () => {
         )}
         {/* Cover & Banner Section */}
         <div className="relative w-full h-[320px] md:h-[400px] overflow-hidden bg-slate-200 dark:bg-zinc-800">
-          {group.banner ? (
-            <img
-              src={group.banner}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = "none";
-              }}
-              className="w-full h-full object-cover"
-              alt="Group Banner"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-indigo-600/30 via-slate-700/50 to-purple-700/30 dark:from-indigo-900/60 dark:via-zinc-800 dark:to-purple-900/40" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+          <img
+            src={group.banner || groupBannerDefault}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = groupBannerDefault;
+            }}
+            className="w-full h-full object-cover cursor-pointer hover:brightness-95 transition-all"
+            alt="Group Banner"
+            onClick={() => setLightboxImage(group.banner || groupBannerDefault)}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent pointer-events-none" />
 
           {/* Group details floating overlay banner (Glassmorphism) */}
           <div className="absolute bottom-6 left-[5vw] right-[5vw] p-6 backdrop-blur-xl bg-black/55 dark:bg-[#111113]/70 border border-white/10 rounded-[32px] flex flex-col md:flex-row md:items-end justify-between gap-6 text-white shadow-2xl">
@@ -535,7 +540,13 @@ const GroupDetailsPage = () => {
                           ? "border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)]"
                           : "border-slate-300 shadow-[0_0_15px_rgba(255,255,255,0.25)]"
                     : "border-white/20 shadow-2xl"
-                } overflow-hidden bg-slate-300 shrink-0`}
+                } overflow-hidden bg-slate-300 shrink-0 cursor-pointer hover:scale-105 active:scale-98 transition-all`}
+                onClick={() =>
+                  setLightboxImage(
+                    group.avatar ||
+                      `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(group.name || "Group")}&backgroundColor=b3c5fc`,
+                  )
+                }
               >
                 <img
                   src={
@@ -547,7 +558,7 @@ const GroupDetailsPage = () => {
                     e.target.src = `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(group.name || "Group")}&backgroundColor=b3c5fc`;
                   }}
                   className="w-full h-full object-cover"
-                  alt=""
+                  alt="Group Avatar"
                 />
               </div>
 
@@ -703,6 +714,15 @@ const GroupDetailsPage = () => {
                   pendingBlogs={pendingBlogs}
                   handleApproveBlog={handleApproveBlog}
                   handleRejectBlog={handleRejectBlog}
+                  onAuthorClick={(author) => {
+                    const member = (members || []).find(
+                      (m) => m.user?._id === author._id,
+                    );
+                    setSelectedMemberForModal(
+                      member || { role: "MEMBER", user: author },
+                    );
+                  }}
+                  members={members}
                 />
               )}
 
@@ -749,6 +769,7 @@ const GroupDetailsPage = () => {
                   userAuth={userAuth}
                   handleKickMember={handleKickMember}
                   handleChangeRole={handleChangeRole}
+                  onMemberClick={handleMemberClick}
                 />
               )}
 
@@ -782,6 +803,7 @@ const GroupDetailsPage = () => {
             isJoined={isJoined}
             onInviteClick={() => setIsInviteModalOpen(true)}
             handleToggleMute={handleToggleMute}
+            onMemberClick={handleMemberClick}
           />
         </div>
 
@@ -812,6 +834,51 @@ const GroupDetailsPage = () => {
             }
           }}
         />
+
+        {/* Member Details & Activity Modal */}
+        <GroupMemberModal
+          isOpen={!!selectedMemberForModal}
+          onClose={() => setSelectedMemberForModal(null)}
+          member={selectedMemberForModal}
+          groupId={id}
+          token={userAuth.access_token}
+          theme={theme}
+        />
+
+        {/* Lightbox Image Viewer */}
+        <AnimatePresence>
+          {lightboxImage && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setLightboxImage(null)}
+                className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                transition={{ type: "spring", damping: 25, stiffness: 210 }}
+                className="relative z-10 max-w-[90vw] max-h-[85vh] select-none"
+              >
+                <img
+                  src={lightboxImage}
+                  className="max-w-[90vw] max-h-[80vh] rounded-2xl border border-white/10 shadow-2xl object-contain"
+                  alt="Lightbox Preview"
+                />
+                <button
+                  type="button"
+                  onClick={() => setLightboxImage(null)}
+                  className="absolute -top-12 right-0 w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-white flex items-center justify-center cursor-pointer transition-all border border-white/15"
+                >
+                  <i className="fi fi-rr-cross-small text-lg"></i>
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </section>
     </AnimationWrapper>
   );

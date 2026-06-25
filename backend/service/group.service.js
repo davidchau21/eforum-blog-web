@@ -539,7 +539,7 @@ class GroupService {
   /**
    * Get group blogs
    */
-  async getGroupBlogs(groupId, searchQuery, page = 1, limit = 6, userId = null) {
+  async getGroupBlogs(groupId, searchQuery, page = 1, limit = 6, userId = null, author = null) {
     const group = await Group.findById(groupId);
     if (!group) throw new Error("Nhóm không tồn tại.");
 
@@ -553,6 +553,10 @@ class GroupService {
 
     const skip = (page - 1) * limit;
     const findQuery = { group: groupId, draft: false, isActive: true };
+
+    if (author) {
+      findQuery.author = author;
+    }
 
     if (searchQuery && searchQuery.trim() !== "") {
       findQuery.$or = [

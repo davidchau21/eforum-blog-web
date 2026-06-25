@@ -26,6 +26,7 @@ export const GroupMembersTab = ({
   userAuth,
   handleKickMember,
   handleChangeRole,
+  onMemberClick,
 }) => {
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
@@ -47,8 +48,12 @@ export const GroupMembersTab = ({
   const filteredRequests = (pendingRequests || []).filter((req) => {
     if (!req.user) return false;
     return (
-      (req.user.personal_info?.fullname || "").toLowerCase().includes(memberSearch.toLowerCase()) ||
-      (req.user.personal_info?.username || "").toLowerCase().includes(memberSearch.toLowerCase())
+      (req.user.personal_info?.fullname || "")
+        .toLowerCase()
+        .includes(memberSearch.toLowerCase()) ||
+      (req.user.personal_info?.username || "")
+        .toLowerCase()
+        .includes(memberSearch.toLowerCase())
     );
   });
 
@@ -64,16 +69,12 @@ export const GroupMembersTab = ({
 
   if (showLockScreen) {
     return (
-      <GroupPrivateLock
-        group={group}
-        handleToggleJoin={handleToggleJoin}
-      />
+      <GroupPrivateLock group={group} handleToggleJoin={handleToggleJoin} />
     );
   }
 
   return (
     <div className="space-y-8">
-
       {/* Search and Filters Header */}
       <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 p-4 rounded-[24px] shadow-sm font-inter">
         <div className="relative flex-grow max-w-md">
@@ -170,6 +171,7 @@ export const GroupMembersTab = ({
                         handleChangeRole={handleChangeRole}
                         openConfirmModal={openConfirmModal}
                         canManage={canManage}
+                        onMemberClick={onMemberClick}
                       />
                     ))}
                   </tbody>
@@ -230,6 +232,7 @@ export const GroupMembersTab = ({
                         handleChangeRole={handleChangeRole}
                         openConfirmModal={openConfirmModal}
                         canManage={canManage}
+                        onMemberClick={onMemberClick}
                       />
                     ))}
                   </tbody>
@@ -279,7 +282,8 @@ export const GroupMembersTab = ({
                       Quyền hạn bị hạn chế
                     </p>
                     <p className="text-[10px] text-slate-400 leading-relaxed">
-                      Trưởng nhóm hoặc Phó nhóm đã khóa tính năng phê duyệt thành viên đối với Kiểm duyệt viên.
+                      Trưởng nhóm hoặc Phó nhóm đã khóa tính năng phê duyệt
+                      thành viên đối với Kiểm duyệt viên.
                     </p>
                   </div>
                 </div>

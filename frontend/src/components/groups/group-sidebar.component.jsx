@@ -6,6 +6,7 @@ export const GroupSidebar = ({
   isJoined = false,
   onInviteClick,
   handleToggleMute,
+  onMemberClick,
 }) => {
   return (
     <div className="lg:col-span-3 space-y-6">
@@ -120,8 +121,12 @@ export const GroupSidebar = ({
                     : "bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-300"
                 }`}
               >
-                <i className={`fi ${group?.myMembership?.muteNotifications ? "fi-rr-bell-ring" : "fi-rr-bell-slash"} text-xs`}></i>
-                {group?.myMembership?.muteNotifications ? "Bật thông báo" : "Tắt thông báo"}
+                <i
+                  className={`fi ${group?.myMembership?.muteNotifications ? "fi-rr-bell-ring" : "fi-rr-bell-slash"} text-xs`}
+                ></i>
+                {group?.myMembership?.muteNotifications
+                  ? "Bật thông báo"
+                  : "Tắt thông báo"}
               </button>
             </div>
           ) : (
@@ -168,7 +173,8 @@ export const GroupSidebar = ({
                 return (
                   <div
                     key={member.user?._id || username}
-                    className="flex items-center gap-3"
+                    onClick={() => onMemberClick && onMemberClick(member)}
+                    className="flex items-center gap-3 cursor-pointer group/sidebar-member hover:opacity-80 transition-all"
                   >
                     <div
                       className={`w-8 h-8 rounded-lg border-2 ${ringColor} overflow-hidden bg-slate-100 dark:bg-zinc-800 shrink-0`}
