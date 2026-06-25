@@ -7,6 +7,7 @@ export const blogStructure = {
     content: [],
     tags: [],
     des: '',
+    group: null,
     author: { personal_info: { } }
 };
 

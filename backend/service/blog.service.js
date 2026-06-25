@@ -10,6 +10,7 @@ import UserFollow from "../Schema/UserFollow.js";
 import UserInterest from "../Schema/UserInterest.js";
 import EE from "../socket/eventManager.js";
 import GroupMember from "../Schema/GroupMember.js";
+import Group from "../Schema/Group.js";
 
 async function notifyGroupMembersOfNewPost(blog, authorId) {
   try {
@@ -43,18 +44,33 @@ class BlogService {
       throw new Error("You must provide a title");
     }
 
+    let isActiveVal = false;
     if (groupId) {
+      const groupDoc = await Group.findById(groupId);
+      if (!groupDoc) throw new Error("Nhóm không tồn tại.");
+      
       const membership = await GroupMember.findOne({ group: groupId, user: authorId, status: "JOINED" });
       if (!membership) {
         throw new Error("Bạn không có quyền đăng bài trong nhóm này (chưa tham gia hoặc chưa được duyệt).");
       }
+
+      const isGroupAdmin = membership.role === "OWNER" || membership.role === "DEPUTY" || membership.role === "MODERATOR";
+      const approvalRequired = groupDoc.settings?.memberPostApprovalRequired;
+
+      if (isGroupAdmin || !approvalRequired) {
+        isActiveVal = true;
+      } else {
+        isActiveVal = false;
+      }
+    } else {
+      isActiveVal = false;
     }
 
     if (!draft) {
       if (des && des.length > 200) {
         throw new Error("Blog description must be under 200 characters");
       }
-      if (!banner || !banner.length) {
+      if (!groupId && (!banner || !banner.length)) {
         throw new Error("You must provide blog banner to publish it");
       }
       if (!content || !content.blocks || !content.blocks.length) {
@@ -88,6 +104,10 @@ class BlogService {
       const oldBlog = await Blog.findOne({ blog_id });
       const wasDraft = oldBlog ? oldBlog.draft : false;
 
+      if (wasDraft && !draft) {
+        updateData.isActive = isActiveVal;
+      }
+
       await Blog.findOneAndUpdate(
         { blog_id },
         {
@@ -96,11 +116,11 @@ class BlogService {
       );
 
       const newBlog = await Blog.findOne({ blog_id });
-      if (newBlog && !newBlog.draft && wasDraft && newBlog.group) {
+      if (newBlog && !newBlog.draft && wasDraft && newBlog.group && newBlog.isActive) {
         await notifyGroupMembersOfNewPost(newBlog, authorId);
       }
 
-      return { id: blog_id, message: "Blog updated successfully" };
+      return { id: blog_id, message: "Blog updated successfully", isActive: newBlog ? newBlog.isActive : isActiveVal };
     } else {
       const author = await User.findById(authorId);
       if (!author) throw new Error("Author not found");
@@ -114,7 +134,7 @@ class BlogService {
         author: author._id,
         blog_id,
         draft: Boolean(draft),
-        isActive: false, // Default to inactive until admin approves (if that's the flow)
+        isActive: draft ? false : isActiveVal,
         isDeleted: false,
         group: groupId || null,
       });
@@ -127,11 +147,11 @@ class BlogService {
         { $inc: { "account_info.total_posts": incrementVal } }
       );
 
-      if (!savedBlog.draft && savedBlog.group) {
+      if (!savedBlog.draft && savedBlog.group && savedBlog.isActive) {
         await notifyGroupMembersOfNewPost(savedBlog, authorId);
       }
 
-      return { id: savedBlog.blog_id };
+      return { id: savedBlog.blog_id, isActive: savedBlog.isActive };
     }
   }
 
@@ -150,7 +170,7 @@ class BlogService {
         "author",
         "personal_info.fullname personal_info.username personal_info.profile_img personal_info.role"
       )
-      .select("title des content banner activity publishedAt blog_id tags isReport isActive draft");
+      .select("title des content banner activity publishedAt blog_id tags isReport isActive draft group");
 
     if (!blog) {
       throw new Error("Blog not found");
@@ -198,7 +218,7 @@ class BlogService {
    */
   async getLatestBlogs({ page = 1, limit = 6, userInterests = [], followingIds = [], currentUserId = null }) {
     // Basic implementation - can be enhanced with interests later
-    const blogs = await Blog.find({ draft: false, isActive: true, group: null })
+    const blogs = await Blog.find({ draft: false, isActive: true })
       .populate({
         path: "author",
         match: { "personal_info.role": { $ne: "ADMIN" } },
@@ -226,7 +246,7 @@ class BlogService {
 
     if (!following.length) return { blogs: [] };
 
-    const blogs = await Blog.find({ author: { $in: following }, draft: false, isActive: true, group: null })
+    const blogs = await Blog.find({ author: { $in: following }, draft: false, isActive: true })
       .skip((page - 1) * maxLimit)
       .limit(maxLimit)
       .sort({ publishedAt: -1 })
@@ -251,7 +271,6 @@ class BlogService {
       author: { $in: adminIds },
       draft: false,
       isActive: true,
-      group: null,
     })
       .populate(
         "author",
@@ -287,11 +306,11 @@ class BlogService {
   }
 
   async getAllLatestBlogsCount() {
-    return await Blog.countDocuments({ draft: false, isActive: true, group: null });
+    return await Blog.countDocuments({ draft: false, isActive: true });
   }
 
   async getTrendingBlogs() {
-    return await Blog.find({ draft: false, isActive: true, group: null })
+    return await Blog.find({ draft: false, isActive: true })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
       .sort({
         "activity.total_reads": -1,
@@ -315,7 +334,7 @@ class BlogService {
     }
 
     let maxLimit = limit ? limit : 2;
-    return await Blog.find({ ...findQuery, isActive: true, group: null })
+    return await Blog.find({ ...findQuery, isActive: true })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
       .sort({ publishedAt: -1 })
       .select("blog_id title des banner activity tags publishedAt")
@@ -332,7 +351,7 @@ class BlogService {
     } else if (author) {
       findQuery = { author, draft: false };
     }
-    return await Blog.countDocuments({ ...findQuery, isActive: true, group: null });
+    return await Blog.countDocuments({ ...findQuery, isActive: true });
   }
 
   async trackInterest(userId, tags) {
@@ -411,7 +430,7 @@ class BlogService {
       .skip(skipDocs)
       .limit(maxLimit)
       .sort({ publishedAt: -1 })
-      .select("title banner publishedAt blog_id activity des draft isActive -_id");
+      .select("title banner publishedAt blog_id activity des draft isActive group -_id");
   }
 
   async getUserWrittenBlogsCount(userId, { query, filter }) {

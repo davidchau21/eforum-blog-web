@@ -37,6 +37,7 @@ import DocumentLibraryPage from "./pages/directory.page.jsx";
 import FriendsPage from "./pages/friends.page";
 import GroupsPage from "./pages/groups.page.jsx";
 import GroupDetailsPage from "./pages/group-details.page.jsx";
+import GroupEditor from "./pages/group-editor.pages.jsx";
 
 export const UserContext = createContext({});
 export const ThemeContext = createContext({});
@@ -132,6 +133,7 @@ const App = () => {
     "/friends",
     "/groups",
     "/group",
+    "/group-editor",
   ];
   const shouldShowFooter = !excludedPaths.some((path) =>
     path === "/"
@@ -160,6 +162,22 @@ const App = () => {
                   element={
                     <ProtectedRoute access_token={userAuth.access_token}>
                       <Editor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/group-editor"
+                  element={
+                    <ProtectedRoute access_token={userAuth.access_token}>
+                      <GroupEditor />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/group-editor/:blog_id"
+                  element={
+                    <ProtectedRoute access_token={userAuth.access_token}>
+                      <GroupEditor />
                     </ProtectedRoute>
                   }
                 />

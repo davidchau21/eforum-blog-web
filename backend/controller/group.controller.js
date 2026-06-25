@@ -203,6 +203,41 @@ class GroupController extends BaseController {
       return this.sendError(res, error.message, 400);
     }
   }
+
+  async getPendingBlogs(req, res) {
+    try {
+      const groupId = req.params.id;
+      const requesterId = req.user.id;
+      const result = await groupService.getPendingBlogs(groupId, requesterId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
+
+  async approveBlog(req, res) {
+    try {
+      const groupId = req.params.id;
+      const blogId = req.params.blogId;
+      const requesterId = req.user.id;
+      const result = await groupService.approveGroupBlog(groupId, blogId, requesterId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
+
+  async rejectBlog(req, res) {
+    try {
+      const groupId = req.params.id;
+      const blogId = req.params.blogId;
+      const requesterId = req.user.id;
+      const result = await groupService.rejectGroupBlog(groupId, blogId, requesterId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
 }
 
 export default new GroupController();

@@ -217,3 +217,37 @@ export const inviteMember = async (id, targetUserId, token) => {
   );
   return data;
 };
+
+/**
+ * Fetch pending blogs in the group (waiting for approval).
+ */
+export const getPendingBlogs = async (id, token) => {
+  const { data } = await axios.get(
+    `${API_BASE}/groups/id/${id}/blogs/pending`,
+    getHeaders(token)
+  );
+  return data;
+};
+
+/**
+ * Approve a pending blog post.
+ */
+export const approveBlog = async (id, blogId, token) => {
+  const { data } = await axios.post(
+    `${API_BASE}/groups/id/${id}/blogs/${blogId}/approve`,
+    {},
+    getHeaders(token)
+  );
+  return data;
+};
+
+/**
+ * Reject a pending blog post.
+ */
+export const rejectBlog = async (id, blogId, token) => {
+  const { data } = await axios.delete(
+    `${API_BASE}/groups/id/${id}/blogs/${blogId}/reject`,
+    getHeaders(token)
+  );
+  return data;
+};

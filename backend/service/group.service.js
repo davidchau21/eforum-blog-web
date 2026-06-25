@@ -552,7 +552,7 @@ class GroupService {
     }
 
     const skip = (page - 1) * limit;
-    const findQuery = { group: groupId, draft: false };
+    const findQuery = { group: groupId, draft: false, isActive: true };
 
     if (searchQuery && searchQuery.trim() !== "") {
       findQuery.$or = [
@@ -692,6 +692,111 @@ class GroupService {
         ? "Đã tắt thông báo của nhóm này."
         : "Đã bật thông báo của nhóm này."
     };
+  }
+
+  /**
+   * Get pending group blogs (awaiting approval)
+   */
+  async getPendingBlogs(groupId, requesterId) {
+    const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!requesterMember || (requesterMember.role !== "OWNER" && requesterMember.role !== "DEPUTY" && requesterMember.role !== "MODERATOR")) {
+      throw new Error("Chỉ Trưởng nhóm, Phó nhóm hoặc Kiểm duyệt viên mới có quyền xem bài viết chờ duyệt.");
+    }
+
+    const list = await Blog.find({ group: groupId, draft: false, isActive: false })
+      .populate("author", "personal_info.fullname personal_info.username personal_info.profile_img")
+      .sort({ createdAt: -1 });
+
+    return { list };
+  }
+
+  /**
+   * Approve a pending group blog post
+   */
+  async approveGroupBlog(groupId, blogId, requesterId) {
+    const group = await Group.findById(groupId);
+    if (!group) throw new Error("Nhóm không tồn tại.");
+
+    const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!requesterMember) throw new Error("Bạn không phải thành viên nhóm.");
+
+    const isOwnerOrDeputy = requesterMember.role === "OWNER" || requesterMember.role === "DEPUTY";
+    const isMod = requesterMember.role === "MODERATOR";
+
+    if (!isOwnerOrDeputy && !isMod) {
+      throw new Error("Bạn không có quyền duyệt bài viết.");
+    }
+
+    if (isMod) {
+      if (!group.settings || !group.settings.moderatorCanApprove) {
+        throw new Error("Kiểm duyệt viên không có quyền duyệt bài viết trong nhóm này.");
+      }
+    }
+
+    const blog = await Blog.findOne({ _id: blogId, group: groupId, isActive: false });
+    if (!blog) {
+      throw new Error("Không tìm thấy bài viết chờ duyệt này.");
+    }
+
+    blog.isActive = true;
+    blog.publishedAt = new Date();
+    await blog.save();
+
+    // Trigger group_new_post notification to other members
+    try {
+      const groupMembers = await GroupMember.find({
+        group: groupId,
+        status: "JOINED",
+        user: { $ne: blog.author },
+        muteNotifications: { $ne: true }
+      });
+
+      for (const member of groupMembers) {
+        EE.emit("publish-notification", {
+          type: "group_new_post",
+          user: blog.author,
+          notification_for: member.user,
+          group: groupId,
+          blog: blog._id
+        });
+      }
+    } catch (err) {
+      console.error("Failed to send group new post notifications on approval:", err.message);
+    }
+
+    return { success: true, message: "Phê duyệt bài viết thành công." };
+  }
+
+  /**
+   * Reject (delete) a pending group blog post
+   */
+  async rejectGroupBlog(groupId, blogId, requesterId) {
+    const group = await Group.findById(groupId);
+    if (!group) throw new Error("Nhóm không tồn tại.");
+
+    const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!requesterMember) throw new Error("Bạn không phải thành viên nhóm.");
+
+    const isOwnerOrDeputy = requesterMember.role === "OWNER" || requesterMember.role === "DEPUTY";
+    const isMod = requesterMember.role === "MODERATOR";
+
+    if (!isOwnerOrDeputy && !isMod) {
+      throw new Error("Bạn không có quyền từ chối bài viết.");
+    }
+
+    if (isMod) {
+      if (!group.settings || !group.settings.moderatorCanDeletePost) {
+        throw new Error("Kiểm duyệt viên không có quyền xóa bài viết trong nhóm này.");
+      }
+    }
+
+    const blog = await Blog.findOne({ _id: blogId, group: groupId, isActive: false });
+    if (!blog) {
+      throw new Error("Không tìm thấy bài viết chờ duyệt này.");
+    }
+
+    await Blog.deleteOne({ _id: blog._id });
+    return { success: true, message: "Từ chối bài viết thành công." };
   }
 }
 

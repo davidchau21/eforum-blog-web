@@ -1,27 +1,26 @@
 /* eslint-disable react/prop-types */
 import { Link, useNavigate, useParams } from "react-router-dom";
-import lightLogo from "../imgs/logo-light.png";
-import darkLogo from "../imgs/logo-dark.png";
-import AnimationWrapper from "../common/page-animation";
-import lightBanner from "../imgs/blog banner light.png";
-import darkBanner from "../imgs/blog banner dark.png";
-import { uploadImage } from "../common/aws";
+import lightLogo from "../../imgs/logo-light.png";
+import darkLogo from "../../imgs/logo-dark.png";
+import AnimationWrapper from "../../common/page-animation";
+import lightBanner from "../../imgs/blog banner light.png";
+import darkBanner from "../../imgs/blog banner dark.png";
+import { uploadImage } from "../../common/aws";
 import { useContext, useEffect, useCallback, useRef, useState } from "react";
 import { Toaster, toast } from "react-hot-toast";
-import { EditorContext } from "../contexts/EditorContext";
+import { EditorContext } from "../../contexts/EditorContext";
 import EditorJS from "@editorjs/editorjs";
-import { tools } from "./tools.component";
+import { tools } from "../tools.component";
 import axios from "axios";
-import { ThemeContext, UserContext } from "../App";
-import { getTranslations } from "../../translations";
+import { ThemeContext, UserContext } from "../../App";
+import { getTranslations } from "../../../translations";
 
-const DRAFT_KEY = "blog_editor_draft";
+const DRAFT_KEY = "group_blog_editor_draft";
 
-const BlogEditor = ({ isModal = false }) => {
+const GroupBlogEditor = ({ isModal = false }) => {
   let { blog, setBlog, textEditor, setTextEditor, setEditorState, setActions } =
     useContext(EditorContext);
 
-  // Guard: wait until blog context is available
   const {
     title = "",
     banner = "",
@@ -42,26 +41,22 @@ const BlogEditor = ({ isModal = false }) => {
 
   const editorCore = useRef(null);
 
-  // --- Auto-save and Restore Logic ---
   useEffect(() => {
-    // Attempt to restore draft from LocalStorage
     const savedDraft = localStorage.getItem(DRAFT_KEY);
     if (savedDraft) {
       const parsedDraft = JSON.parse(savedDraft);
-      // Only restore if it's the same blog or a new one
       if (parsedDraft.blog_id === blog_id) {
         setBlog((prev) => ({ ...prev, ...parsedDraft.data }));
       }
     }
-  }, []); // Only on mount
+  }, []);
 
-  // Save to localStorage on title or banner change
   useEffect(() => {
     const draftData = {
       blog_id,
       data: {
         title: blog.title,
-        banner: blog.banner.startsWith("blob:") ? "" : blog.banner, // Don't save blob URLs
+        banner: blog.banner.startsWith("blob:") ? "" : blog.banner,
         des: blog.des,
         tags: blog.tags,
       },
@@ -71,7 +66,6 @@ const BlogEditor = ({ isModal = false }) => {
 
   useEffect(() => {
     if (!editorCore.current) {
-      // Check if we have saved content for EditorJS
       const savedDraft = localStorage.getItem(DRAFT_KEY);
       let initialContent = Array.isArray(content) ? content[0] : content;
 
@@ -92,24 +86,14 @@ const BlogEditor = ({ isModal = false }) => {
           const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
           draft.data = { ...draft.data, content: updatedContent };
           localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-        },
-        onReady() {
-          // No need to overwrite the instance here
         }
       });
 
       editorCore.current = editor;
       setTextEditor(editor); 
     }
-
-    return () => {
-      if (editorCore.current && typeof editorCore.current.destroy === 'function') {
-        // editorCore.current.destroy(); // Optional: destroy on unmount
-      }
-    };
   }, []);
 
-  // Cleanup effect for preview URL to avoid memory leaks
   useEffect(() => {
     return () => {
       if (blog.banner && blog.banner.startsWith("blob:")) {
@@ -195,9 +179,7 @@ const BlogEditor = ({ isModal = false }) => {
 
   const handleBannerUpload = (e) => {
     let img = e.target.files[0];
-
     if (img) {
-      // Create local preview URL instead of uploading immediately
       const previewURL = URL.createObjectURL(img);
       setBlog({ ...blog, banner: previewURL, bannerFile: img });
     }
@@ -205,31 +187,23 @@ const BlogEditor = ({ isModal = false }) => {
 
   const handleTitleKeyDown = (e) => {
     if (e.keyCode == 13) {
-      // enter key
       e.preventDefault();
     }
   };
 
   const handleTitleChange = (e) => {
     let input = e.target;
-
     input.style.height = "auto";
     input.style.height = input.scrollHeight + "px";
-
     setBlog({ ...blog, title: input.value });
   };
 
   const handleError = (e) => {
     let img = e.target;
-
     img.src = theme == "light" ? lightBanner : darkBanner;
   };
 
   const handlePublishEvent = useCallback(() => {
-    // if(!banner.length){
-    //     return toast.error("Upload a blog banner to publish it")
-    // }
-
     if (!title.length) {
       return toast.error(currentTranslations.writeTitleToPublish);
     }
@@ -262,17 +236,14 @@ const BlogEditor = ({ isModal = false }) => {
       }
 
       let loadingToast = toast.loading(currentTranslations.savingDraft);
-
       if (e && e.target) e.target.classList.add("disable");
 
       let currentBanner = banner;
 
-      // If there's a local banner file, upload it now
       if (blog.bannerFile) {
         toast.loading(currentTranslations.uploading, { id: loadingToast });
         try {
           currentBanner = await uploadImage(blog.bannerFile);
-          // Update the blog state so subsequent saves don't re-upload
           setBlog((prev) => ({
             ...prev,
             banner: currentBanner,
@@ -310,16 +281,16 @@ const BlogEditor = ({ isModal = false }) => {
             .then(() => {
               if (e && e.target) e.target.classList.remove("disable");
 
-              localStorage.removeItem(DRAFT_KEY); // Clear draft cache
+              localStorage.removeItem(DRAFT_KEY);
 
               toast.dismiss(loadingToast);
               toast.success(currentTranslations.savedDraft);
 
               setTimeout(() => {
-                if (!isModal) {
-                  navigate("/dashboard/blogs?tab=draft");
+                const targetGroup = blog?.group || blogObj.groupId;
+                if (targetGroup) {
+                  navigate(`/group/${targetGroup}?tab=discussion`);
                 } else {
-                  // If it's a modal, we navigate to the draft dashboard to show the change
                   navigate("/dashboard/blogs?tab=draft");
                 }
               }, 500);
@@ -327,7 +298,6 @@ const BlogEditor = ({ isModal = false }) => {
             .catch(({ response }) => {
               if (e && e.target) e.target.classList.remove("disable");
               toast.dismiss(loadingToast);
-
               return toast.error(response.data.error);
             });
         });
@@ -344,6 +314,7 @@ const BlogEditor = ({ isModal = false }) => {
       navigate,
       isModal,
       currentTranslations,
+      blog,
     ],
   );
 
@@ -381,7 +352,6 @@ const BlogEditor = ({ isModal = false }) => {
             >
               {currentTranslations.saveDraft}
             </button>
-            {/* Cancel — desktop only */}
             <button
               className="hidden md:flex items-center gap-2 bg-transparent text-dark-grey hover:text-red border border-grey/80 dark:border-grey/30 rounded-full py-2 px-6 text-[15px] font-semibold hover:border-red/30 hover:bg-red/5 transition-all duration-200 shrink-0"
               onClick={() => {
@@ -391,7 +361,12 @@ const BlogEditor = ({ isModal = false }) => {
                   : "Are you sure you want to cancel? All unsaved changes will be lost.";
                 if (window.confirm(confirmMsg)) {
                   localStorage.removeItem(DRAFT_KEY);
-                  navigate(-1);
+                  const targetGroup = blog?.group;
+                  if (targetGroup) {
+                    navigate(`/group/${targetGroup}?tab=discussion`);
+                  } else {
+                    navigate(-1);
+                  }
                 }
               }}
             >
@@ -496,7 +471,6 @@ const BlogEditor = ({ isModal = false }) => {
         </section>
       </AnimationWrapper>
 
-      {/* Bottom Cancel Bar — mobile only */}
       {!isModal && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-grey/60 px-5 py-3 flex items-center justify-between shadow-lg">
           <p className="text-xs text-dark-grey">
@@ -511,7 +485,12 @@ const BlogEditor = ({ isModal = false }) => {
                 : "Are you sure you want to cancel? All unsaved changes will be lost.";
               if (window.confirm(confirmMsg)) {
                 localStorage.removeItem(DRAFT_KEY);
-                navigate(-1);
+                const targetGroup = blog?.group;
+                if (targetGroup) {
+                  navigate(`/group/${targetGroup}?tab=discussion`);
+                } else {
+                  navigate(-1);
+                }
               }
             }}
           >
@@ -524,4 +503,4 @@ const BlogEditor = ({ isModal = false }) => {
   );
 };
 
-export default BlogEditor;
+export default GroupBlogEditor;

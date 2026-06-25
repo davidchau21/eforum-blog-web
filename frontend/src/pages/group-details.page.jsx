@@ -32,6 +32,9 @@ import {
   triggerDownload,
   deleteGroup,
   toggleMuteGroupNotifications,
+  getPendingBlogs,
+  approveBlog,
+  rejectBlog,
 } from "../services/group.service";
 
 const GroupDetailsPage = () => {
@@ -49,6 +52,7 @@ const GroupDetailsPage = () => {
   const [documents, setDocuments] = useState([]);
   const [members, setMembers] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [pendingBlogs, setPendingBlogs] = useState([]);
 
   // Modals / Panels
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
@@ -187,6 +191,15 @@ const GroupDetailsPage = () => {
     }
   };
 
+  const fetchPendingBlogs = async () => {
+    try {
+      const data = await getPendingBlogs(id, userAuth.access_token);
+      setPendingBlogs(data.list);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   useEffect(() => {
     if (id) {
       setLoading(true);
@@ -200,7 +213,12 @@ const GroupDetailsPage = () => {
 
   useEffect(() => {
     const tabParam = searchParams.get("tab");
-    if (tabParam && ["discussion", "documents", "members", "settings", "about"].includes(tabParam)) {
+    if (
+      tabParam &&
+      ["discussion", "documents", "members", "settings", "about"].includes(
+        tabParam,
+      )
+    ) {
       setActiveTab(tabParam);
     }
     const subParam = searchParams.get("sub");
@@ -208,6 +226,35 @@ const GroupDetailsPage = () => {
       setMemberFilter(subParam);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (id && isAdminOrMod && userAuth.access_token) {
+      fetchPendingBlogs();
+    } else {
+      setPendingBlogs([]);
+    }
+  }, [id, isAdminOrMod, userAuth.access_token]);
+
+  const handleApproveBlog = async (blogId) => {
+    try {
+      const data = await approveBlog(id, blogId, userAuth.access_token);
+      toast.success(data.message || "Đã duyệt bài viết.");
+      fetchBlogs();
+      fetchPendingBlogs();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Lỗi khi duyệt bài viết.");
+    }
+  };
+
+  const handleRejectBlog = async (blogId) => {
+    try {
+      const data = await rejectBlog(id, blogId, userAuth.access_token);
+      toast.success(data.message || "Đã từ chối bài viết.");
+      fetchPendingBlogs();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Lỗi khi từ chối bài viết.");
+    }
+  };
 
   const handleToggleJoin = async () => {
     if (!userAuth.access_token) {
@@ -323,16 +370,22 @@ const GroupDetailsPage = () => {
     }
 
     try {
-      const data = await toggleMuteGroupNotifications(id, userAuth.access_token);
+      const data = await toggleMuteGroupNotifications(
+        id,
+        userAuth.access_token,
+      );
       toast.success(data.message || "Đã cập nhật cài đặt thông báo.");
-      
+
       setGroup((prev) => {
         if (!prev) return prev;
         return {
           ...prev,
           myMembership: prev.myMembership
-            ? { ...prev.myMembership, muteNotifications: data.muteNotifications }
-            : null
+            ? {
+                ...prev.myMembership,
+                muteNotifications: data.muteNotifications,
+              }
+            : null,
         };
       });
     } catch (err) {
@@ -452,15 +505,19 @@ const GroupDetailsPage = () => {
         )}
         {/* Cover & Banner Section */}
         <div className="relative w-full h-[320px] md:h-[400px] overflow-hidden bg-slate-200 dark:bg-zinc-800">
-          <img
-            src={group.banner || groupBannerDefault}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = groupBannerDefault;
-            }}
-            className="w-full h-full object-cover"
-            alt="Group Banner"
-          />
+          {group.banner ? (
+            <img
+              src={group.banner}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = "none";
+              }}
+              className="w-full h-full object-cover"
+              alt="Group Banner"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-indigo-600/30 via-slate-700/50 to-purple-700/30 dark:from-indigo-900/60 dark:via-zinc-800 dark:to-purple-900/40" />
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
 
           {/* Group details floating overlay banner (Glassmorphism) */}
@@ -642,6 +699,10 @@ const GroupDetailsPage = () => {
                   id={id}
                   blogs={blogs}
                   navigate={navigate}
+                  isAdminOrMod={isAdminOrMod}
+                  pendingBlogs={pendingBlogs}
+                  handleApproveBlog={handleApproveBlog}
+                  handleRejectBlog={handleRejectBlog}
                 />
               )}
 

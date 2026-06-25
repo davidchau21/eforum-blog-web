@@ -1,18 +1,16 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
 import { Toaster, toast } from "react-hot-toast";
-import AnimationWrapper from "../common/page-animation";
+import AnimationWrapper from "../../common/page-animation";
 import { useContext, useEffect, useState, useCallback } from "react";
-import { EditorContext } from "../contexts/EditorContext";
-import Tag from "./tags.component";
+import { EditorContext } from "../../contexts/EditorContext";
+import Tag from "../tags.component";
 import axios from "axios";
-import { UserContext } from "../App";
+import { UserContext } from "../../App";
 import { useNavigate, useParams } from "react-router-dom";
 import confetti from "canvas-confetti";
-import { uploadImage } from "../common/aws";
-// import bannerDefault from "../imgs/banner-default.png";
+import { uploadImage } from "../../common/aws";
 
-const PublishForm = ({ isModal = false }) => {
+const GroupPublishForm = ({ isModal = false }) => {
   let characterLimit = 200;
   let tagLimit = 10;
   const bannerDefault =
@@ -32,37 +30,9 @@ const PublishForm = ({ isModal = false }) => {
 
   const [availableTags, setAvailableTags] = useState([]);
   const [filteredTags, setFilteredTags] = useState([]);
-  const [selectedClassTag, setSelectedClassTag] = useState(""); // Trạng thái để lưu tag mặc định đã chọn
-  const [selectedSubjectTag, setSelectedSubjectTag] = useState(""); // Trạng thái để lưu tag môn học đã chọn
+  const [customTagInput, setCustomTagInput] = useState("");
 
   let navigate = useNavigate();
-
-  // Các tag mặc định bạn muốn thêm vào dropdown
-  const defaultTagsClass = [
-    "Lớp 6",
-    "Lớp 7",
-    "Lớp 8",
-    "Lớp 9",
-    "Lớp 10",
-    "Lớp 11",
-    "Lớp 12",
-    "Khác",
-  ];
-
-  const defaultTagsSubject = [
-    "Toán",
-    "Văn",
-    "Anh",
-    "Lý",
-    "Hóa",
-    "Sinh",
-    "Sử",
-    "Địa",
-    "GDCD",
-    "Công Nghệ",
-    "Tin Học",
-    "Môn học khác",
-  ];
 
   const handleCloseEvent = () => {
     setEditorState("editor");
@@ -80,26 +50,25 @@ const PublishForm = ({ isModal = false }) => {
 
   const handleTitleKeyDown = (e) => {
     if (e.keyCode == 13) {
-      // enter key
       e.preventDefault();
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.keyCode == 13 || e.keyCode == 188) {
+  const handleAddCustomTag = (e) => {
+    if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-
-      // let tag = e.target.value.trim();
-
-      // if (tags.length < tagLimit) {
-      //   if (!tags.includes(tag) && tag.length) {
-      //     setBlog({ ...blog, tags: [...tags, tag] });
-      //   }
-      // } else {
-      //   toast.error(`You can add max ${tagLimit} Tags`);
-      // }
-
-      // e.target.value = "";
+      const val = customTagInput.trim();
+      if (!val) return;
+      if (tags.includes(val)) {
+        toast.error("Tag already exists");
+        return;
+      }
+      if (tags.length >= tagLimit) {
+        toast.error(`You can add max ${tagLimit} Tags`);
+        return;
+      }
+      setBlog({ ...blog, tags: [...tags, val] });
+      setCustomTagInput("");
     }
   };
 
@@ -119,30 +88,15 @@ const PublishForm = ({ isModal = false }) => {
         );
       }
 
-      // if (!tags.length) {
-      //   return toast.error("Enter at least 1 tag to help us rank your blog");
-      // }
-
-      // // Kiểm tra nếu người dùng chưa chọn tag mặc định
-      // if (!selectedClassTag) {
-      //   return toast.error("Please choose a default class before publishing");
-      // }
-
-      // if (!selectedSubjectTag) {
-      //   return toast.error("Please choose a default subject before publishing");
-      // }
-
       let loadingToast = toast.loading("Publishing....");
       if (e && e.target) e.target.classList.add("disable");
 
       let currentBanner = banner;
 
-      // If there's a local banner file, upload it now
       if (blog.bannerFile) {
         toast.loading("Uploading banner...", { id: loadingToast });
         try {
           currentBanner = await uploadImage(blog.bannerFile);
-          // Update the blog state
           setBlog((prev) => ({ ...prev, banner: currentBanner, bannerFile: null }));
         } catch (uploadErr) {
           toast.dismiss(loadingToast);
@@ -153,7 +107,7 @@ const PublishForm = ({ isModal = false }) => {
 
       let blogObj = {
         title,
-        banner: currentBanner.length === 0 ? bannerDefault : currentBanner,
+        banner: currentBanner,
         des,
         content,
         tags,
@@ -178,7 +132,7 @@ const PublishForm = ({ isModal = false }) => {
           }),
         );
 
-        await axios.post(
+        const response = await axios.post(
           import.meta.env.VITE_SERVER_DOMAIN + "/blogs/create-blog",
           { ...blogObj, id: blog_id },
           {
@@ -188,18 +142,23 @@ const PublishForm = ({ isModal = false }) => {
           },
         );
 
-        localStorage.removeItem("blog_editor_draft"); // Clear draft cache
+        localStorage.removeItem("group_blog_editor_draft");
 
         toast.dismiss(loadingToast);
-        toast.success("Published 👍 \nBài viết của bạn đang chờ duyệt");
+        
+        const isActive = response.data?.isActive;
 
-        // Celebration confetti!
-        confetti({
-          particleCount: 150,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#10b981", "#3b82f6", "#8b5cf6"],
-        });
+        if (isActive) {
+          toast.success("Bài viết đã được đăng thành công! 👍");
+          confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ["#10b981", "#3b82f6", "#8b5cf6"],
+          });
+        } else {
+          toast.success("Bài viết đã gửi thành công!\nĐang chờ ban quản trị nhóm duyệt. 👍");
+        }
 
         setTimeout(() => {
           if (blog?.group) {
@@ -207,7 +166,7 @@ const PublishForm = ({ isModal = false }) => {
           } else {
             navigate("/dashboard/blogs");
           }
-        }, 500);
+        }, 800);
       } catch (error) {
         if (e && e.target) e.target.classList.remove("disable");
         toast.dismiss(loadingToast);
@@ -227,8 +186,6 @@ const PublishForm = ({ isModal = false }) => {
       content,
       des,
       navigate,
-      selectedClassTag,
-      selectedSubjectTag,
       tags,
       title,
       blog,
@@ -255,15 +212,6 @@ const PublishForm = ({ isModal = false }) => {
         setFilteredTags({ list: fetchedTags, total: fetchedTags.length });
       })
       .catch((error) => console.error("Failed to fetch tags:", error));
-
-    // Initialize selected tags from existing blog tags (for editing)
-    if (tags && tags.length) {
-      const classTag = tags.find((t) => defaultTagsClass.includes(t));
-      const subjectTag = tags.find((t) => defaultTagsSubject.includes(t));
-
-      if (classTag) setSelectedClassTag(classTag);
-      if (subjectTag) setSelectedSubjectTag(subjectTag);
-    }
   }, []);
 
   return (
@@ -341,75 +289,7 @@ const PublishForm = ({ isModal = false }) => {
           <div className="space-y-5 mt-8">
             <div>
               <p className="text-dark-grey font-medium mb-2">
-                Choose default class
-              </p>
-              <select
-                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
-                value={selectedClassTag}
-                onChange={(e) => {
-                  const selectedTag = e.target.value;
-                  let newTags = [...tags];
-                  if (selectedClassTag) {
-                    newTags = newTags.filter((t) => t !== selectedClassTag);
-                  }
-                  if (
-                    selectedTag &&
-                    !newTags.includes(selectedTag) &&
-                    newTags.length < tagLimit
-                  ) {
-                    setBlog({ ...blog, tags: [...newTags, selectedTag] });
-                    setSelectedClassTag(selectedTag);
-                  }
-                }}
-              >
-                <option value="" disabled>
-                  Choose a class
-                </option>
-                {defaultTagsClass.map((tag, i) => (
-                  <option key={i} value={tag}>
-                    {tag}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <p className="text-dark-grey font-medium mb-2">
-                Choose default subjects
-              </p>
-              <select
-                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
-                value={selectedSubjectTag}
-                onChange={(e) => {
-                  const selectedTag = e.target.value;
-                  let newTags = [...tags];
-                  if (selectedSubjectTag) {
-                    newTags = newTags.filter((t) => t !== selectedSubjectTag);
-                  }
-                  if (
-                    selectedTag &&
-                    !newTags.includes(selectedTag) &&
-                    newTags.length < tagLimit
-                  ) {
-                    setBlog({ ...blog, tags: [...newTags, selectedTag] });
-                    setSelectedSubjectTag(selectedTag);
-                  }
-                }}
-              >
-                <option value="" disabled>
-                  Choose a subject
-                </option>
-                {defaultTagsSubject.map((tag, i) => (
-                  <option key={i} value={tag}>
-                    {tag}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <p className="text-dark-grey font-medium mb-2">
-                Choose from existing topics
+                Choose topic tags
               </p>
               <select
                 className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
@@ -437,6 +317,20 @@ const PublishForm = ({ isModal = false }) => {
                 ))}
               </select>
             </div>
+
+            <div>
+              <p className="text-dark-grey font-medium mb-2">
+                Or type custom tag (Press Enter to add)
+              </p>
+              <input
+                type="text"
+                placeholder="Type and press Enter..."
+                value={customTagInput}
+                onChange={(e) => setCustomTagInput(e.target.value)}
+                onKeyDown={handleAddCustomTag}
+                className="input-box pl-4 focus:bg-white"
+              />
+            </div>
           </div>
 
           {tags.length > 0 && (
@@ -453,7 +347,7 @@ const PublishForm = ({ isModal = false }) => {
           )}
 
           {!isModal && (
-            <button className="btn-dark px-8" onClick={publishBlog}>
+            <button className="btn-dark px-8 mt-8" onClick={publishBlog}>
               Publish
             </button>
           )}
@@ -463,4 +357,4 @@ const PublishForm = ({ isModal = false }) => {
   );
 };
 
-export default PublishForm;
+export default GroupPublishForm;

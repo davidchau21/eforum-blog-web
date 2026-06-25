@@ -9,8 +9,14 @@ class AdminBlogService {
    * Admin: Get all blogs with filters
    */
   async getAllBlogsForAdmin({ isDraft, isActive, title, tags, page = 0, limit = 10, isReport, startDate, endDate }) {
-    const findQuery = { isDeleted: { $in: [false, null] } };
-    
+    const findQuery = { 
+      isDeleted: { $in: [false, null] },
+      $or: [
+        { group: null },
+        { isActive: true }
+      ]
+    };
+
     // Parse boolean strings if they come from query params
     if (isDraft !== undefined) findQuery.draft = isDraft === 'true' || isDraft === true;
     if (isActive !== undefined) findQuery.isActive = isActive === 'true' || isActive === true;

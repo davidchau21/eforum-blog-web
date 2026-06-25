@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { GroupPrivateLock } from "./group-private-lock.component";
 
 /* eslint-disable react/prop-types */
@@ -10,7 +11,13 @@ export const GroupDiscussionTab = ({
   id,
   blogs = [],
   navigate,
+  isAdminOrMod = false,
+  pendingBlogs = [],
+  handleApproveBlog,
+  handleRejectBlog,
 }) => {
+  const [discussionFilter, setDiscussionFilter] = useState("published"); // published, pending
+
   if (showLockScreen) {
     return (
       <GroupPrivateLock
@@ -20,10 +27,38 @@ export const GroupDiscussionTab = ({
     );
   }
 
+  const activeBlogsList = discussionFilter === "published" ? blogs : pendingBlogs;
+
   return (
     <div className="space-y-6">
+      {/* Discussion Sub-Tabs (Published vs Pending) - Only visible to Admins/Mods */}
+      {isAdminOrMod && pendingBlogs.length > 0 && (
+        <div className="flex gap-2 bg-slate-100 dark:bg-white/5 p-1 rounded-xl w-fit font-inter">
+          <button
+            onClick={() => setDiscussionFilter("published")}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              discussionFilter === "published"
+                ? "bg-white dark:bg-[#1e1e22] text-indigo-600 dark:text-indigo-400 shadow-sm"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            Đã đăng ({blogs.length})
+          </button>
+          <button
+            onClick={() => setDiscussionFilter("pending")}
+            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              discussionFilter === "pending"
+                ? "bg-white dark:bg-[#1e1e22] text-rose-600 dark:text-rose-400 shadow-sm"
+                : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+            }`}
+          >
+            Chờ duyệt ({pendingBlogs.length})
+          </button>
+        </div>
+      )}
+
       {/* Create Blog Banner */}
-      {isJoined && (
+      {isJoined && discussionFilter === "published" && (
         <div className="bg-gradient-to-r from-indigo-500/5 via-transparent to-transparent bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-3xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm relative overflow-hidden">
           <div className="space-y-1 relative z-10">
             <p className="font-black text-slate-900 dark:text-white font-jakarta flex items-center gap-2 font-inter">
@@ -39,7 +74,7 @@ export const GroupDiscussionTab = ({
             </p>
           </div>
           <button
-            onClick={() => navigate(`/editor?groupId=${id}`)}
+            onClick={() => navigate(`/group-editor?groupId=${id}`)}
             className="py-3 px-5 text-xs font-black uppercase tracking-wider font-jakarta bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl hover:scale-105 active:scale-95 transition-all shadow-md shadow-indigo-500/10 shrink-0 self-stretch sm:self-auto text-center"
           >
             Đăng bài mới
@@ -47,27 +82,31 @@ export const GroupDiscussionTab = ({
         </div>
       )}
 
-      {blogs.length > 0 ? (
+      {activeBlogsList.length > 0 ? (
         <div className="space-y-6">
-          {blogs.map((blog) => (
+          {activeBlogsList.map((blog) => (
             <div
               key={blog.blog_id}
               className="bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-[32px] p-6 flex flex-col md:flex-row gap-6 shadow-sm hover:shadow-[0_20px_50px_rgba(99,102,241,0.06)] hover:border-indigo-500/20 dark:hover:border-indigo-500/20 transition-all duration-300 cursor-pointer group"
-              onClick={() => navigate(`/blog/${blog.blog_id}`)}
+              onClick={() => {
+                if (discussionFilter === "published") {
+                  navigate(`/blog/${blog.blog_id}`);
+                }
+              }}
             >
               <div className="flex-grow space-y-3">
                 <div className="flex items-center gap-2">
                   <img
-                    src={blog.author.personal_info.profile_img}
+                    src={blog.author?.personal_info?.profile_img}
                     className="w-6 h-6 rounded-full border border-slate-200/60 dark:border-white/10"
                     alt=""
                   />
                   <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">
-                    @{blog.author.personal_info.username}
+                    @{blog.author?.personal_info?.username}
                   </span>
                   <span className="w-1 h-1 bg-slate-300 dark:bg-zinc-700 rounded-full"></span>
                   <span className="text-[10px] text-slate-400 dark:text-slate-500">
-                    {new Date(blog.publishedAt).toLocaleDateString()}
+                    {new Date(blog.publishedAt || blog.createdAt).toLocaleDateString()}
                   </span>
                 </div>
                 <h3 className="text-xl font-black font-jakarta text-slate-900 dark:text-white leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -76,16 +115,33 @@ export const GroupDiscussionTab = ({
                 <p className="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 leading-relaxed font-medium">
                   {blog.des}
                 </p>
-                <div className="flex items-center gap-4 text-xs font-bold text-slate-400 pt-2">
-                  <span className="flex items-center gap-1">
-                    <i className="fi fi-rr-heart text-xs"></i>{" "}
-                    {blog.activity.total_likes}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <i className="fi fi-rr-comment-alt text-xs"></i>{" "}
-                    {blog.activity.total_comments}
-                  </span>
-                </div>
+                {discussionFilter === "published" ? (
+                  <div className="flex items-center gap-4 text-xs font-bold text-slate-400 pt-2">
+                    <span className="flex items-center gap-1">
+                      <i className="fi fi-rr-heart text-xs"></i>{" "}
+                      {blog.activity?.total_likes || 0}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <i className="fi fi-rr-comment-alt text-xs"></i>{" "}
+                      {blog.activity?.total_comments || 0}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-white/5 mt-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => handleApproveBlog(blog._id)}
+                      className="py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider bg-emerald-600 hover:bg-emerald-700 text-white transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                    >
+                      Duyệt bài
+                    </button>
+                    <button
+                      onClick={() => handleRejectBlog(blog._id)}
+                      className="py-2 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider bg-rose-600 hover:bg-rose-700 text-white transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                    >
+                      Từ chối
+                    </button>
+                  </div>
+                )}
               </div>
 
               {blog.banner && (
@@ -103,7 +159,9 @@ export const GroupDiscussionTab = ({
       ) : (
         <div className="py-20 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-3xl">
           <i className="fi fi-rr-comments text-3xl mb-2 block text-slate-300 dark:text-zinc-750"></i>
-          Chưa có bài viết thảo luận nào trong nhóm này.
+          {discussionFilter === "published" 
+            ? "Chưa có bài viết thảo luận nào trong nhóm này." 
+            : "Không có bài viết nào đang chờ duyệt."}
         </div>
       )}
     </div>
