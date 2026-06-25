@@ -1,8 +1,12 @@
 import { motion } from "framer-motion";
+import { useContext } from "react";
+import { UserContext } from "../../App";
+import { toast } from "react-hot-toast";
 import groupBannerDefault from "../../imgs/group-banner-default.png";
 
 /* eslint-disable react/prop-types */
 export const GroupCard = ({ group, navigate }) => {
+  const { userAuth } = useContext(UserContext);
   const myRole = group.myMembership?.role;
   const isOwner = myRole === "OWNER";
   const isDeputy = myRole === "DEPUTY";
@@ -127,7 +131,18 @@ export const GroupCard = ({ group, navigate }) => {
           </div>
 
           <button
-            onClick={() => navigate(`/group/${group._id}`)}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (group.myMembership?.status !== "JOINED" && !userAuth?.access_token) {
+                toast.error(
+                  userAuth?.language === "vi"
+                    ? "Vui lòng đăng nhập để tham gia nhóm."
+                    : "Please log in to join the group."
+                );
+                return navigate("/signin");
+              }
+              navigate(`/group/${group._id}`);
+            }}
             className={`text-[11px] font-black uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 ${
               group.myMembership?.status === "JOINED"
                 ? "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 hover:bg-slate-200 dark:hover:bg-white/10"

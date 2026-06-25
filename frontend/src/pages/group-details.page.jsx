@@ -130,6 +130,30 @@ const GroupDetailsPage = () => {
     (m) => m.role === "OWNER" || m.role === "DEPUTY" || m.role === "MODERATOR",
   );
 
+  const handleApiError = (err, defaultMessage) => {
+    console.error(err);
+    const status = err.response?.status;
+    const errMsg = err.response?.data?.error || "";
+    if (
+      status === 401 ||
+      status === 403 ||
+      errMsg.toLowerCase().includes("token") ||
+      errMsg.toLowerCase().includes("session")
+    ) {
+      toast.error(
+        userAuth?.language === "vi"
+          ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+          : "Session expired. Please sign in again."
+      );
+      navigate("/signin");
+      return true;
+    }
+    if (defaultMessage) {
+      toast.error(errMsg || defaultMessage);
+    }
+    return false;
+  };
+
   const fetchGroupDetails = async () => {
     try {
       setIsDisabledError(false);
@@ -148,12 +172,12 @@ const GroupDetailsPage = () => {
         isDisabled: data.isDisabled || false,
       });
     } catch (err) {
-      console.error(err);
       const errMsg = err.response?.data?.error || "";
       if (errMsg.includes("vô hiệu hóa")) {
         setIsDisabledError(true);
+      } else {
+        handleApiError(err, "Không thể tải thông tin nhóm.");
       }
-      toast.error(errMsg || "Không thể tải thông tin nhóm.");
     } finally {
       setLoading(false);
     }
@@ -191,7 +215,7 @@ const GroupDetailsPage = () => {
       const data = await getGroupMembers(id, "PENDING", userAuth.access_token);
       setPendingRequests(data.list);
     } catch (err) {
-      console.error(err);
+      handleApiError(err);
     }
   };
 
@@ -200,43 +224,39 @@ const GroupDetailsPage = () => {
       const data = await getPendingBlogs(id, userAuth.access_token);
       setPendingBlogs(data.list);
     } catch (err) {
-      console.error(err);
+      handleApiError(err);
     }
   };
 
   useEffect(() => {
-    if (id) {
-      setLoading(true);
-      fetchGroupDetails();
-      fetchBlogs();
-      fetchDocuments();
-      fetchMembers();
-      fetchPendingRequests();
+    if (!userAuth.access_token) {
+      toast.error(userAuth.language === "vi" ? "Vui lòng đăng nhập để truy cập nhóm học tập." : "Please log in to access the learning group.");
+      navigate("/signin");
     }
+  }, [userAuth.access_token, userAuth.language, navigate]);
+
+  useEffect(() => {
+    if (!userAuth.access_token || !id) return;
+    setLoading(true);
+    fetchGroupDetails();
+    fetchBlogs();
+    fetchDocuments();
+    fetchMembers();
+    fetchPendingRequests();
   }, [id, userAuth.access_token]);
 
   useEffect(() => {
-    const tabParam = searchParams.get("tab");
-    if (
-      tabParam &&
-      ["discussion", "documents", "members", "settings", "about"].includes(
-        tabParam,
-      )
-    ) {
-      setActiveTab(tabParam);
-    }
-    const subParam = searchParams.get("sub");
-    if (subParam && ["all", "admin", "member", "pending"].includes(subParam)) {
-      setMemberFilter(subParam);
-    }
-  }, [searchParams]);
+    if (!userAuth.access_token) return;
+    const tab = searchParams.get("tab");
+    const sub = searchParams.get("sub");
+    if (tab && ["discussion", "documents", "members", "settings", "about"].includes(tab)) setActiveTab(tab);
+    if (sub && ["all", "admin", "member", "pending"].includes(sub)) setMemberFilter(sub);
+  }, [searchParams, userAuth.access_token]);
 
   useEffect(() => {
-    if (id && isAdminOrMod && userAuth.access_token) {
-      fetchPendingBlogs();
-    } else {
-      setPendingBlogs([]);
-    }
+    if (!userAuth.access_token) return;
+    if (id && isAdminOrMod) fetchPendingBlogs();
+    else setPendingBlogs([]);
   }, [id, isAdminOrMod, userAuth.access_token]);
 
   const handleApproveBlog = async (blogId) => {
@@ -246,7 +266,7 @@ const GroupDetailsPage = () => {
       fetchBlogs();
       fetchPendingBlogs();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi duyệt bài viết.");
+      handleApiError(err, "Lỗi khi duyệt bài viết.");
     }
   };
 
@@ -256,12 +276,13 @@ const GroupDetailsPage = () => {
       toast.success(data.message || "Đã từ chối bài viết.");
       fetchPendingBlogs();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi từ chối bài viết.");
+      handleApiError(err, "Lỗi khi từ chối bài viết.");
     }
   };
 
   const handleToggleJoin = async () => {
     if (!userAuth.access_token) {
+      toast.error(userAuth.language === "vi" ? "Vui lòng đăng nhập để tham gia nhóm." : "Please log in to join the group.");
       return navigate("/signin");
     }
 
@@ -277,7 +298,7 @@ const GroupDetailsPage = () => {
       fetchMembers();
       fetchPendingRequests();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi thao tác.");
+      handleApiError(err, "Lỗi khi thao tác.");
     }
   };
 
@@ -289,7 +310,7 @@ const GroupDetailsPage = () => {
       fetchMembers();
       fetchPendingRequests();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi phê duyệt.");
+      handleApiError(err, "Lỗi khi phê duyệt.");
     }
   };
 
@@ -299,7 +320,7 @@ const GroupDetailsPage = () => {
       toast.success(data.message || "Từ chối yêu cầu gia nhập thành công.");
       fetchPendingRequests();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi từ chối.");
+      handleApiError(err, "Lỗi khi từ chối.");
     }
   };
 
@@ -310,7 +331,7 @@ const GroupDetailsPage = () => {
       fetchGroupDetails();
       fetchMembers();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi xóa thành viên.");
+      handleApiError(err, "Lỗi khi xóa thành viên.");
     }
   };
 
@@ -326,7 +347,7 @@ const GroupDetailsPage = () => {
       fetchGroupDetails();
       fetchMembers();
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi cập nhật vai trò.");
+      handleApiError(err, "Lỗi khi cập nhật vai trò.");
     }
   };
 
@@ -350,9 +371,11 @@ const GroupDetailsPage = () => {
       setSettingsMessage("Cập nhật cài đặt nhóm thành công!");
       toast.success("Cập nhật cài đặt nhóm thành công!");
     } catch (err) {
-      const errMsg = err.response?.data?.error || "Lỗi khi cập nhật cài đặt.";
-      setSettingsMessage(errMsg);
-      toast.error(errMsg);
+      const isAuthErr = handleApiError(err, "Lỗi khi cập nhật cài đặt.");
+      if (!isAuthErr) {
+        const errMsg = err.response?.data?.error || "Lỗi khi cập nhật cài đặt.";
+        setSettingsMessage(errMsg);
+      }
     } finally {
       setIsSavingSettings(false);
     }
@@ -364,12 +387,13 @@ const GroupDetailsPage = () => {
       toast.success(data.message || "Xóa nhóm thành công.");
       navigate("/groups");
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi xóa nhóm.");
+      handleApiError(err, "Lỗi khi xóa nhóm.");
     }
   };
 
   const handleToggleMute = async () => {
     if (!userAuth.access_token) {
+      toast.error(userAuth.language === "vi" ? "Vui lòng đăng nhập để thực hiện hành động này." : "Please log in to perform this action.");
       return navigate("/signin");
     }
 
@@ -393,7 +417,7 @@ const GroupDetailsPage = () => {
         };
       });
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi thao tác.");
+      handleApiError(err, "Lỗi khi thao tác.");
     }
   };
 
@@ -406,7 +430,6 @@ const GroupDetailsPage = () => {
     if (!docForm.title.trim() || !selectedFile) {
       return toast.error("Vui lòng nhập tiêu đề và chọn file tài liệu.");
     }
-    0;
 
     const formData = new FormData();
     formData.append("file", selectedFile);
@@ -425,7 +448,7 @@ const GroupDetailsPage = () => {
       fetchDocuments();
     } catch (err) {
       toast.dismiss(loadingToast);
-      toast.error(err.response?.data?.error || "Lỗi khi tải tài liệu lên.");
+      handleApiError(err, "Lỗi khi tải tài liệu lên.");
     }
   };
 
@@ -447,6 +470,10 @@ const GroupDetailsPage = () => {
       console.error("Lỗi khi ghi nhận lượt tải về:", err);
     }
   };
+
+  if (!userAuth.access_token) {
+    return null;
+  }
 
   if (loading) {
     return <GroupDetailsSkeleton />;

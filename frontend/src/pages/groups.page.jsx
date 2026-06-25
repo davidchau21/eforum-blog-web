@@ -51,6 +51,21 @@ const GroupsPage = () => {
       setCurrentPage(pageNum);
     } catch (err) {
       console.error("Error fetching groups:", err);
+      const status = err.response?.status;
+      const errMsg = err.response?.data?.error || "";
+      if (
+        status === 401 ||
+        status === 403 ||
+        errMsg.toLowerCase().includes("token") ||
+        errMsg.toLowerCase().includes("session")
+      ) {
+        toast.error(
+          userAuth.language === "vi"
+            ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+            : "Session expired. Please sign in again."
+        );
+        return navigate("/signin");
+      }
       toast.error("Không thể tải danh sách nhóm.");
     } finally {
       setLoading(false);
@@ -58,7 +73,14 @@ const GroupsPage = () => {
   };
 
   useEffect(() => {
-    fetchGroups(1);
+    if (!userAuth.access_token) {
+      toast.error(userAuth.language === "vi" ? "Vui lòng đăng nhập để truy cập cộng đồng học tập." : "Please log in to access the learning community.");
+      navigate("/signin");
+    }
+  }, [userAuth.access_token, userAuth.language, navigate]);
+
+  useEffect(() => {
+    if (userAuth.access_token) fetchGroups(1);
   }, [searchQuery, activeFilter, userAuth.access_token]);
 
   const handlePageChange = (pageNum) => {
@@ -83,9 +105,29 @@ const GroupsPage = () => {
         isPrivate: false,
       });
     } catch (err) {
-      toast.error(err.response?.data?.error || "Lỗi khi tạo nhóm.");
+      console.error("Error creating group:", err);
+      const status = err.response?.status;
+      const errMsg = err.response?.data?.error || "";
+      if (
+        status === 401 ||
+        status === 403 ||
+        errMsg.toLowerCase().includes("token") ||
+        errMsg.toLowerCase().includes("session")
+      ) {
+        toast.error(
+          userAuth.language === "vi"
+            ? "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+            : "Session expired. Please sign in again."
+        );
+        return navigate("/signin");
+      }
+      toast.error(errMsg || "Lỗi khi tạo nhóm.");
     }
   };
+
+  if (!userAuth.access_token) {
+    return null;
+  }
 
   return (
     <AnimationWrapper>
@@ -135,7 +177,17 @@ const GroupsPage = () => {
             ].map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
+                onClick={() => {
+                  if (filter.id === "mine" && !userAuth?.access_token) {
+                    toast.error(
+                      userAuth?.language === "vi"
+                        ? "Vui lòng đăng nhập để xem các nhóm của bạn."
+                        : "Please log in to view your groups."
+                    );
+                    return navigate("/signin");
+                  }
+                  setActiveFilter(filter.id);
+                }}
                 className={`px-4 py-2.5 text-xs font-black rounded-xl transition-all border flex items-center gap-2 ${
                   activeFilter === filter.id
                     ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 border-slate-950 dark:border-white shadow-sm shadow-indigo-500/5 scale-[1.02]"

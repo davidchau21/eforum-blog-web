@@ -47,6 +47,10 @@ const BlogPostCard = ({ content, author }) => {
     content.isFollowingAuthor || false,
   );
 
+  useEffect(() => {
+    setLocalIsFollowing(content.isFollowingAuthor || false);
+  }, [content.isFollowingAuthor]);
+
   const handleFollowAuthor = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -87,6 +91,14 @@ const BlogPostCard = ({ content, author }) => {
 
   const [localLikes, setLocalLikes] = useState(total_likes);
   const [localShares, setLocalShares] = useState(total_share);
+
+  useEffect(() => {
+    setLocalLikes(total_likes);
+  }, [total_likes]);
+
+  useEffect(() => {
+    setLocalShares(total_share);
+  }, [total_share]);
   const [isLikedByUser, setLikedByUser] = useState(false);
   const [isSavedByUser, setSavedByUser] = useState(false);
   const [showShareOptions, setShowShareOptions] = useState(false);
@@ -100,12 +112,18 @@ const BlogPostCard = ({ content, author }) => {
     content.group?.myMembership || null
   );
 
+  useEffect(() => {
+    setGroupMembership(content.group?.myMembership || null);
+  }, [content.group?.myMembership]);
+
   const handleJoinGroup = (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!access_token) {
-      return toast.error("Vui lòng đăng nhập để tham gia nhóm.");
+      toast.error(language === "vi" ? "Vui lòng đăng nhập để tham gia nhóm." : "Please log in to join the group.");
+      navigate("/signin");
+      return;
     }
 
     joinGroup(content.group._id, access_token)
