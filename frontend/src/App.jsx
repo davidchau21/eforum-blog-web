@@ -134,6 +134,7 @@ const App = () => {
     "/groups",
     "/group",
     "/group-editor",
+    "/user",
   ];
   const shouldShowFooter = !excludedPaths.some((path) =>
     path === "/"
