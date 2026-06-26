@@ -6,10 +6,11 @@ import { useContext, useEffect, useState, useCallback } from "react";
 import { EditorContext } from "../contexts/EditorContext";
 import Tag from "./tags.component";
 import axios from "axios";
-import { UserContext } from "../App";
+import { UserContext, ThemeContext } from "../App";
 import { useNavigate, useParams } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { uploadImage } from "../common/aws";
+import Select from "react-select";
 // import bannerDefault from "../imgs/banner-default.png";
 
 const PublishForm = ({ isModal = false }) => {
@@ -29,6 +30,75 @@ const PublishForm = ({ isModal = false }) => {
   let {
     userAuth: { access_token },
   } = useContext(UserContext);
+  const { theme } = useContext(ThemeContext);
+
+  const customSelectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: theme === "dark" ? "#1b1b1f" : "#f3f4f6",
+      borderColor: state.isFocused 
+        ? "#10b981" 
+        : (theme === "dark" ? "#2d2d34" : "#e5e7eb"),
+      borderRadius: "1rem",
+      padding: "0.2rem 0.5rem",
+      fontSize: "0.875rem",
+      boxShadow: state.isFocused ? "0 0 0 2px rgba(16, 185, 129, 0.15)" : null,
+      transition: "all 0.2s",
+      cursor: "pointer",
+      color: theme === "dark" ? "#f3f4f6" : "#1f2937",
+      "&:hover": {
+        borderColor: theme === "dark" ? "#3f3f46" : "#d1d5db",
+      }
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: theme === "dark" ? "#f3f4f6" : "#1f2937",
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: theme === "dark" ? "#9ca3af" : "#6b7280",
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: theme === "dark" ? "#f3f4f6" : "#1f2937",
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: theme === "dark" ? "#1b1b1f" : "#ffffff",
+      borderColor: theme === "dark" ? "#2d2d34" : "#e5e7eb",
+      borderRadius: "1rem",
+      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      overflow: "hidden",
+      zIndex: 50,
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected 
+        ? "#10b981" 
+        : state.isFocused 
+          ? (theme === "dark" ? "#2d2d34" : "#f3f4f6") 
+          : "transparent",
+      color: state.isSelected 
+        ? "#ffffff" 
+        : (theme === "dark" ? "#f3f4f6" : "#1f2937"),
+      cursor: "pointer",
+      fontSize: "0.875rem",
+      "&:active": {
+        backgroundColor: "#10b981",
+        color: "#ffffff",
+      }
+    }),
+    dropdownIndicator: (provided) => ({
+      ...provided,
+      color: theme === "dark" ? "#9ca3af" : "#6b7280",
+      "&:hover": {
+        color: theme === "dark" ? "#d1d5db" : "#374151",
+      }
+    }),
+    indicatorSeparator: () => ({
+      display: "none",
+    }),
+  };
 
   const [availableTags, setAvailableTags] = useState([]);
   const [filteredTags, setFilteredTags] = useState([]);
@@ -269,7 +339,7 @@ const PublishForm = ({ isModal = false }) => {
   return (
     <AnimationWrapper>
       <section
-        className={`${isModal ? "p-0" : "w-screen min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-4"}`}
+        className={`${isModal ? "p-0" : "w-full max-w-[1100px] min-h-screen grid items-center lg:grid-cols-2 py-16 lg:gap-16 mx-auto px-5"}`}
       >
         <Toaster />
 
@@ -283,7 +353,7 @@ const PublishForm = ({ isModal = false }) => {
         )}
 
         <div
-          className={`${isModal ? "w-full space-y-4" : "max-w-[550px] center"}`}
+          className={`${isModal ? "w-full space-y-4" : "max-w-[550px] w-full center"}`}
         >
           <p className="text-dark-grey mb-1">Preview</p>
 
@@ -307,7 +377,7 @@ const PublishForm = ({ isModal = false }) => {
         </div>
 
         <div
-          className={`${isModal ? "w-full border-t border-subtle mt-10 pt-10" : "border-grey lg:border-1 lg:pl-8"}`}
+          className={`${isModal ? "w-full border-t border-subtle mt-10 pt-10" : "max-w-[550px] w-full center border-grey lg:border-l lg:pl-12"}`}
         >
           <div className="space-y-6">
             <div>
@@ -343,11 +413,14 @@ const PublishForm = ({ isModal = false }) => {
               <p className="text-dark-grey font-medium mb-2">
                 Choose default class
               </p>
-              <select
-                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
-                value={selectedClassTag}
-                onChange={(e) => {
-                  const selectedTag = e.target.value;
+              <Select
+                options={defaultTagsClass.map((tag) => ({
+                  value: tag,
+                  label: tag,
+                }))}
+                value={selectedClassTag ? { value: selectedClassTag, label: selectedClassTag } : null}
+                onChange={(selectedOption) => {
+                  const selectedTag = selectedOption?.value;
                   let newTags = [...tags];
                   if (selectedClassTag) {
                     newTags = newTags.filter((t) => t !== selectedClassTag);
@@ -361,27 +434,24 @@ const PublishForm = ({ isModal = false }) => {
                     setSelectedClassTag(selectedTag);
                   }
                 }}
-              >
-                <option value="" disabled>
-                  Choose a class
-                </option>
-                {defaultTagsClass.map((tag, i) => (
-                  <option key={i} value={tag}>
-                    {tag}
-                  </option>
-                ))}
-              </select>
+                placeholder="Choose a class..."
+                styles={customSelectStyles}
+                isSearchable={true}
+              />
             </div>
 
             <div>
               <p className="text-dark-grey font-medium mb-2">
                 Choose default subjects
               </p>
-              <select
-                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
-                value={selectedSubjectTag}
-                onChange={(e) => {
-                  const selectedTag = e.target.value;
+              <Select
+                options={defaultTagsSubject.map((tag) => ({
+                  value: tag,
+                  label: tag,
+                }))}
+                value={selectedSubjectTag ? { value: selectedSubjectTag, label: selectedSubjectTag } : null}
+                onChange={(selectedOption) => {
+                  const selectedTag = selectedOption?.value;
                   let newTags = [...tags];
                   if (selectedSubjectTag) {
                     newTags = newTags.filter((t) => t !== selectedSubjectTag);
@@ -395,27 +465,24 @@ const PublishForm = ({ isModal = false }) => {
                     setSelectedSubjectTag(selectedTag);
                   }
                 }}
-              >
-                <option value="" disabled>
-                  Choose a subject
-                </option>
-                {defaultTagsSubject.map((tag, i) => (
-                  <option key={i} value={tag}>
-                    {tag}
-                  </option>
-                ))}
-              </select>
+                placeholder="Choose a subject..."
+                styles={customSelectStyles}
+                isSearchable={true}
+              />
             </div>
 
             <div>
               <p className="text-dark-grey font-medium mb-2">
                 Choose from existing topics
               </p>
-              <select
-                className="w-full bg-grey/30 border border-subtle rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all cursor-pointer"
-                defaultValue=""
-                onChange={(e) => {
-                  const selectedTag = e.target.value;
+              <Select
+                options={availableTags.map((tag) => ({
+                  value: tag.tag_name,
+                  label: tag.tag_name,
+                }))}
+                value={null}
+                onChange={(selectedOption) => {
+                  const selectedTag = selectedOption?.value;
                   if (
                     selectedTag &&
                     !tags.includes(selectedTag) &&
@@ -426,16 +493,10 @@ const PublishForm = ({ isModal = false }) => {
                     toast.error(`You can add max ${tagLimit} Tags`);
                   }
                 }}
-              >
-                <option value="" disabled>
-                  Choose a topic
-                </option>
-                {availableTags.map((tag, i) => (
-                  <option key={i} value={tag.tag_name}>
-                    {tag.tag_name}
-                  </option>
-                ))}
-              </select>
+                placeholder="Choose a topic..."
+                styles={customSelectStyles}
+                isSearchable={true}
+              />
             </div>
           </div>
 

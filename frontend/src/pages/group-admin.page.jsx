@@ -493,17 +493,17 @@ const GroupAdminPage = () => {
     { id: "dashboard", label: "Dashboard", icon: "fi-rr-chart-pie" },
     {
       id: "members",
-      label: "Quản lý Thành viên",
+      label: "Quản Lý Thành Viên",
       icon: "fi-rr-users",
       badge: pendingRequests.length,
     },
     {
       id: "blogs",
-      label: "Duyệt Bài Thảo Luận",
+      label: "Quản Lý Bài Viết",
       icon: "fi-rr-document-signed",
       badge: pendingBlogs.length,
     },
-    { id: "settings", label: "Cài đặt Nhóm", icon: "fi-rr-settings" },
+    { id: "settings", label: "Cài Đặt Nhóm", icon: "fi-rr-settings" },
   ];
 
   return (
@@ -981,7 +981,7 @@ const GroupAdminPage = () => {
                   {/* Section Title */}
                   <div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white font-jakarta">
-                      Duyệt Bài Thảo Luận
+                      Quản Lý Bài viết
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       Kiểm duyệt các bài viết trước khi được đăng công khai lên
@@ -1073,7 +1073,7 @@ const GroupAdminPage = () => {
                   {/* Section Title */}
                   <div>
                     <h2 className="text-xl font-black text-slate-900 dark:text-white font-jakarta">
-                      Cài đặt Nhóm
+                      Cài Đặt Nhóm
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       Cập nhật thông tin chung và cấu hình các quyền kiểm duyệt

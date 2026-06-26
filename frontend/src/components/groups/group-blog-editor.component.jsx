@@ -366,8 +366,9 @@ const GroupBlogEditor = ({ isModal = false }) => {
                 if (window.confirm(confirmMsg)) {
                   localStorage.removeItem(DRAFT_KEY);
                   const targetGroup = blog?.group;
-                  if (targetGroup) {
-                    navigate(`/group/${targetGroup}?tab=discussion`);
+                  const groupId = targetGroup && (typeof targetGroup === "object" ? targetGroup._id : targetGroup);
+                  if (groupId) {
+                    navigate(`/group/${groupId}?tab=discussion`);
                   } else {
                     navigate(-1);
                   }
@@ -508,8 +509,9 @@ const GroupBlogEditor = ({ isModal = false }) => {
               if (window.confirm(confirmMsg)) {
                 localStorage.removeItem(DRAFT_KEY);
                 const targetGroup = blog?.group;
-                if (targetGroup) {
-                  navigate(`/group/${targetGroup}?tab=discussion`);
+                const groupId = targetGroup && (typeof targetGroup === "object" ? targetGroup._id : targetGroup);
+                if (groupId) {
+                  navigate(`/group/${groupId}?tab=discussion`);
                 } else {
                   navigate(-1);
                 }

@@ -583,6 +583,60 @@ class GroupService {
   }
 
   /**
+   * Get requester's own blogs in a group with specific filter (published, pending, draft, rejected)
+   */
+  async getUserGroupBlogs(groupId, requesterId, { filter = "published", page = 1, limit = 6, search = "" }) {
+    const group = await Group.findById(groupId);
+    if (!group) throw new Error("Nhóm không tồn tại.");
+
+    // Verify membership
+    const member = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!member) throw new Error("Bạn không phải thành viên nhóm.");
+
+    const skip = (page - 1) * limit;
+    const findQuery = { group: groupId, author: requesterId };
+
+    if (filter === "pending") {
+      findQuery.draft = false;
+      findQuery.isActive = false;
+      findQuery.isRejected = { $ne: true };
+    } else if (filter === "draft") {
+      findQuery.draft = true;
+    } else if (filter === "rejected") {
+      findQuery.isRejected = true;
+      findQuery.draft = false;
+      findQuery.isActive = false;
+    } else {
+      // default: published
+      findQuery.draft = false;
+      findQuery.isActive = true;
+      findQuery.isRejected = { $ne: true };
+    }
+
+    if (search && search.trim() !== "") {
+      findQuery.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { des: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const list = await Blog.find(findQuery)
+      .populate("author", "personal_info.fullname personal_info.username personal_info.profile_img")
+      .sort({ publishedAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalBlogs = await Blog.countDocuments(findQuery);
+
+    return {
+      list,
+      totalBlogs,
+      page,
+      limit,
+    };
+  }
+
+  /**
    * Get group documents
    */
   async getGroupDocuments(groupId, searchQuery, page = 1, limit = 6, userId = null) {
@@ -744,6 +798,7 @@ class GroupService {
     }
 
     blog.isActive = true;
+    blog.isRejected = false;
     blog.publishedAt = new Date();
     await blog.save();
 
@@ -800,7 +855,10 @@ class GroupService {
       throw new Error("Không tìm thấy bài viết chờ duyệt này.");
     }
 
-    await Blog.deleteOne({ _id: blog._id });
+    blog.isRejected = true;
+    blog.isActive = false;
+    blog.draft = false;
+    await blog.save();
     return { success: true, message: "Từ chối bài viết thành công." };
   }
 

@@ -64,6 +64,10 @@ const blogSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isRejected: {
+      type: Boolean,
+      default: false,
+    },
     isReport: {
       type: Boolean,
       default: false,

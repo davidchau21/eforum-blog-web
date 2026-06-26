@@ -32,8 +32,8 @@ class UserBlogController extends BaseController {
       const { blog_id } = req.body;
       const isAdmin = req.user.admin;
 
-      const blog = await blogService.getBlogById(blog_id);
-      if (userId !== blog.author && !isAdmin) {
+      const { blog } = await blogService.getBlogById(blog_id);
+      if (String(userId) !== String(blog.author) && !isAdmin) {
         return this.sendError(res, "You can't delete this blog");
       }
 

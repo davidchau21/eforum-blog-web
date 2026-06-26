@@ -11,10 +11,16 @@ class TagService {
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     
-    const tags = await Tag.aggregate([
-      { $sort: { createdAt: -1 } },
-      { $skip: pageNum * limitNum },
-      { $limit: limitNum },
+    const pipeline = [
+      { $sort: { createdAt: -1 } }
+    ];
+
+    if (limitNum > 0) {
+      pipeline.push({ $skip: pageNum * limitNum });
+      pipeline.push({ $limit: limitNum });
+    }
+
+    pipeline.push(
       {
         $lookup: {
           from: "blogs",
@@ -32,9 +38,10 @@ class TagService {
         $project: {
           blogs: 0,
         },
-      },
-    ]);
-    
+      }
+    );
+
+    const tags = await Tag.aggregate(pipeline);
     const total = await Tag.countDocuments();
     return { list: tags, total };
   }

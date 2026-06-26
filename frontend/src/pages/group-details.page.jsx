@@ -11,6 +11,7 @@ import { GroupDiscussionTab } from "../components/groups/group-discussion-tab.co
 import { GroupDocumentsTab } from "../components/groups/group-documents-tab.component";
 import { GroupMembersTab } from "../components/groups/group-members-tab.component";
 import { GroupAboutTab } from "../components/groups/group-about-tab.component";
+import { GroupMyContentTab } from "../components/groups/group-my-content-tab.component";
 import { GroupUploadDocModal } from "../components/groups/group-upload-doc-modal.component";
 import { GroupInviteModal } from "../components/groups/group-invite-modal.component";
 import { GroupMemberModal } from "../components/groups/group-member-modal.component";
@@ -248,7 +249,7 @@ const GroupDetailsPage = () => {
     if (!userAuth.access_token) return;
     const tab = searchParams.get("tab");
     const sub = searchParams.get("sub");
-    if (tab && ["discussion", "documents", "members", "about"].includes(tab)) setActiveTab(tab);
+    if (tab && ["discussion", "documents", "members", "my-content", "about"].includes(tab)) setActiveTab(tab);
     if (sub && ["all", "admin", "member", "pending"].includes(sub)) setMemberFilter(sub);
   }, [searchParams, userAuth.access_token]);
 
@@ -677,6 +678,7 @@ const GroupDetailsPage = () => {
                 },
                 { id: "documents", label: "Tài liệu", icon: "fi-rr-document" },
                 { id: "members", label: "Thành viên", icon: "fi-rr-users" },
+                ...(isJoined ? [{ id: "my-content", label: "Bài viết của tôi", icon: "fi-rr-document-signed" }] : []),
                 { id: "about", label: "Giới thiệu", icon: "fi-rr-info" },
               ].map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -785,6 +787,11 @@ const GroupDetailsPage = () => {
                   handleChangeRole={null}
                   onMemberClick={handleMemberClick}
                 />
+              )}
+
+              {/* Tab 4: My Content (Manage published, pending, drafts, rejected posts) */}
+              {activeTab === "my-content" && (
+                <GroupMyContentTab groupId={id} />
               )}
 
               {/* Tab 5: About (Description & rules) */}

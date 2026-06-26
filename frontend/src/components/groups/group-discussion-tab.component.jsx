@@ -256,21 +256,31 @@ export const GroupDiscussionTab = ({
                                     </div>
                                   </div>
 
-                                  {/* Message button */}
-                                  {!isSelf && (
-                                    <button
-                                      type="button"
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleStartChat(memberInfo.user);
-                                      }}
-                                      className="w-full mt-4 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer"
+                                  {/* Action buttons */}
+                                  <div className="mt-4 flex gap-2">
+                                    <Link
+                                      to={`/user/${memberInfo.user.personal_info?.username}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center font-inter"
                                     >
-                                      <i className="fi fi-rr-paper-plane text-[10px]"></i>
-                                      Nhắn tin ngay
-                                    </button>
-                                  )}
+                                      <i className="fi fi-rr-user text-[10px]"></i>
+                                      Trang cá nhân
+                                    </Link>
+                                    {!isSelf && (
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          e.stopPropagation();
+                                          handleStartChat(memberInfo.user);
+                                        }}
+                                        className="flex-1 py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer font-inter"
+                                      >
+                                        <i className="fi fi-rr-paper-plane text-[10px]"></i>
+                                        Nhắn tin
+                                      </button>
+                                    )}
+                                  </div>
                                 </motion.div>
                               );
                             })()}

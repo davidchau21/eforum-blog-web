@@ -80,6 +80,17 @@ export const getGroupBlogs = async (id, token, author = null, limit = null) => {
   return data;
 };
 
+/**
+ * Fetch the logged-in user's own blogs in a group with specific filter.
+ */
+export const getUserGroupBlogs = async (id, filter, page, limit, token, search = "") => {
+  const { data } = await axios.get(
+    `${API_BASE}/groups/id/${id}/my-blogs?filter=${filter}&page=${page}&limit=${limit}&search=${search}`,
+    getHeaders(token)
+  );
+  return data;
+};
+
 // ----------------- MEMBERSHIP & ROLE SERVICES -----------------
 
 /**

@@ -26,6 +26,7 @@ groupRouter.get("/id/:id/stats", isAuthenticate, (req, res) => groupController.g
 
 // Scoped group contents
 groupRouter.get("/id/:id/blogs", isAuthenticateOptional, (req, res) => groupController.getGroupBlogs(req, res));
+groupRouter.get("/id/:id/my-blogs", isAuthenticate, (req, res) => groupController.getUserGroupBlogs(req, res));
 groupRouter.get("/id/:id/blogs/pending", isAuthenticate, (req, res) => groupController.getPendingBlogs(req, res));
 groupRouter.post("/id/:id/blogs/:blogId/approve", isAuthenticate, (req, res) => groupController.approveBlog(req, res));
 groupRouter.delete("/id/:id/blogs/:blogId/reject", isAuthenticate, (req, res) => groupController.rejectBlog(req, res));

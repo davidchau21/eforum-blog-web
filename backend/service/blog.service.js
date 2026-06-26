@@ -134,6 +134,7 @@ class BlogService {
         content,
         tags,
         draft: draft ? draft : false,
+        isRejected: false,
       };
       if (groupId !== undefined) {
         updateData.group = groupId || null;
@@ -175,6 +176,7 @@ class BlogService {
         isActive: draft ? false : isActiveVal,
         isDeleted: false,
         group: groupId || null,
+        isRejected: false,
       });
 
       const savedBlog = await blog.save();

@@ -153,6 +153,27 @@ class GroupController extends BaseController {
     }
   }
 
+  async getUserGroupBlogs(req, res) {
+    try {
+      const groupId = req.params.id;
+      const requesterId = req.user.id;
+      const { filter, page, limit, search } = req.query;
+      const result = await groupService.getUserGroupBlogs(
+        groupId,
+        requesterId,
+        {
+          filter,
+          page: page ? parseInt(page) : 1,
+          limit: limit ? parseInt(limit) : 6,
+          search
+        }
+      );
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
+
   async getGroupDocuments(req, res) {
     try {
       const groupId = req.params.id;

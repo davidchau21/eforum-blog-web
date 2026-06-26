@@ -18,7 +18,8 @@ const CustomSelect = ({ value, onChange, options }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+  const selectedOption =
+    options.find((opt) => opt.value === value) || options[0];
 
   return (
     <div className="relative min-w-[160px]" ref={dropdownRef}>
@@ -28,10 +29,16 @@ const CustomSelect = ({ value, onChange, options }) => {
         className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-white/5 rounded-xl text-xs font-black text-slate-800 dark:text-slate-200 flex items-center justify-between gap-2 hover:bg-slate-100 dark:hover:bg-slate-850 focus:outline-none focus:border-indigo-500 transition-colors duration-200 cursor-pointer shadow-sm min-h-[36px]"
       >
         <div className="flex items-center gap-2 truncate">
-          {selectedOption.icon && <i className={`fi ${selectedOption.icon} text-slate-400 text-sm shrink-0`}></i>}
+          {selectedOption.icon && (
+            <i
+              className={`fi ${selectedOption.icon} text-slate-400 text-sm shrink-0`}
+            ></i>
+          )}
           <span className="truncate">{selectedOption.label}</span>
         </div>
-        <i className={`fi fi-rr-angle-small-down text-slate-400 text-sm transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}></i>
+        <i
+          className={`fi fi-rr-angle-small-down text-slate-400 text-sm transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180" : ""}`}
+        ></i>
       </button>
 
       <AnimatePresence>
@@ -61,11 +68,15 @@ const CustomSelect = ({ value, onChange, options }) => {
                 >
                   <div className="flex items-center gap-2 truncate">
                     {opt.icon && (
-                      <i className={`fi ${opt.icon} ${isSelected ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400"} text-sm shrink-0`} />
+                      <i
+                        className={`fi ${opt.icon} ${isSelected ? "text-indigo-500 dark:text-indigo-400" : "text-slate-400"} text-sm shrink-0`}
+                      />
                     )}
                     <span className="truncate">{opt.label}</span>
                   </div>
-                  {isSelected && <i className="fi fi-rr-check text-indigo-500 dark:text-indigo-400 text-[10px] shrink-0" />}
+                  {isSelected && (
+                    <i className="fi fi-rr-check text-indigo-500 dark:text-indigo-400 text-[10px] shrink-0" />
+                  )}
                 </button>
               );
             })}
@@ -82,7 +93,7 @@ const timeRanges = [
   { value: "3m", label: "3 tháng qua", icon: "fi-rr-calendar-lines" },
   { value: "6m", label: "6 tháng qua", icon: "fi-rr-calendar-lines" },
   { value: "12m", label: "12 tháng qua", icon: "fi-rr-calendar-clock" },
-  { value: "custom", label: "Tùy chọn ngày...", icon: "fi-rr-edit" }
+  { value: "custom", label: "Tùy chọn ngày...", icon: "fi-rr-edit" },
 ];
 
 export const GroupDashboardTab = ({ groupId, token }) => {
@@ -95,11 +106,19 @@ export const GroupDashboardTab = ({ groupId, token }) => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const data = await getGroupStats(groupId, range, token, startDate, endDate);
+      const data = await getGroupStats(
+        groupId,
+        range,
+        token,
+        startDate,
+        endDate,
+      );
       setStats(data);
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.error || "Không thể tải số liệu thống kê.");
+      toast.error(
+        err.response?.data?.error || "Không thể tải số liệu thống kê.",
+      );
     } finally {
       setLoading(false);
     }
@@ -238,7 +257,9 @@ export const GroupDashboardTab = ({ groupId, token }) => {
         {range === "custom" && (
           <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-slate-150 dark:border-white/5 animate-in fade-in duration-200">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Từ ngày:</span>
+              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">
+                Từ ngày:
+              </span>
               <input
                 type="date"
                 value={startDate}
@@ -247,7 +268,9 @@ export const GroupDashboardTab = ({ groupId, token }) => {
               />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">Đến ngày:</span>
+              <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase">
+                Đến ngày:
+              </span>
               <input
                 type="date"
                 value={endDate}
@@ -297,7 +320,9 @@ export const GroupDashboardTab = ({ groupId, token }) => {
             <span className="text-5xl font-black text-slate-900 dark:text-white font-jakarta leading-none">
               {stats?.members?.total || 0}
             </span>
-            <div className="mb-1">{renderGrowthBadge(stats?.members?.growth || 0)}</div>
+            <div className="mb-1">
+              {renderGrowthBadge(stats?.members?.growth || 0)}
+            </div>
           </div>
 
           {/* Sub Stats Footer Box */}
@@ -347,7 +372,9 @@ export const GroupDashboardTab = ({ groupId, token }) => {
             <span className="text-5xl font-black text-slate-900 dark:text-white font-jakarta leading-none">
               {stats?.content?.total || 0}
             </span>
-            <div className="mb-1">{renderGrowthBadge(stats?.content?.growth || 0)}</div>
+            <div className="mb-1">
+              {renderGrowthBadge(stats?.content?.growth || 0)}
+            </div>
           </div>
 
           {/* Sub Stats Footer Box (3 Items) */}
@@ -420,7 +447,7 @@ export const GroupDashboardTab = ({ groupId, token }) => {
           {/* Sub item 2: Likes */}
           <div className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-white/5 rounded-2xl p-5 flex items-center gap-4 hover:scale-[1.01] transition-all">
             <div className="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl shrink-0">
-              <i className="fi fi-rr-thumbs-up"></i>
+              <i className="fi fi-rr-heart"></i>
             </div>
             <div className="space-y-1 overflow-hidden">
               <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold block">
@@ -598,7 +625,8 @@ export const GroupDashboardTab = ({ groupId, token }) => {
                           {blog.title}
                         </div>
                         <div className="text-[10px] text-slate-400 dark:text-slate-555 truncate">
-                          Đăng bởi @{blog.author?.personal_info?.username || "username"}
+                          Đăng bởi @
+                          {blog.author?.personal_info?.username || "username"}
                         </div>
                       </div>
                     </div>
