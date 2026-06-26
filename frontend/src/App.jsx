@@ -15,6 +15,7 @@ import BlogPage from "./pages/blog.page";
 import SideNav from "./components/sidenavbar.component";
 import ChangePassword from "./pages/change-password.page";
 import EditProfile from "./pages/edit-profile.page";
+import AccountSettings from "./pages/account-settings.page";
 import Notifications from "./pages/notifications.page";
 import ManageBlogs from "./pages/manage-blogs.page";
 import ManageDocuments from "./pages/manage-documents.page.jsx";
@@ -37,6 +38,7 @@ import DocumentLibraryPage from "./pages/directory.page.jsx";
 import FriendsPage from "./pages/friends.page";
 import GroupsPage from "./pages/groups.page.jsx";
 import GroupDetailsPage from "./pages/group-details.page.jsx";
+import GroupAdminPage from "./pages/group-admin.page.jsx";
 import GroupEditor from "./pages/group-editor.pages.jsx";
 
 export const UserContext = createContext({});
@@ -220,6 +222,7 @@ const App = () => {
                       path="change-password"
                       element={<ChangePassword />}
                     />
+                    <Route path="account" element={<AccountSettings />} />
                   </Route>
                   <Route path="verify" element={<VerifyOtp />} />
                   <Route
@@ -267,6 +270,14 @@ const App = () => {
                   <Route path="friends" element={<FriendsPage />} />
                   <Route path="groups" element={<GroupsPage />} />
                   <Route path="group/:id" element={<GroupDetailsPage />} />
+                  <Route
+                    path="group/:id/admin"
+                    element={
+                      <ProtectedRoute access_token={userAuth.access_token}>
+                        <GroupAdminPage />
+                      </ProtectedRoute>
+                    }
+                  />
                   <Route path="*" element={<PageNotFound />} />
                 </Route>
               </Routes>

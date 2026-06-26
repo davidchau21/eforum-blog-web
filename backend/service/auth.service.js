@@ -151,6 +151,7 @@ class AuthService {
     if (!user) throw new Error("Email not found");
     if (!user.verified) throw new Error("Account not verified. Please verify your account first.");
     if (user.google_auth) throw new Error("Account was created using google. Try logging in with google.");
+    if (user.disabled) throw new Error("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ admin để được hỗ trợ.");
 
     const isPasswordValid = await bcrypt.compare(password, user.personal_info.password);
     if (!isPasswordValid) throw new Error("Incorrect password");
@@ -302,6 +303,7 @@ class AuthService {
     let user = await User.findOne({ "personal_info.email": email });
     if (user) {
       if (!user.google_auth) throw new Error("This email was signed up without google. Please log in with password to access the account");
+      if (user.disabled) throw new Error("Tài khoản đã bị vô hiệu hóa. Vui lòng liên hệ admin để được hỗ trợ.");
     } else {
       const username = await this.generateUsername(email);
       user = await new User({

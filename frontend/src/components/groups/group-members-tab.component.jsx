@@ -84,7 +84,7 @@ export const GroupMembersTab = ({
             placeholder="Tìm kiếm thành viên theo tên hoặc username..."
             value={memberSearch}
             onChange={(e) => setMemberSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 rounded-xl outline-none text-xs font-medium focus:border-indigo-500 dark:focus:border-indigo-400 transition-all text-slate-700 dark:text-slate-200"
+            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 rounded-xl outline-none text-xs font-medium focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors duration-200 text-slate-700 dark:text-slate-200"
           />
         </div>
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl shrink-0 self-start md:self-auto flex-wrap">
@@ -104,7 +104,7 @@ export const GroupMembersTab = ({
             <button
               key={opt.value}
               onClick={() => setMemberFilter(opt.value)}
-              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors duration-200 ${
                 memberFilter === opt.value
                   ? "bg-white dark:bg-[#1e1e22] text-indigo-600 dark:text-indigo-400 shadow-sm"
                   : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"

@@ -89,7 +89,7 @@ export const GroupUploadDocModal = ({
                   <input
                     type="file"
                     required={!selectedFile}
-                    accept=".pdf,.ppt,.pptx,.doc,.docx"
+                    accept=".pdf,.ppt,.pptx,.doc,.docx,.mp4,.webm"
                     onChange={(e) => setSelectedFile(e.target.files[0])}
                     className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200/60 dark:border-white/5 rounded-xl py-3 px-4 outline-none focus:border-indigo-500 transition-all text-slate-400"
                   />

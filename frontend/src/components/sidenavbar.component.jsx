@@ -42,7 +42,7 @@ const SideNav = () => {
   useEffect(() => {
     setShowSideNav(false);
     if (pageStateTab.current) {
-        pageStateTab.current.click();
+      pageStateTab.current.click();
     }
   }, [pageState]);
 
@@ -90,7 +90,9 @@ const SideNav = () => {
                 <NavLink
                   to="/dashboard/blogs"
                   onClick={(e) => setPageState(e.target.innerText)}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`
+                  }
                 >
                   <i className="fi fi-rr-document text-[16px]"></i>
                   {translations.blogs}
@@ -99,7 +101,9 @@ const SideNav = () => {
                 <NavLink
                   to="/dashboard/documents"
                   onClick={(e) => setPageState(e.target.innerText)}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`
+                  }
                 >
                   <i className="fi fi-rr-folder text-[16px]"></i>
                   {translations.myDocuments || "Tài liệu của tôi"}
@@ -108,7 +112,9 @@ const SideNav = () => {
                 <NavLink
                   to="/dashboard/notifications"
                   onClick={(e) => setPageState(e.target.innerText)}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`
+                  }
                 >
                   <div className="relative">
                     <i className="fi fi-rr-bell text-[16px]"></i>
@@ -128,7 +134,9 @@ const SideNav = () => {
                 <NavLink
                   to="/editor"
                   onClick={(e) => setPageState(e.target.innerText)}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`
+                  }
                 >
                   <i className="fi fi-rr-file-edit text-[16px]"></i>
                   {translations.write}
@@ -143,9 +151,21 @@ const SideNav = () => {
 
               <div className="space-y-1">
                 <NavLink
+                  to="/settings/account"
+                  onClick={(e) => setPageState(e.target.innerText)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`
+                  }
+                >
+                  <i className="fi fi-rr-user-gear text-[16px]"></i>
+                  Tài khoản
+                </NavLink>
+                <NavLink
                   to="/settings/edit-profile"
                   onClick={(e) => setPageState(e.target.innerText)}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`
+                  }
                 >
                   <i className="fi fi-rr-user text-[16px]"></i>
                   {translations.editProfile}
@@ -154,7 +174,9 @@ const SideNav = () => {
                 <NavLink
                   to="/settings/change-password"
                   onClick={(e) => setPageState(e.target.innerText)}
-                  className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-200 font-medium ${isActive ? "bg-black text-white shadow-lg shadow-black/10" : "text-dark-grey hover:bg-grey/50 hover:text-black"}`
+                  }
                 >
                   <i className="fi fi-rr-lock text-[16px]"></i>
                   {translations.changePassword}

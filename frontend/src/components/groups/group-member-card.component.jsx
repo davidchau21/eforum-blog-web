@@ -93,7 +93,7 @@ export const GroupMemberCard = ({
       if (member.role === "DEPUTY") {
         actions.push({
           label: "Gỡ Phó nhóm",
-          icon: "fi-rr-user-delete",
+          icon: "fi-rr-delete-user",
           onClick: () => handleChangeRole(targetId, "MEMBER"),
           className:
             "text-slate-700 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-white/5",
@@ -285,7 +285,7 @@ export const GroupMemberCard = ({
               </div>
 
               {/* Bio */}
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-3 bg-slate-50 dark:bg-white/[0.02] p-2.5 rounded-xl border border-slate-100 dark:border-white/5 italic">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-3 bg-slate-50 dark:bg-white/[0.02] p-2.5 rounded-xl border border-slate-100 dark:border-white/5 italic line-clamp-2">
                 {member.user.personal_info.bio || "Không có giới thiệu tiểu sử."}
               </p>
 
@@ -309,21 +309,31 @@ export const GroupMemberCard = ({
                 </div>
               </div>
 
-              {/* Message button */}
-              {!isSelf && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleStartChat();
-                  }}
-                  className="w-full mt-4 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer"
+              {/* Action buttons */}
+              <div className="mt-4 flex gap-2">
+                <Link
+                  to={`/user/${member.user.personal_info?.username}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center"
                 >
-                  <i className="fi fi-rr-paper-plane text-[10px]"></i>
-                  Nhắn tin ngay
-                </button>
-              )}
+                  <i className="fi fi-rr-user text-[10px]"></i>
+                  Trang cá nhân
+                </Link>
+                {!isSelf && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleStartChat();
+                    }}
+                    className="flex-1 py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer"
+                  >
+                    <i className="fi fi-rr-paper-plane text-[10px]"></i>
+                    Nhắn tin
+                  </button>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

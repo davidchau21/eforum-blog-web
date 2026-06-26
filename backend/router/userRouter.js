@@ -18,4 +18,8 @@ router.get("/get-following", (req, res) => userController.getFollowing(req, res)
 // Remaining routes to be migrated later (if any)
 router.post("/online", isAuthenticate, (req, res) => userController.userOnline(req, res));
 
+// Self-account deactivation (soft delete)
+router.delete("/delete-account", isAuthenticate, (req, res) => userController.deactivateAccount(req, res));
+
 export default router;
+

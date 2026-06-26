@@ -264,7 +264,7 @@ const ProfilePage = () => {
                         }`}
                         onClick={handleFollow}
                       >
-                        <i className={`fi ${isFollowing ? "fi-rr-user-delete" : "fi-rr-user-add"} text-sm`}></i>
+                        <i className={`fi ${isFollowing ? "fi-rr-delete-user" : "fi-rr-user-add"} text-sm`}></i>
                         {isFollowing ? "Following" : "Follow"}
                       </button>
 

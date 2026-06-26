@@ -17,7 +17,8 @@ class FileController extends BaseController {
 
   async getUploadUrl(req, res) {
     try {
-      const result = await fileService.getUploadUrl();
+      const { ext } = req.query;
+      const result = await fileService.getUploadUrl(ext);
       return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, error.message);

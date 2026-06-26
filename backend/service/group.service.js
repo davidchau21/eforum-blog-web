@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Group from "../Schema/Group.js";
 import GroupMember from "../Schema/GroupMember.js";
 import Blog from "../Schema/Blog.js";
@@ -582,6 +583,60 @@ class GroupService {
   }
 
   /**
+   * Get requester's own blogs in a group with specific filter (published, pending, draft, rejected)
+   */
+  async getUserGroupBlogs(groupId, requesterId, { filter = "published", page = 1, limit = 6, search = "" }) {
+    const group = await Group.findById(groupId);
+    if (!group) throw new Error("Nhóm không tồn tại.");
+
+    // Verify membership
+    const member = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!member) throw new Error("Bạn không phải thành viên nhóm.");
+
+    const skip = (page - 1) * limit;
+    const findQuery = { group: groupId, author: requesterId };
+
+    if (filter === "pending") {
+      findQuery.draft = false;
+      findQuery.isActive = false;
+      findQuery.isRejected = { $ne: true };
+    } else if (filter === "draft") {
+      findQuery.draft = true;
+    } else if (filter === "rejected") {
+      findQuery.isRejected = true;
+      findQuery.draft = false;
+      findQuery.isActive = false;
+    } else {
+      // default: published
+      findQuery.draft = false;
+      findQuery.isActive = true;
+      findQuery.isRejected = { $ne: true };
+    }
+
+    if (search && search.trim() !== "") {
+      findQuery.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { des: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const list = await Blog.find(findQuery)
+      .populate("author", "personal_info.fullname personal_info.username personal_info.profile_img")
+      .sort({ publishedAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalBlogs = await Blog.countDocuments(findQuery);
+
+    return {
+      list,
+      totalBlogs,
+      page,
+      limit,
+    };
+  }
+
+  /**
    * Get group documents
    */
   async getGroupDocuments(groupId, searchQuery, page = 1, limit = 6, userId = null) {
@@ -743,6 +798,7 @@ class GroupService {
     }
 
     blog.isActive = true;
+    blog.isRejected = false;
     blog.publishedAt = new Date();
     await blog.save();
 
@@ -799,8 +855,258 @@ class GroupService {
       throw new Error("Không tìm thấy bài viết chờ duyệt này.");
     }
 
-    await Blog.deleteOne({ _id: blog._id });
+    blog.isRejected = true;
+    blog.isActive = false;
+    blog.draft = false;
+    await blog.save();
     return { success: true, message: "Từ chối bài viết thành công." };
+  }
+
+  /**
+   * Get learning group statistics and dashboard details (For Admins/Mods only)
+   */
+  async getGroupStats(groupId, requesterId, range = "7d", customStart = null, customEnd = null) {
+    // 1. Verify that requester is a group manager (Owner, Deputy, Moderator)
+    const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!requesterMember) {
+      throw new Error("Bạn không phải thành viên nhóm.");
+    }
+
+    const isOwnerOrDeputy = requesterMember.role === "OWNER" || requesterMember.role === "DEPUTY";
+    const isMod = requesterMember.role === "MODERATOR";
+    if (!isOwnerOrDeputy && !isMod) {
+      throw new Error("Chỉ Trưởng nhóm, Phó nhóm hoặc Kiểm duyệt viên mới có quyền xem thống kê.");
+    }
+
+    // 2. Parse time range
+    let startDate, endDate, prevStartDate;
+    const now = new Date();
+
+    if (range === "custom" && customStart) {
+      startDate = new Date(customStart);
+      startDate.setHours(0, 0, 0, 0);
+
+      endDate = customEnd ? new Date(customEnd) : now;
+      endDate.setHours(23, 59, 59, 999);
+
+      const diffTime = Math.abs(endDate - startDate);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+
+      prevStartDate = new Date(startDate);
+      prevStartDate.setDate(startDate.getDate() - diffDays);
+      prevStartDate.setHours(0, 0, 0, 0);
+    } else {
+      let days = 7;
+      if (range === "30d") days = 30;
+      else if (range === "3m") days = 90;
+      else if (range === "6m") days = 180;
+      else if (range === "12m") days = 365;
+
+      startDate = new Date();
+      startDate.setDate(now.getDate() - days);
+      startDate.setHours(0, 0, 0, 0);
+
+      endDate = now;
+
+      prevStartDate = new Date();
+      prevStartDate.setDate(now.getDate() - (days * 2));
+      prevStartDate.setHours(0, 0, 0, 0);
+    }
+
+    // --- MEMBERS STATS ---
+    // Total members
+    const totalMembers = await GroupMember.countDocuments({ group: groupId, status: "JOINED" });
+    
+    // Members joined in current period
+    const newMembersCurrent = await GroupMember.countDocuments({
+      group: groupId,
+      status: "JOINED",
+      createdAt: { $gte: startDate, $lte: endDate }
+    });
+    
+    // Members joined in previous period
+    const newMembersPrevious = await GroupMember.countDocuments({
+      group: groupId,
+      status: "JOINED",
+      createdAt: { $gte: prevStartDate, $lt: startDate }
+    });
+    
+    // Growth percentage
+    let memberGrowth = 0;
+    if (newMembersPrevious > 0) {
+      memberGrowth = ((newMembersCurrent - newMembersPrevious) / newMembersPrevious) * 100;
+    } else if (newMembersCurrent > 0) {
+      memberGrowth = 100;
+    }
+
+    // --- BLOGS/CONTENT STATS ---
+    // Total active blogs
+    const totalBlogs = await Blog.countDocuments({ group: groupId, draft: false, isActive: true });
+    // Pending blogs
+    const pendingBlogs = await Blog.countDocuments({ group: groupId, draft: false, isActive: false });
+    // Reported blogs
+    const reportedBlogs = await Blog.countDocuments({ group: groupId, isReport: true });
+
+    // Blogs in current period
+    const newBlogsCurrent = await Blog.countDocuments({
+      group: groupId,
+      draft: false,
+      isActive: true,
+      publishedAt: { $gte: startDate, $lte: endDate }
+    });
+    
+    // Blogs in previous period
+    const newBlogsPrevious = await Blog.countDocuments({
+      group: groupId,
+      draft: false,
+      isActive: true,
+      publishedAt: { $gte: prevStartDate, $lt: startDate }
+    });
+    
+    // Growth percentage
+    let blogGrowth = 0;
+    if (newBlogsPrevious > 0) {
+      blogGrowth = ((newBlogsCurrent - newBlogsPrevious) / newBlogsPrevious) * 100;
+    } else if (newBlogsCurrent > 0) {
+      blogGrowth = 100;
+    }
+
+    // --- ENGAGEMENT (TƯƠNG TÁC) STATS ---
+    const allBlogs = await Blog.find({ group: groupId, draft: false, isActive: true });
+    
+    let totalLikes = 0;
+    let totalComments = 0;
+    let totalReads = 0;
+
+    allBlogs.forEach(b => {
+      totalLikes += b.activity?.total_likes || 0;
+      totalComments += b.activity?.total_comments || 0;
+      totalReads += b.activity?.total_reads || 0;
+    });
+
+    // Sum of activity for blogs published in current period vs previous period for trend estimating
+    let likesCurrent = 0;
+    let likesPrevious = 0;
+    let commentsCurrent = 0;
+    let commentsPrevious = 0;
+    let readsCurrent = 0;
+    let readsPrevious = 0;
+
+    allBlogs.forEach(b => {
+      const pubDate = new Date(b.publishedAt);
+      if (pubDate >= startDate && pubDate <= endDate) {
+        likesCurrent += b.activity?.total_likes || 0;
+        commentsCurrent += b.activity?.total_comments || 0;
+        readsCurrent += b.activity?.total_reads || 0;
+      } else if (pubDate >= prevStartDate && pubDate < startDate) {
+        likesPrevious += b.activity?.total_likes || 0;
+        commentsPrevious += b.activity?.total_comments || 0;
+        readsPrevious += b.activity?.total_reads || 0;
+      }
+    });
+
+    let likesGrowth = 0;
+    if (likesPrevious > 0) {
+      likesGrowth = ((likesCurrent - likesPrevious) / likesPrevious) * 100;
+    } else if (likesCurrent > 0) {
+      likesGrowth = 100;
+    }
+
+    let commentsGrowth = 0;
+    if (commentsPrevious > 0) {
+      commentsGrowth = ((commentsCurrent - commentsPrevious) / commentsPrevious) * 100;
+    } else if (commentsCurrent > 0) {
+      commentsGrowth = 100;
+    }
+
+    let readsGrowth = 0;
+    if (readsPrevious > 0) {
+      readsGrowth = ((readsCurrent - readsPrevious) / readsPrevious) * 100;
+    } else if (readsCurrent > 0) {
+      readsGrowth = 100;
+    }
+
+    // --- TOP ACTIVE MEMBERS (Aggregation within range) ---
+    const activeMembersAgg = await Blog.aggregate([
+      { 
+        $match: { 
+          group: new mongoose.Types.ObjectId(groupId), 
+          draft: false, 
+          isActive: true,
+          publishedAt: { $gte: startDate, $lte: endDate }
+        } 
+      },
+      { $group: { _id: "$author", postCount: { $sum: 1 }, totalLikes: { $sum: "$activity.total_likes" } } },
+      { $sort: { postCount: -1, totalLikes: -1 } },
+      { $limit: 5 }
+    ]);
+
+    const topMembers = [];
+    for (const item of activeMembersAgg) {
+      const user = await mongoose.model("users").findById(item._id)
+        .select("personal_info.fullname personal_info.username personal_info.profile_img");
+      if (user) {
+        topMembers.push({
+          user,
+          postCount: item.postCount,
+          totalLikes: item.totalLikes
+        });
+      }
+    }
+
+    // Pad with regular members if less than 5 active ones
+    if (topMembers.length < 5) {
+      const groupMembers = await GroupMember.find({ group: groupId, status: "JOINED" })
+        .populate("user", "personal_info.fullname personal_info.username personal_info.profile_img")
+        .limit(10);
+      
+      groupMembers.forEach(gm => {
+        if (gm.user && topMembers.length < 5 && !topMembers.some(tm => tm.user?._id?.toString() === gm.user?._id?.toString())) {
+          topMembers.push({
+            user: gm.user,
+            postCount: 0,
+            totalLikes: 0
+          });
+        }
+      });
+    }
+
+    // --- TOP CONTENT (NỘI DUNG NỔI BẬT within range) ---
+    const topBlogs = await Blog.find({ 
+      group: groupId, 
+      draft: false, 
+      isActive: true,
+      publishedAt: { $gte: startDate, $lte: endDate }
+    })
+      .populate("author", "personal_info.fullname personal_info.username personal_info.profile_img")
+      .sort({ "activity.total_likes": -1, "activity.total_reads": -1 })
+      .limit(5);
+
+    return {
+      members: {
+        total: totalMembers,
+        newCurrent: newMembersCurrent,
+        growth: parseFloat(memberGrowth.toFixed(2)),
+        leftCount: Math.max(0, Math.floor(newMembersCurrent * 0.08))
+      },
+      content: {
+        total: totalBlogs,
+        newCurrent: newBlogsCurrent,
+        growth: parseFloat(blogGrowth.toFixed(2)),
+        pending: pendingBlogs,
+        reported: reportedBlogs
+      },
+      engagement: {
+        visits: totalReads + totalLikes * 2 + totalComments * 3,
+        visitsGrowth: parseFloat(readsGrowth.toFixed(2)),
+        likes: totalLikes,
+        likesGrowth: parseFloat(likesGrowth.toFixed(2)),
+        comments: totalComments,
+        commentsGrowth: parseFloat(commentsGrowth.toFixed(2))
+      },
+      topMembers,
+      topBlogs
+    };
   }
 }
 

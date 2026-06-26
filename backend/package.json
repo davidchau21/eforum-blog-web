@@ -9,7 +9,8 @@
     "dev": "nodemon server.js",
     "start": "node server.js",
     "ingest": "node scripts/ingest.js",
-    "seed-groups": "node scripts/seed_groups.js"
+    "seed-groups": "node scripts/seed_groups.js",
+    "seed-all": "node scripts/index.js"
   },
   "author": "",
   "license": "ISC",

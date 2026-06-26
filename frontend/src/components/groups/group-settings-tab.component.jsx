@@ -386,7 +386,7 @@ export const GroupSettingsTab = ({
                   }
                   label="Được xóa thành viên"
                   description="Cho phép xóa thành viên thường khỏi nhóm học tập."
-                  icon="fi-rr-user-delete"
+                  icon="fi-rr-delete-user"
                 />
                 <Toggle
                   enabled={settings.moderatorCanDeletePost}

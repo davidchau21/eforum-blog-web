@@ -80,6 +80,17 @@ export const getGroupBlogs = async (id, token, author = null, limit = null) => {
   return data;
 };
 
+/**
+ * Fetch the logged-in user's own blogs in a group with specific filter.
+ */
+export const getUserGroupBlogs = async (id, filter, page, limit, token, search = "") => {
+  const { data } = await axios.get(
+    `${API_BASE}/groups/id/${id}/my-blogs?filter=${filter}&page=${page}&limit=${limit}&search=${search}`,
+    getHeaders(token)
+  );
+  return data;
+};
+
 // ----------------- MEMBERSHIP & ROLE SERVICES -----------------
 
 /**
@@ -253,5 +264,16 @@ export const rejectBlog = async (id, blogId, token) => {
     `${API_BASE}/groups/id/${id}/blogs/${blogId}/reject`,
     getHeaders(token)
   );
+  return data;
+};
+
+/**
+ * Fetch group statistics and dashboard details.
+ */
+export const getGroupStats = async (id, range, token, startDate = null, endDate = null) => {
+  let url = `${API_BASE}/groups/id/${id}/stats?range=${range}`;
+  if (startDate) url += `&startDate=${startDate}`;
+  if (endDate) url += `&endDate=${endDate}`;
+  const { data } = await axios.get(url, getHeaders(token));
   return data;
 };

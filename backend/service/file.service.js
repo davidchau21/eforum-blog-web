@@ -22,9 +22,9 @@ class FileService {
     return media;
   }
 
-  async getUploadUrl() {
+  async getUploadUrl(ext) {
     const { generateUploadURL } = await import("../integrations/supabase.js");
-    return await generateUploadURL();
+    return await generateUploadURL(ext);
   }
 }
 

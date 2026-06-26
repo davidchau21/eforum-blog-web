@@ -4,6 +4,7 @@ export const GroupSidebar = ({
   documents = [],
   managementTeam = [],
   isJoined = false,
+  isAdminOrMod = false,
   onInviteClick,
   handleToggleMute,
   onMemberClick,
@@ -104,6 +105,15 @@ export const GroupSidebar = ({
                   Bạn đã gia nhập cộng đồng này
                 </p>
               </div>
+              {isAdminOrMod && (
+                <a
+                  href={`/group/${group._id}/admin`}
+                  className="w-full py-2.5 bg-slate-950 dark:bg-white hover:bg-slate-850 dark:hover:bg-slate-100 text-white dark:text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 font-jakarta hover:scale-[1.02] active:scale-98"
+                >
+                  <i className="fi fi-rr-settings-sliders text-xs"></i>
+                  Quản lý nhóm
+                </a>
+              )}
               <button
                 type="button"
                 onClick={onInviteClick}
