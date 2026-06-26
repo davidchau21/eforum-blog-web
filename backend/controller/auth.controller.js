@@ -76,6 +76,16 @@ class AuthController extends BaseController {
     }
   }
 
+  async resendSignupOtp(req, res) {
+    try {
+      const { email } = req.body;
+      const result = await authService.resendSignupOtp(email);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
   async googleAuth(req, res) {
     try {
       const { access_token } = req.body;

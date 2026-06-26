@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast, Toaster } from "react-hot-toast";
@@ -16,9 +16,45 @@ const VerifyOtp = () => {
   const email = location.state?.email; 
   const password = location.state?.password;  
 
+  const [resendCount, setResendCount] = useState(1);
+  const [timer, setTimer] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+
   let {
     setUserAuth,
   } = useContext(UserContext);
+
+  useEffect(() => {
+    let interval = null;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    } else {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
+
+  const handleResendOtp = async () => {
+    if (resendCount >= 3) {
+      return toast.error("Bạn đã vượt quá giới hạn gửi lại mã OTP (tối đa 3 lần).");
+    }
+
+    try {
+      const { data } = await axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/resend-signup-otp", { email });
+      toast.success("Mã OTP mới đã được gửi vào email của bạn!");
+      setResendCount(data.resendCount || (resendCount + 1));
+      setTimer(data.timeLeft || 30);
+      setCanResend(false);
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || error.response?.data?.message || "Lỗi gửi lại mã OTP";
+      if (errorMsg.includes("giới hạn")) {
+        setResendCount(3);
+      }
+      toast.error(errorMsg);
+    }
+  };
 
   const handleVerifyOtp = (e) => {
     e.preventDefault();
@@ -111,22 +147,48 @@ const VerifyOtp = () => {
             </p>
           </motion.div>
 
-          <form className="space-y-6">
-            <InputBox
-              name="otp"
-              type="text"
-              placeholder="Enter 6-digit OTP"
-              icon="fi-rr-key"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              className="!bg-grey/30 !border-grey/50 !text-black !rounded-2xl !h-14 focus:!border-emerald-500/50 focus:!bg-white text-center tracking-[0.5em] font-mono text-2xl transition-all"
-            />
+          <form onSubmit={handleVerifyOtp} className="space-y-6">
+            <div className="space-y-4">
+              <InputBox
+                name="otp"
+                type="text"
+                placeholder="Enter 6-digit OTP"
+                icon="fi-rr-key"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="!bg-grey/30 !border-grey/50 !text-black !rounded-2xl !h-14 focus:!border-emerald-500/50 focus:!bg-white text-center tracking-[0.5em] font-mono text-2xl transition-all"
+              />
+
+              <div className="flex justify-between items-center text-sm px-2 mt-2">
+                <span className="text-dark-grey text-xs">
+                  {resendCount < 3 ? `Gửi lại tối đa: còn ${3 - resendCount} lần` : "Đã đạt giới hạn gửi lại"}
+                </span>
+                
+                {resendCount < 3 ? (
+                  canResend ? (
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      className="text-emerald-500 font-bold hover:underline"
+                    >
+                      Gửi lại OTP
+                    </button>
+                  ) : (
+                    <span className="text-dark-grey font-medium text-xs">
+                      Gửi lại sau {timer}s
+                    </span>
+                  )
+                ) : (
+                  <span className="text-red-500 font-bold text-xs">Hết lượt gửi lại</span>
+                )}
+              </div>
+            </div>
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-emerald-500/20 transition-all"
-              onClick={handleVerifyOtp}
+              type="submit"
             >
               Verify & Sign In
             </motion.button>
@@ -141,12 +203,6 @@ const VerifyOtp = () => {
               Back
             </motion.button>
           </form>
-
-          <div className="mt-12 text-center">
-            <p className="text-dark-grey">
-              Didn't receive the code? <button className="text-emerald-500 font-bold hover:text-emerald-600 transition-colors ml-1 underline underline-offset-4 decoration-emerald-500/20">Resend OTP</button>
-            </p>
-          </div>
         </div>
       </motion.div>
     </div>
