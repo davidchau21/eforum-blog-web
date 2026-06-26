@@ -109,6 +109,17 @@ class UserController extends BaseController {
       return this.sendError(res, error.message);
     }
   }
+
+  async deactivateAccount(req, res) {
+    try {
+      const userId = req.user.id;
+      const { password } = req.body;
+      await userService.deactivateAccount(userId, password);
+      return this.sendSuccess(res, { message: "Tài khoản đã được vô hiệu hóa thành công." });
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
 }
 
 export default new UserController();

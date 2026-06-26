@@ -210,7 +210,9 @@ const EditProfile = () => {
             <h1 className="text-[24px] font-bold text-black tracking-tight">
               Edit Profile
             </h1>
-            <p className="text-[14px] text-dark-grey mt-2">Update your personal details and public profile.</p>
+            <p className="text-[14px] text-dark-grey mt-2">
+              Update your personal details and public profile.
+            </p>
           </div>
 
           <div className="flex flex-col xl:flex-row items-start gap-8">

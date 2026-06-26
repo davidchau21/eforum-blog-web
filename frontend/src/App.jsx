@@ -15,6 +15,7 @@ import BlogPage from "./pages/blog.page";
 import SideNav from "./components/sidenavbar.component";
 import ChangePassword from "./pages/change-password.page";
 import EditProfile from "./pages/edit-profile.page";
+import AccountSettings from "./pages/account-settings.page";
 import Notifications from "./pages/notifications.page";
 import ManageBlogs from "./pages/manage-blogs.page";
 import ManageDocuments from "./pages/manage-documents.page.jsx";
@@ -221,6 +222,7 @@ const App = () => {
                       path="change-password"
                       element={<ChangePassword />}
                     />
+                    <Route path="account" element={<AccountSettings />} />
                   </Route>
                   <Route path="verify" element={<VerifyOtp />} />
                   <Route

@@ -345,6 +345,26 @@ class UserService {
 
     return followingIds.map(id => following.find(f => f._id.toString() === id.toString())).filter(Boolean);
   }
+
+  /**
+   * Soft-delete: deactivate a user's own account (sets disabled = true)
+   * The account can be restored by an admin later.
+   */
+  async deactivateAccount(userId, password) {
+    const user = await User.findById(userId).select("personal_info.password google_auth disabled");
+    if (!user) throw new Error("Không tìm thấy tài khoản.");
+    if (user.disabled) throw new Error("Tài khoản đã bị vô hiệu hóa trước đó.");
+
+    // Verify password (skip for Google-authenticated accounts)
+    if (!user.google_auth) {
+      if (!password) throw new Error("Vui lòng nhập mật khẩu để xác nhận.");
+      const isMatch = await bcrypt.compare(password, user.personal_info.password);
+      if (!isMatch) throw new Error("Mật khẩu không đúng. Vui lòng thử lại.");
+    }
+
+    await User.findByIdAndUpdate(userId, { disabled: true });
+  }
 }
 
 export default new UserService();
+
