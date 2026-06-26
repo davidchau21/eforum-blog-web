@@ -58,8 +58,8 @@ export const uploadDocumentFile = async (fileBuffer, fileName, mimeType) => {
   return publicUrlData.publicUrl;
 };
 
-export const generateUploadURL = async () => {
-  const path = `images/${nanoid()}-${Date.now()}.jpeg`;
+export const generateUploadURL = async (ext = "jpeg") => {
+  const path = `images/${nanoid()}-${Date.now()}.${ext}`;
 
   const { data, error } = await supabase.storage
     .from(bucketName)

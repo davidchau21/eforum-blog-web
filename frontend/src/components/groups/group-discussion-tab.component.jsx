@@ -6,6 +6,57 @@ import { GroupPrivateLock } from "./group-private-lock.component";
 import useGetConversations from "../../hook/useGetConversations";
 import useConversation from "../../zustand/useConversation";
 
+const DEFAULT_BANNER = "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg";
+
+/** Renders the first video / embed block, or the banner image of a blog card */
+const BlogMediaPreview = ({ blog }) => {
+  const blocks = blog.content?.blocks ?? [];
+  const videoBlock = blocks.find((b) => b.type === "video");
+  const embedBlock = blocks.find((b) => b.type === "embed");
+
+  if (videoBlock) {
+    return (
+      <div
+        className="block mb-4 overflow-hidden rounded-xl border border-grey/80 dark:border-zinc-800/80 bg-black"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <video src={videoBlock.data.file.url} controls className="w-full aspect-video" />
+      </div>
+    );
+  }
+
+  if (embedBlock) {
+    return (
+      <div
+        className="block mb-4 overflow-hidden rounded-xl border border-grey/80 dark:border-zinc-800/80 bg-slate-50 dark:bg-[#111113]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <iframe
+          src={embedBlock.data.embed}
+          title={embedBlock.data.caption || "Embedded video"}
+          className="w-full aspect-video border-none"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+    );
+  }
+
+  if (blog.banner && blog.banner !== DEFAULT_BANNER) {
+    return (
+      <div className="block mb-4 overflow-hidden rounded-xl border border-grey">
+        <img
+          src={blog.banner}
+          alt={blog.title}
+          className="w-full h-auto hover:scale-[1.02] transition-transform duration-500"
+        />
+      </div>
+    );
+  }
+
+  return null;
+};
+
 /* eslint-disable react/prop-types */
 export const GroupDiscussionTab = ({
   group,
@@ -306,16 +357,8 @@ export const GroupDiscussionTab = ({
                     </p>
                   </div>
 
-                  {/* Banner (Full width, hide if default) */}
-                  {blog.banner && blog.banner !== "https://edublog.s3.ap-southeast-1.amazonaws.com/EEqYGj95LKSs4iZlzHeDi-1733239504104.jpeg" && (
-                    <div className="block mb-4 overflow-hidden rounded-xl border border-grey">
-                      <img
-                        src={blog.banner}
-                        alt={blog.title}
-                        className="w-full h-auto hover:scale-[1.02] transition-transform duration-500"
-                      />
-                    </div>
-                  )}
+                  {/* Media Banner or Video Player */}
+                  <BlogMediaPreview blog={blog} />
 
                   {/* Tags */}
                   {blog.tags && blog.tags.length > 0 && (

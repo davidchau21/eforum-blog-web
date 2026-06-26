@@ -13,10 +13,7 @@ export const GroupDocumentsTab = ({
 }) => {
   if (showLockScreen) {
     return (
-      <GroupPrivateLock
-        group={group}
-        handleToggleJoin={handleToggleJoin}
-      />
+      <GroupPrivateLock group={group} handleToggleJoin={handleToggleJoin} />
     );
   }
 
@@ -35,7 +32,7 @@ export const GroupDocumentsTab = ({
               )}
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Hỗ trợ các file định dạng PDF, PPT, PPTX, DOC, DOCX tối đa 15MB.
+              Hỗ trợ các file định dạng PDF, PPT, PPTX, DOC, DOCX, MP4, WEBM tối đa 50MB.
             </p>
           </div>
           <button
@@ -53,6 +50,7 @@ export const GroupDocumentsTab = ({
             const isPdf = doc.file_type === "pdf";
             const isWord = ["doc", "docx"].includes(doc.file_type);
             const isPpt = ["ppt", "pptx"].includes(doc.file_type);
+            const isVideo = ["mp4", "webm"].includes(doc.file_type);
 
             let colorClass =
               "bg-slate-50 text-slate-500 dark:bg-white/5 dark:text-slate-400 border-slate-100 dark:border-white/5";
@@ -70,6 +68,10 @@ export const GroupDocumentsTab = ({
               colorClass =
                 "bg-orange-50 text-orange-500 dark:bg-orange-500/10 dark:text-orange-400 border-orange-100 dark:border-orange-500/20";
               iconClass = "fi-rr-file-powerpoint";
+            } else if (isVideo) {
+              colorClass =
+                "bg-violet-50 text-violet-500 dark:bg-violet-500/10 dark:text-violet-400 border-violet-100 dark:border-violet-500/20";
+              iconClass = "fi-rr-file-video";
             }
 
             return (
@@ -109,7 +111,8 @@ export const GroupDocumentsTab = ({
                       </span>
                       <span className="w-1 h-1 bg-slate-300 dark:bg-zinc-700 rounded-full"></span>
                       <span className="flex items-center gap-1">
-                        <i className="fi fi-rr-download"></i> {doc.downloads || 0}
+                        <i className="fi fi-rr-download"></i>{" "}
+                        {doc.downloads || 0}
                       </span>
                     </div>
                   </div>
@@ -122,7 +125,7 @@ export const GroupDocumentsTab = ({
                   <div className="flex items-center gap-2">
                     <img
                       src={`https://api.dicebear.com/6.x/fun-emoji/svg?seed=${encodeURIComponent(
-                        doc.author?.personal_info?.fullname || "anonymous"
+                        doc.author?.personal_info?.fullname || "anonymous",
                       )}`}
                       className="w-5 h-5 rounded-full object-cover bg-slate-100"
                       alt=""

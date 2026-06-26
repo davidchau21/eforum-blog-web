@@ -37,6 +37,44 @@ const List = ({ style, items }) => {
     )
 }
 
+const Embed = ({ embed, caption }) => {
+    return (
+        <div className="w-full my-6 flex flex-col items-center">
+            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-md border border-slate-200/60 dark:border-zinc-800/80 bg-slate-50 dark:bg-[#111113]">
+                <iframe
+                    src={embed}
+                    title={caption || "Embedded video"}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                ></iframe>
+            </div>
+            {caption && caption.length ? (
+                <p className="w-full text-center my-3 text-sm text-dark-grey dark:text-slate-450">{caption}</p>
+            ) : (
+                ""
+            )}
+        </div>
+    )
+}
+
+const Video = ({ url, caption }) => {
+    return (
+        <div className="w-full my-6 flex flex-col items-center">
+            <video
+                src={url}
+                controls
+                className="w-full aspect-video rounded-2xl shadow-md border border-slate-200/60 dark:border-zinc-800/80 bg-black"
+            ></video>
+            {caption && caption.length ? (
+                <p className="w-full text-center my-3 text-sm text-dark-grey dark:text-slate-450">{caption}</p>
+            ) : (
+                ""
+            )}
+        </div>
+    )
+}
+
 const BlogContent = ({ block }) => {
     
     let { type, data } = block;
@@ -62,6 +100,14 @@ const BlogContent = ({ block }) => {
     
     if(type == "list"){
         return <List style={data.style} items={data.items} />
+    }
+
+    if(type == "embed") {
+        return <Embed embed={data.embed} caption={data.caption} />
+    }
+
+    if(type == "video") {
+        return <Video url={data.file.url} caption={data.caption} />
     }
 
 }

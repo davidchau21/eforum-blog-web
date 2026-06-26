@@ -21,7 +21,7 @@ const documentSchema = new mongoose.Schema(
       required: true,
     },
     file_type: {
-      type: String, // 'pdf', 'ppt', 'pptx', 'doc', 'docx'
+      type: String, // 'pdf', 'ppt', 'pptx', 'doc', 'docx', 'mp4', 'webm'
       required: true,
     },
     file_size: {

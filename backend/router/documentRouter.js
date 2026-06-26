@@ -8,7 +8,7 @@ const router = express.Router();
 const multerStorage = multer.memoryStorage();
 const upload = multer({
   storage: multerStorage,
-  limits: { fileSize: 15 * 1024 * 1024 } // Limit 15MB
+  limits: { fileSize: 50 * 1024 * 1024 } // Limit 50MB
 });
 
 const uploadSingleFile = upload.single("file");
@@ -19,7 +19,7 @@ const handleUploadMiddleware = (req, res, next) => {
       if (err.code === "LIMIT_FILE_SIZE") {
         return res.status(400).json({
           status: false,
-          error: "Dung lượng file vượt quá giới hạn 15MB."
+          error: "Dung lượng file vượt quá giới hạn 50MB."
         });
       }
       return res.status(400).json({

@@ -786,19 +786,64 @@ const BlogPostCard = ({ content, author, members = [] }) => {
           </p>
         </Link>
 
-        {/* Banner (Full width, hide if default) */}
-        {banner && !isDefaultBanner && (
-          <Link
-            to={`/blog/${id}`}
-            className="block mb-4 overflow-hidden rounded-xl border border-grey"
-          >
-            <img
-              src={banner}
-              alt={title}
-              className="w-full h-auto hover:scale-[1.02] transition-transform duration-500"
-            />
-          </Link>
-        )}
+        {/* Media Banner or Video Player */}
+        {(() => {
+          const firstVideoBlock = content.content?.blocks?.find(
+            (block) => block.type === "video"
+          );
+          const firstEmbedBlock = content.content?.blocks?.find(
+            (block) => block.type === "embed"
+          );
+
+          if (firstVideoBlock) {
+            return (
+              <div
+                className="block mb-4 overflow-hidden rounded-xl border border-grey/80 dark:border-zinc-800/80 bg-black"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <video
+                  src={firstVideoBlock.data.file.url}
+                  controls
+                  className="w-full aspect-video"
+                ></video>
+              </div>
+            );
+          }
+
+          if (firstEmbedBlock) {
+            return (
+              <div
+                className="block mb-4 overflow-hidden rounded-xl border border-grey/80 dark:border-zinc-800/80 bg-slate-50 dark:bg-[#111113]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <iframe
+                  src={firstEmbedBlock.data.embed}
+                  title={firstEmbedBlock.data.caption || "Embedded video"}
+                  className="w-full aspect-video border-none"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              </div>
+            );
+          }
+
+          if (banner && !isDefaultBanner) {
+            return (
+              <Link
+                to={`/blog/${id}`}
+                className="block mb-4 overflow-hidden rounded-xl border border-grey"
+              >
+                <img
+                  src={banner}
+                  alt={title}
+                  className="w-full h-auto hover:scale-[1.02] transition-transform duration-500"
+                />
+              </Link>
+            );
+          }
+
+          return null;
+        })()}
 
         {/* Tags */}
         {tags && tags.length > 0 && (

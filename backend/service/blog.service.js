@@ -288,7 +288,7 @@ class BlogService {
       })
       .populate("group", "name avatar banner isPrivate")
       .sort({ publishedAt: -1 })
-      .select("blog_id title des banner activity tags publishedAt group")
+      .select("blog_id title des banner activity tags publishedAt group content")
       .skip((page - 1) * limit)
       .limit(limit);
 
@@ -327,7 +327,7 @@ class BlogService {
       .sort({ publishedAt: -1 })
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
       .populate("group", "name avatar banner isPrivate")
-      .select("blog_id title des banner activity tags publishedAt group");
+      .select("blog_id title des banner activity tags publishedAt group content");
 
     const populatedBlogs = await this.attachGroupMemberships(blogs, userId);
     return { blogs: populatedBlogs };
@@ -449,7 +449,7 @@ class BlogService {
       .populate("author", "personal_info.profile_img personal_info.username personal_info.fullname")
       .populate("group", "name avatar banner isPrivate")
       .sort({ publishedAt: -1 })
-      .select("blog_id title des banner activity tags publishedAt group")
+      .select("blog_id title des banner activity tags publishedAt group content")
       .skip((page - 1) * maxLimit)
       .limit(maxLimit);
 

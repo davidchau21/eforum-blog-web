@@ -15,15 +15,15 @@ class DocumentService {
     }
 
     // Validate size and file type
-    const allowedExtensions = ["pdf", "ppt", "pptx", "doc", "docx"];
+    const allowedExtensions = ["pdf", "ppt", "pptx", "doc", "docx", "mp4", "webm"];
     const extension = file.originalname.split(".").pop().toLowerCase();
     if (!allowedExtensions.includes(extension)) {
-      throw new Error("Định dạng file không được hỗ trợ. Chỉ nhận PDF, PPT, PPTX, DOC, DOCX.");
+      throw new Error("Định dạng file không được hỗ trợ. Chỉ nhận PDF, PPT, PPTX, DOC, DOCX, MP4, WEBM.");
     }
 
-    const maxLimit = 15 * 1024 * 1024; // 15MB
+    const maxLimit = 50 * 1024 * 1024; // 50MB
     if (file.size > maxLimit) {
-      throw new Error("Dung lượng file vượt quá giới hạn 15MB.");
+      throw new Error("Dung lượng file vượt quá giới hạn 50MB.");
     }
 
     // Upload to Supabase
