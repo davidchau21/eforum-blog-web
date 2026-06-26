@@ -239,6 +239,20 @@ class GroupController extends BaseController {
       return this.sendError(res, error.message, 400);
     }
   }
+
+  async getGroupStats(req, res) {
+    try {
+      const groupId = req.params.id;
+      const requesterId = req.user.id;
+      const { range, startDate, endDate } = req.query;
+      const result = await groupService.getGroupStats(groupId, requesterId, range, startDate, endDate);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      // If it's a permission denied error, return 403 Forbidden
+      const status = error.message.includes("quyền") ? 403 : 400;
+      return this.sendError(res, error.message, status);
+    }
+  }
 }
 
 export default new GroupController();

@@ -255,3 +255,14 @@ export const rejectBlog = async (id, blogId, token) => {
   );
   return data;
 };
+
+/**
+ * Fetch group statistics and dashboard details.
+ */
+export const getGroupStats = async (id, range, token, startDate = null, endDate = null) => {
+  let url = `${API_BASE}/groups/id/${id}/stats?range=${range}`;
+  if (startDate) url += `&startDate=${startDate}`;
+  if (endDate) url += `&endDate=${endDate}`;
+  const { data } = await axios.get(url, getHeaders(token));
+  return data;
+};

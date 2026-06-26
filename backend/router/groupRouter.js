@@ -22,6 +22,7 @@ groupRouter.delete("/id/:id/members/:userId", isAuthenticate, (req, res) => grou
 groupRouter.put("/id/:id/settings", isAuthenticate, (req, res) => groupController.updateGroupSettings(req, res));
 groupRouter.delete("/id/:id", isAuthenticate, (req, res) => groupController.deleteGroup(req, res));
 groupRouter.post("/id/:id/invite", isAuthenticate, (req, res) => groupController.inviteMember(req, res));
+groupRouter.get("/id/:id/stats", isAuthenticate, (req, res) => groupController.getGroupStats(req, res));
 
 // Scoped group contents
 groupRouter.get("/id/:id/blogs", isAuthenticateOptional, (req, res) => groupController.getGroupBlogs(req, res));

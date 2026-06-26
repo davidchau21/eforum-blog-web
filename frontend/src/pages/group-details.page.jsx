@@ -10,7 +10,6 @@ import { GroupSidebar } from "../components/groups/group-sidebar.component";
 import { GroupDiscussionTab } from "../components/groups/group-discussion-tab.component";
 import { GroupDocumentsTab } from "../components/groups/group-documents-tab.component";
 import { GroupMembersTab } from "../components/groups/group-members-tab.component";
-import { GroupSettingsTab } from "../components/groups/group-settings-tab.component";
 import { GroupAboutTab } from "../components/groups/group-about-tab.component";
 import { GroupUploadDocModal } from "../components/groups/group-upload-doc-modal.component";
 import { GroupInviteModal } from "../components/groups/group-invite-modal.component";
@@ -249,7 +248,7 @@ const GroupDetailsPage = () => {
     if (!userAuth.access_token) return;
     const tab = searchParams.get("tab");
     const sub = searchParams.get("sub");
-    if (tab && ["discussion", "documents", "members", "settings", "about"].includes(tab)) setActiveTab(tab);
+    if (tab && ["discussion", "documents", "members", "about"].includes(tab)) setActiveTab(tab);
     if (sub && ["all", "admin", "member", "pending"].includes(sub)) setMemberFilter(sub);
   }, [searchParams, userAuth.access_token]);
 
@@ -678,15 +677,6 @@ const GroupDetailsPage = () => {
                 },
                 { id: "documents", label: "Tài liệu", icon: "fi-rr-document" },
                 { id: "members", label: "Thành viên", icon: "fi-rr-users" },
-                ...(isOwnerOrDeputy
-                  ? [
-                      {
-                        id: "settings",
-                        label: "Cài đặt",
-                        icon: "fi-rr-settings",
-                      },
-                    ]
-                  : []),
                 { id: "about", label: "Giới thiệu", icon: "fi-rr-info" },
               ].map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -697,7 +687,7 @@ const GroupDetailsPage = () => {
                       setActiveTab(tab.id);
                       setSearchParams({ tab: tab.id });
                     }}
-                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-black relative flex items-center justify-center gap-2 transition-all duration-300 z-10 ${
+                    className={`flex-1 py-3 px-4 rounded-xl text-xs font-black relative flex items-center justify-center gap-2 transition-colors duration-200 z-10 ${
                       isActive
                         ? "text-white dark:text-slate-950"
                         : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
@@ -764,18 +754,18 @@ const GroupDetailsPage = () => {
                 />
               )}
 
-              {/* Tab 3: Members & Roles Management */}
+              {/* Tab 3: Members directory (Read-only on main page, admin controls moved to dedicated Admin Page) */}
               {activeTab === "members" && (
                 <GroupMembersTab
                   group={group}
                   showLockScreen={showLockScreen}
                   handleToggleJoin={handleToggleJoin}
-                  isAdminOrMod={isAdminOrMod}
-                  pendingRequests={pendingRequests}
-                  myRole={myRole}
+                  isAdminOrMod={false}
+                  pendingRequests={[]}
+                  myRole="MEMBER"
                   settings={settings}
-                  handleRejectRequest={handleRejectRequest}
-                  handleApproveRequest={handleApproveRequest}
+                  handleRejectRequest={null}
+                  handleApproveRequest={null}
                   memberSearch={memberSearch}
                   setMemberSearch={setMemberSearch}
                   memberFilter={memberFilter}
@@ -791,25 +781,9 @@ const GroupDetailsPage = () => {
                   regularMembers={regularMembers}
                   filteredMembers={filteredMembers}
                   userAuth={userAuth}
-                  handleKickMember={handleKickMember}
-                  handleChangeRole={handleChangeRole}
+                  handleKickMember={null}
+                  handleChangeRole={null}
                   onMemberClick={handleMemberClick}
-                />
-              )}
-
-              {/* Tab 4: Settings */}
-              {activeTab === "settings" && (
-                <GroupSettingsTab
-                  settingsCategory={settingsCategory}
-                  setSettingsCategory={setSettingsCategory}
-                  groupEditForm={groupEditForm}
-                  setGroupEditForm={setGroupEditForm}
-                  settings={settings}
-                  setSettings={setSettings}
-                  isSavingSettings={isSavingSettings}
-                  settingsMessage={settingsMessage}
-                  handleSaveSettings={handleSaveSettings}
-                  handleDeleteGroup={handleDeleteGroup}
                 />
               )}
 
@@ -825,6 +799,7 @@ const GroupDetailsPage = () => {
             documents={documents}
             managementTeam={managementTeam}
             isJoined={isJoined}
+            isAdminOrMod={isAdminOrMod}
             onInviteClick={() => setIsInviteModalOpen(true)}
             handleToggleMute={handleToggleMute}
             onMemberClick={handleMemberClick}
