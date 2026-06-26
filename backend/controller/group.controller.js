@@ -274,6 +274,16 @@ class GroupController extends BaseController {
       return this.sendError(res, error.message, status);
     }
   }
+
+  async getTrendingGroups(req, res) {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit) : 5;
+      const result = await groupService.getTrendingGroups(limit);
+      return this.sendSuccess(res, { groups: result });
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
 }
 
 export default new GroupController();

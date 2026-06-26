@@ -1108,6 +1108,35 @@ class GroupService {
       topBlogs
     };
   }
+
+  /**
+   * Get list of trending groups (sorted by number of members)
+   */
+  async getTrendingGroups(limit = 5) {
+    const trending = await GroupMember.aggregate([
+      { $match: { status: "JOINED" } },
+      { $group: { _id: "$group", memberCount: { $sum: 1 } } },
+      { $sort: { memberCount: -1 } },
+      { $limit: limit }
+    ]);
+
+    const groupIds = trending.map(t => t._id);
+    const groups = await Group.find({ _id: { $in: groupIds }, isDisabled: { $ne: true } })
+      .populate("creator", "personal_info.fullname personal_info.username personal_info.profile_img");
+
+    const groupsWithMemberCount = groups.map(g => {
+      const trendItem = trending.find(t => t._id.toString() === g._id.toString());
+      return {
+        ...g.toObject(),
+        totalMembers: trendItem ? trendItem.memberCount : 0
+      };
+    });
+
+    // Sort by memberCount again since find doesn't guarantee order
+    groupsWithMemberCount.sort((a, b) => b.totalMembers - a.totalMembers);
+
+    return groupsWithMemberCount;
+  }
 }
 
 export default new GroupService();

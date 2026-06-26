@@ -122,7 +122,7 @@ class AuthService {
       user.personal_info.password = hashed_password;
       await user.save();
       await UserAuth.findOneAndUpdate(
-        { user: user._id },
+        { user_id: user._id },
         { $set: { otp: otp.toString(), otp_expiry_time } },
         { upsert: true }
       );
@@ -133,7 +133,7 @@ class AuthService {
         verified: false,
       });
       await user.save();
-      await UserAuth.create({ user: user._id, otp: otp.toString(), otp_expiry_time });
+      await UserAuth.create({ user_id: user._id, otp: otp.toString(), otp_expiry_time });
     }
 
     mailService.sendEmail({
@@ -165,7 +165,7 @@ class AuthService {
     if (!user) throw new Error("User not found");
 
     const authRecord = await UserAuth.findOne({
-      user: user._id,
+      user_id: user._id,
       otp,
       otp_expiry_time: { $gt: Date.now() },
     });
@@ -177,7 +177,7 @@ class AuthService {
     user.verification_date = new Date();
     await user.save();
 
-    await UserAuth.findOneAndUpdate({ user: user._id }, { $unset: { otp: 1, otp_expiry_time: 1 } });
+    await UserAuth.findOneAndUpdate({ user_id: user._id }, { $unset: { otp: 1, otp_expiry_time: 1 } });
 
     const token = jwt.sign({ id: user._id, email: user.personal_info.email }, verificationTokenSecret);
     return { token, user_id: user._id };
@@ -237,7 +237,7 @@ class AuthService {
     if (!isCurrentPasswordValid) throw new Error("Incorrect current password");
 
     user.personal_info.password = await bcrypt.hash(newPassword, 10);
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     // Invalidate all active sessions for this user on password change
     await UserAuth.updateMany({ user_id: userId, is_active: 1 }, { $set: { is_active: 0 } });
@@ -246,53 +246,130 @@ class AuthService {
   }
 
   async forgotPassword(email) {
-    const user = await User.findOne({ "personal_info.email": email });
+    const user = await User.findOne({ "personal_info.email": email.toLowerCase() });
     if (!user) throw new Error("No user found with this email address.");
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+    let authRecord = await UserAuth.findOne({ user_id: user._id, sessionId: { $exists: false } });
 
-    await UserAuth.findOneAndUpdate(
-      { user: user._id },
-      { $set: { passwordResetToken: hashedToken, passwordResetExpires: Date.now() + 10 * 60 * 1000 } },
-      { upsert: true }
-    );
+    if (authRecord) {
+      // 1. Check 30s delay limit
+      if (authRecord.otpLastSentAt) {
+        const timeDiff = Date.now() - new Date(authRecord.otpLastSentAt).getTime();
+        if (timeDiff < 30 * 1000) {
+          const timeLeft = Math.ceil((30 * 1000 - timeDiff) / 1000);
+          throw new Error(`Vui lòng đợi ${timeLeft} giây trước khi gửi lại mã OTP.`);
+        }
+      }
 
-    const resetURL = `${env.CLIENT_URL}/new-password?token=${resetToken}`;
-    mailService.sendEmail({
-      from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
-      to: email,
-      subject: "Password Reset Request",
-      html: resetPasswordTemplate(user.personal_info.fullname, resetURL),
-    });
+      // 2. Check 3-times resend limit (resets after 10 mins)
+      let count = authRecord.otpResendCount || 0;
+      if (authRecord.otpLastSentAt) {
+        const lastSentTime = new Date(authRecord.otpLastSentAt).getTime();
+        if (Date.now() - lastSentTime > 10 * 60 * 1000) {
+          count = 0;
+        }
+      }
 
-    return { message: "Token sent to email" };
+      if (count >= 3) {
+        throw new Error("Bạn đã đạt giới hạn gửi lại mã OTP (tối đa 3 lần). Vui lòng thử lại sau 10 phút.");
+      }
+
+      const otp = otpGenerator.generate(6, {
+        lowerCaseAlphabets: false,
+        upperCaseAlphabets: false,
+        specialChars: false,
+      });
+      const otp_expiry_time = Date.now() + 10 * 60 * 1000;
+
+      authRecord.otp = otp.toString();
+      authRecord.otp_expiry_time = otp_expiry_time;
+      authRecord.otpResendCount = count + 1;
+      authRecord.otpLastSentAt = new Date();
+      await authRecord.save();
+
+      mailService.sendEmail({
+        from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
+        to: email,
+        subject: "Password Reset OTP Verification",
+        html: otpTemplate(user.personal_info.username, otp),
+      });
+
+      return { message: "OTP sent to email", resendCount: count + 1, timeLeft: 30 };
+    } else {
+      const otp = otpGenerator.generate(6, {
+        lowerCaseAlphabets: false,
+        upperCaseAlphabets: false,
+        specialChars: false,
+      });
+      const otp_expiry_time = Date.now() + 10 * 60 * 1000;
+
+      authRecord = new UserAuth({
+        user_id: user._id,
+        otp: otp.toString(),
+        otp_expiry_time,
+        otpResendCount: 1,
+        otpLastSentAt: new Date(),
+      });
+      await authRecord.save();
+
+      mailService.sendEmail({
+        from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
+        to: email,
+        subject: "Password Reset OTP Verification",
+        html: otpTemplate(user.personal_info.username, otp),
+      });
+
+      return { message: "OTP sent to email", resendCount: 1, timeLeft: 30 };
+    }
   }
 
-  async resetPassword({ token, password }) {
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+  async resetPassword({ email, otp, password }) {
+    if (!email || !otp || !password) {
+      throw new Error("Email, OTP, and password are required.");
+    }
+
+    const user = await User.findOne({ "personal_info.email": email.toLowerCase() });
+    if (!user) throw new Error("No user found with this email address.");
+
     const authRecord = await UserAuth.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() },
+      user_id: user._id,
+      otp,
+      otp_expiry_time: { $gt: Date.now() },
     });
 
-    if (!authRecord) throw new Error("Token is invalid or has expired.");
-
-    const user = await User.findById(authRecord.user);
-    if (!user) throw new Error("User not found.");
+    if (!authRecord) throw new Error("OTP is invalid or has expired.");
 
     user.personal_info.password = await bcrypt.hash(password, 10);
-    await user.save();
+    await user.save({ validateBeforeSave: false });
 
     await UserAuth.findOneAndUpdate(
-      { user: user._id },
-      { $unset: { passwordResetToken: 1, passwordResetExpires: 1 }, $set: { passwordChangedAt: new Date() } }
+      { user_id: user._id, sessionId: { $exists: false } },
+      { $unset: { otp: 1, otp_expiry_time: 1, otpResendCount: 1, otpLastSentAt: 1 }, $set: { passwordChangedAt: new Date() } }
     );
 
     // Invalidate all active sessions on password reset
     await UserAuth.updateMany({ user_id: user._id, is_active: 1 }, { $set: { is_active: 0 } });
 
     return { message: "Password has been reset successfully." };
+  }
+
+  async verifyResetOtp({ email, otp }) {
+    if (!email || !otp) {
+      throw new Error("Email and OTP are required.");
+    }
+
+    const user = await User.findOne({ "personal_info.email": email.toLowerCase() });
+    if (!user) throw new Error("No user found with this email address.");
+
+    const authRecord = await UserAuth.findOne({
+      user_id: user._id,
+      otp,
+      otp_expiry_time: { $gt: Date.now() },
+    });
+
+    if (!authRecord) throw new Error("OTP is invalid or has expired.");
+
+    return { message: "OTP verified successfully" };
   }
 
   async googleAuth(access_token, req) {

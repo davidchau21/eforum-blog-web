@@ -14,37 +14,47 @@ const ForgotPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${import.meta.env.VITE_SERVER_DOMAIN}/forgot-password`, { email });
-      navigate("/signin", {
-        state: { message: "Password reset link has been sent to your email" },
-      });
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_SERVER_DOMAIN}/forgot-password`,
+        { email },
+      );
+      toast.success("OTP has been sent to your email!");
+      setTimeout(() => {
+        navigate("/verify-reset-otp", { state: { email, initialResendCount: data.resendCount } });
+      }, 1000);
     } catch (error) {
-      toast.error(error.response?.data.message || "An error occurred");
+      toast.error(
+        error.response?.data.error ||
+          error.response?.data.message ||
+          "An error occurred",
+      );
     }
   };
 
   return (
     <div className="min-h-screen bg-white flex overflow-hidden font-jakarta transition-colors duration-500">
       <Toaster />
-      
+
       {/* Left Side: Immersive Hero Area */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 1, ease: "easeOut" }}
         className="hidden lg:flex lg:w-[60%] relative overflow-hidden group"
       >
-        <img 
-          src="/imgs/auth-hero.png" 
-          alt="Academic Hero" 
+        <img
+          src="/imgs/auth-hero.png"
+          alt="Academic Hero"
           className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-10000 ease-out"
         />
-        
+
         {/* Dynamic theme overlays */}
-        <div className={`absolute inset-0 transition-opacity duration-1000 ${theme === 'dark' ? 'bg-black/60' : 'bg-white/20'}`}></div>
+        <div
+          className={`absolute inset-0 transition-opacity duration-1000 ${theme === "dark" ? "bg-black/60" : "bg-white/20"}`}
+        ></div>
         <div className="absolute inset-0 bg-gradient-to-r from-white dark:from-black via-transparent to-transparent opacity-80"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-black via-transparent to-transparent opacity-60"></div>
-        
+
         <div className="relative z-10 p-20 mt-auto mb-20 max-w-2xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -56,24 +66,27 @@ const ForgotPasswordPage = () => {
             </span>
             <h2 className="text-6xl font-bold text-black mb-6 tracking-tight leading-[1.1]">
               Protect Your <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500 font-black">Digital Identity</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-500 font-black">
+                Digital Identity
+              </span>
             </h2>
             <p className="text-dark-grey text-xl leading-relaxed">
-              We ensure your account remains secure with advanced recovery protocols.
+              We ensure your account remains secure with advanced recovery
+              protocols.
             </p>
           </motion.div>
         </div>
       </motion.div>
 
       {/* Right Side: Recovery Form */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="w-full lg:w-[40%] flex flex-col justify-center items-center px-8 md:px-16 lg:px-20 bg-white relative border-l border-grey/30"
       >
         <div className="w-full max-w-md">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -83,7 +96,8 @@ const ForgotPasswordPage = () => {
               Recover Access
             </h1>
             <p className="text-dark-grey text-lg">
-              Enter your email and we'll send you a secure link to reset your password.
+              Enter your email and we'll send you a secure link to reset your
+              password.
             </p>
           </motion.div>
 
@@ -104,12 +118,15 @@ const ForgotPasswordPage = () => {
               className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-2xl text-lg shadow-lg shadow-emerald-500/20 transition-all"
               type="submit"
             >
-              Send Reset Link
+              Send OTP
             </motion.button>
 
             <motion.button
               type="button"
-              whileHover={{ scale: 1.02, backgroundColor: "rgba(16, 185, 129, 0.05)" }}
+              whileHover={{
+                scale: 1.02,
+                backgroundColor: "rgba(16, 185, 129, 0.05)",
+              }}
               whileTap={{ scale: 0.98 }}
               className="w-full py-4 px-6 bg-grey/30 border border-grey/50 text-black rounded-2xl text-lg font-semibold transition-all"
               onClick={() => navigate("/signin")}
@@ -120,7 +137,13 @@ const ForgotPasswordPage = () => {
 
           <div className="mt-12 text-center">
             <p className="text-dark-grey">
-              Need help? <Link to="/contact" className="text-black font-bold hover:text-emerald-500 transition-colors ml-1 underline underline-offset-4 decoration-emerald-500/20">Contact Support</Link>
+              Need help?{" "}
+              <Link
+                to="/contact"
+                className="text-black font-bold hover:text-emerald-500 transition-colors ml-1 underline underline-offset-4 decoration-emerald-500/20"
+              >
+                Contact Support
+              </Link>
             </p>
           </div>
         </div>

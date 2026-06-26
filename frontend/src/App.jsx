@@ -22,6 +22,7 @@ import ManageDocuments from "./pages/manage-documents.page.jsx";
 import VerifyOtp from "./pages/verifyOtp.page";
 import NewPasswordPage from "./pages/new-password.page";
 import ForgotPasswordPage from "./pages/forgot-password.page";
+import VerifyResetOtpPage from "./pages/verify-reset-otp.page";
 import ChatUI from "./pages/chat.page";
 import { SocketContextProvider } from "./socket/SocketContext.jsx";
 import Footer from "./components/footer.component.jsx";
@@ -234,6 +235,7 @@ const App = () => {
                     element={<UserAuthForm type="sign-up" />}
                   />
                   <Route path="new-password" element={<NewPasswordPage />} />
+                  <Route path="verify-reset-otp" element={<VerifyResetOtpPage />} />
                   <Route
                     path="forgot-password"
                     element={<ForgotPasswordPage />}

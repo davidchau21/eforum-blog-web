@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
@@ -7,26 +7,41 @@ import { motion } from 'framer-motion';
 import { ThemeContext } from '../App';
 
 const NewPasswordPage = () => {
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
 
-  const token = new URLSearchParams(location.search).get('token');
+  const [email, setEmail] = useState(location.state?.email || '');
+  const [otp, setOtp] = useState(location.state?.otp || '');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+
+  useEffect(() => {
+    if (!email || !otp) {
+      toast.error("Please verify OTP first.");
+      navigate("/forgot-password");
+    }
+  }, [email, otp, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!email || !otp || !password) {
+      return toast.error("Please fill in all fields.");
+    }
 
     if (password !== passwordConfirm) {
       return toast.error("Passwords don't match");
     }
 
     try {
-      await axios.post(import.meta.env.VITE_SERVER_DOMAIN + '/reset-password', { token, password, passwordConfirm });
-      navigate('/signin', { state: { message: 'Password reset successful. Please sign in' } });
+      await axios.post(import.meta.env.VITE_SERVER_DOMAIN + '/reset-password', { email, otp, password });
+      toast.success("Password reset successful!");
+      setTimeout(() => {
+        navigate('/signin', { state: { message: 'Password reset successful. Please sign in' } });
+      }, 1000);
     } catch (error) {
-      toast.error(error.response?.data.message || 'An error occurred');
+      toast.error(error.response?.data.error || error.response?.data.message || 'An error occurred');
     }
   };
 
@@ -90,12 +105,13 @@ const NewPasswordPage = () => {
               Set New Password
             </h1>
             <p className="text-dark-grey text-lg">
-              Choose a strong, unique password to keep your academic profile secure.
+              Choose a strong, unique password for <strong className="text-black">{email}</strong> to keep your academic profile secure.
             </p>
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
+
               <InputBox
                 name="password"
                 type="password"
