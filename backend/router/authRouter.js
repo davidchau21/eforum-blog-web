@@ -12,6 +12,7 @@ router.post("/refresh-token", (req, res) => authController.refreshToken(req, res
 router.post("/logout", isAuthenticate, (req, res) => authController.logout(req, res));
 router.post("/change-password", isAuthenticate, (req, res) => authController.changePassword(req, res));
 router.post("/forgot-password", (req, res) => authController.forgotPassword(req, res));
+router.post("/verify-reset-otp", (req, res) => authController.verifyResetOtp(req, res));
 router.post("/reset-password", (req, res) => authController.resetPassword(req, res));
 
 export default router;

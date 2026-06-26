@@ -4,8 +4,8 @@ const oauthSchema = new mongoose.Schema(
   {
     sessionId: {
       type: String,
-      required: true,
       unique: true,
+      sparse: true,
     },
     user_id: {
       type: Schema.Types.ObjectId,
@@ -19,19 +19,15 @@ const oauthSchema = new mongoose.Schema(
     },
     access_token: {
       type: String,
-      required: true,
     },
     access_token_expires_at: {
       type: Date,
-      required: true,
     },
     refresh_token: {
       type: String,
-      required: true,
     },
     refresh_token_expires_at: {
       type: Date,
-      required: true,
     },
     ip_address: {
       type: String,
@@ -63,6 +59,13 @@ const oauthSchema = new mongoose.Schema(
       type: String,
     },
     otp_expiry_time: {
+      type: Date,
+    },
+    otpResendCount: {
+      type: Number,
+      default: 0,
+    },
+    otpLastSentAt: {
       type: Date,
     },
     passwordResetToken: {

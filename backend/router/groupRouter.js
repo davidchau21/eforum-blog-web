@@ -6,6 +6,7 @@ const groupRouter = express.Router();
 
 // Public routes
 groupRouter.get("/list", isAuthenticateOptional, (req, res) => groupController.getGroups(req, res));
+groupRouter.get("/trending", isAuthenticateOptional, (req, res) => groupController.getTrendingGroups(req, res));
 groupRouter.get("/id/:id", isAuthenticateOptional, (req, res) => groupController.getGroupById(req, res));
 
 // Authenticated group routes

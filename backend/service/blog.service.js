@@ -422,7 +422,7 @@ class BlogService {
         "activity.total_comments": -1,
         publishedAt: -1,
       })
-      .select("blog_id title publishedAt")
+      .select("blog_id title des banner activity tags publishedAt")
       .limit(10);
   }
 
