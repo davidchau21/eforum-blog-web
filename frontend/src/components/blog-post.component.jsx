@@ -4,6 +4,9 @@ import { getDay } from "../common/date";
 import bannerDefault from "../imgs/banner-default.png";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useContext, useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import useGetConversations from "../hook/useGetConversations";
+import useConversation from "../zustand/useConversation";
 import { SocketContext } from "../socket/SocketContext";
 import { ThemeContext, UserContext } from "../App";
 import { GroupMemberModal } from "./groups/group-member-modal.component";
@@ -20,9 +23,54 @@ import {
 } from "react-share";
 import { getTranslations } from "../../translations";
 
-const BlogPostCard = ({ content, author }) => {
+const BlogPostCard = ({ content, author, members = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [showAuthorPopover, setShowAuthorPopover] = useState(false);
+  const { conversations } = useGetConversations();
+  const { setSelectedConversation } = useConversation();
+  const currentUsername = localStorage.getItem("username");
+
+  const handleStartChat = (authorUser) => {
+    const preloadedConv = (conversations || []).find(
+      (c) => c._id === authorUser?._id,
+    );
+    setSelectedConversation(preloadedConv || authorUser);
+    navigate("/chat");
+  };
+
+  const getRoleDetails = (role) => {
+    switch (role) {
+      case "OWNER":
+        return {
+          label: "Trưởng nhóm",
+          icon: "fi-sr-crown",
+          badgeStyle:
+            "bg-gradient-to-r from-amber-500/10 to-yellow-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+        };
+      case "DEPUTY":
+        return {
+          label: "Phó nhóm",
+          icon: "fi-sr-star",
+          badgeStyle:
+            "bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20",
+        };
+      case "MODERATOR":
+        return {
+          label: "Kiểm duyệt",
+          icon: "fi-sr-shield",
+          badgeStyle:
+            "bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+        };
+      default:
+        return {
+          label: "Thành viên",
+          icon: "fi-rr-user",
+          badgeStyle:
+            "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/5",
+        };
+    }
+  };
   const { onlineUsers } = useContext(SocketContext) || { onlineUsers: [] };
   const { userAuth, userAuth: { access_token, language } = {} } =
     useContext(UserContext) || {};
@@ -576,19 +624,124 @@ const BlogPostCard = ({ content, author }) => {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link
-                to={`/user/${username}`}
-                className="flex items-center gap-2 group/author"
+              <div
+                className="flex items-center gap-2 group/author cursor-pointer relative"
+                onMouseEnter={() => setShowAuthorPopover(true)}
+                onMouseLeave={() => setShowAuthorPopover(false)}
               >
-                <img
-                  src={profile_img}
-                  className="w-7 h-7 rounded-full object-cover ring-1 ring-grey"
-                  alt={fullname}
-                />
-                <span className="text-[13.5px] font-bold text-black group-hover/author:text-indigo-500 transition-colors">
-                  {fullname}
-                </span>
-              </Link>
+                <Link
+                  to={`/user/${username}`}
+                  className="flex items-center gap-2"
+                >
+                  <img
+                    src={profile_img}
+                    className="w-7 h-7 rounded-full object-cover ring-1 ring-grey"
+                    alt={fullname}
+                  />
+                  <span className="text-[13.5px] font-bold text-black dark:text-white group-hover/author:text-indigo-500 transition-colors">
+                    {fullname}
+                  </span>
+                </Link>
+
+                {/* Popover Hover Card */}
+                <AnimatePresence>
+                  {showAuthorPopover && author && (() => {
+                    const memberInfo = (members || []).find(
+                      (m) => m.user?._id === authorId,
+                    ) || {
+                      role: "MEMBER",
+                      user: {
+                        ...author,
+                        personal_info: {
+                          ...author.personal_info,
+                          bio: "Thành viên.",
+                        },
+                        account_info: {
+                          total_followers: 0,
+                          total_following: 0,
+                        },
+                      },
+                    };
+                    const roleInfo = getRoleDetails(memberInfo.role);
+                    const isSelf = memberInfo.user.personal_info?.username === currentUsername;
+
+                    return (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        className="absolute left-0 bottom-full mb-3.5 z-50 w-72 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xl pointer-events-auto font-inter text-left"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={memberInfo.user.personal_info?.profile_img || profile_img}
+                            className="w-12 h-12 rounded-xl object-cover border border-slate-200/60 dark:border-white/5 bg-slate-100 dark:bg-zinc-800"
+                            alt=""
+                          />
+                          <div className="min-w-0 flex-grow">
+                            <h5 className="text-xs font-black text-slate-900 dark:text-white font-jakarta leading-snug truncate">
+                              {memberInfo.user.personal_info?.fullname || fullname}
+                            </h5>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-none mt-0.5 truncate">
+                              @{memberInfo.user.personal_info?.username || username}
+                            </p>
+
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wider ${roleInfo.badgeStyle} leading-none mt-2`}
+                            >
+                              <i className={`fi ${roleInfo.icon} text-[7px]`}></i>
+                              {roleInfo.label}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Bio */}
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-3 bg-slate-50 dark:bg-[#1f1f23] p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800/45 italic line-clamp-2">
+                          {memberInfo.user.personal_info?.bio || "Không có giới thiệu tiểu sử."}
+                        </p>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/40 text-center">
+                          <div>
+                            <p className="text-xs font-black text-slate-800 dark:text-white font-jakarta">
+                              {memberInfo.user.account_info?.total_followers || 0}
+                            </p>
+                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                              Theo dõi
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-black text-slate-800 dark:text-white font-jakarta">
+                              {memberInfo.user.account_info?.total_following || 0}
+                            </p>
+                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                              Đang theo dõi
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Message button */}
+                        {!isSelf && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleStartChat(memberInfo.user);
+                            }}
+                            className="w-full mt-4 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer"
+                          >
+                            <i className="fi fi-rr-paper-plane text-[10px]"></i>
+                            Nhắn tin ngay
+                          </button>
+                        )}
+                      </motion.div>
+                    );
+                  })()}
+                </AnimatePresence>
+              </div>
               <span className="text-dark-grey text-xs opacity-60 font-medium ml-2">
                 {getDisplayDate(publishedAt)}
               </span>

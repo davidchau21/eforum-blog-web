@@ -285,7 +285,7 @@ export const GroupMemberCard = ({
               </div>
 
               {/* Bio */}
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-3 bg-slate-50 dark:bg-white/[0.02] p-2.5 rounded-xl border border-slate-100 dark:border-white/5 italic">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-3 bg-slate-50 dark:bg-white/[0.02] p-2.5 rounded-xl border border-slate-100 dark:border-white/5 italic line-clamp-2">
                 {member.user.personal_info.bio || "Không có giới thiệu tiểu sử."}
               </p>
 
