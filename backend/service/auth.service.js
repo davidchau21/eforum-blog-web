@@ -123,7 +123,7 @@ class AuthService {
       await user.save();
       await UserAuth.findOneAndUpdate(
         { user_id: user._id },
-        { $set: { otp: otp.toString(), otp_expiry_time } },
+        { $set: { otp: otp.toString(), otp_expiry_time, otpResendCount: 1, otpLastSentAt: new Date() } },
         { upsert: true }
       );
     } else {
@@ -133,7 +133,13 @@ class AuthService {
         verified: false,
       });
       await user.save();
-      await UserAuth.create({ user_id: user._id, otp: otp.toString(), otp_expiry_time });
+      await UserAuth.create({
+        user_id: user._id,
+        otp: otp.toString(),
+        otp_expiry_time,
+        otpResendCount: 1,
+        otpLastSentAt: new Date(),
+      });
     }
 
     mailService.sendEmail({
@@ -245,9 +251,13 @@ class AuthService {
     return { status: "password changed" };
   }
 
-  async forgotPassword(email) {
+  async sendOtp(email, type = "verification") {
+    if (!email) throw new Error("Email is required.");
     const user = await User.findOne({ "personal_info.email": email.toLowerCase() });
     if (!user) throw new Error("No user found with this email address.");
+    if (type === "verification" && user.verified) {
+      throw new Error("Account is already verified.");
+    }
 
     let authRecord = await UserAuth.findOne({ user_id: user._id, sessionId: { $exists: false } });
 
@@ -287,10 +297,12 @@ class AuthService {
       authRecord.otpLastSentAt = new Date();
       await authRecord.save();
 
+      const subject = type === "reset" ? "Password Reset OTP Verification" : "Your OTP for Account Verification";
+
       mailService.sendEmail({
         from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
         to: email,
-        subject: "Password Reset OTP Verification",
+        subject,
         html: otpTemplate(user.personal_info.username, otp),
       });
 
@@ -312,15 +324,25 @@ class AuthService {
       });
       await authRecord.save();
 
+      const subject = type === "reset" ? "Password Reset OTP Verification" : "Your OTP for Account Verification";
+
       mailService.sendEmail({
         from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
         to: email,
-        subject: "Password Reset OTP Verification",
+        subject,
         html: otpTemplate(user.personal_info.username, otp),
       });
 
       return { message: "OTP sent to email", resendCount: 1, timeLeft: 30 };
     }
+  }
+
+  async resendSignupOtp(email) {
+    return this.sendOtp(email, "verification");
+  }
+
+  async forgotPassword(email) {
+    return this.sendOtp(email, "reset");
   }
 
   async resetPassword({ email, otp, password }) {

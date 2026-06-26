@@ -14,4 +14,4 @@ export const corsOptions = {
   credentials: true,
 };
 
-export const isDevelopment = env.NODE_ENV === "development";
+export const isDevelopment = env.NODE_ENV !== "production";
