@@ -408,7 +408,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
         {/* Footer Actions */}
         <div className="flex items-center gap-4 mt-1">
           <button className="flex items-center gap-1.5 text-[13px] font-bold text-dark-grey hover:text-rose-500 transition-colors">
-            <i className="fi fi-rr-heart text-sm"></i>
+            <i className="fi fi-br-heart text-sm"></i>
             {0} {/* Placeholder for likes */}
           </button>
 
@@ -417,7 +417,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
               className="flex items-center gap-1.5 text-[13px] font-bold text-dark-grey hover:text-indigo-500 transition-colors"
               onClick={handleReplyClick}
             >
-              <i className="fi fi-rr-comment-dots text-sm"></i>
+              <i className="fi fi-br-comment-dots text-sm"></i>
               Reply
             </button>
           )}

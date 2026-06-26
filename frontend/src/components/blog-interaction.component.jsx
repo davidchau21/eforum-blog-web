@@ -197,7 +197,7 @@ const BlogInteraction = () => {
             }`}
           >
             <i
-              className={`fi ${islikedByUser ? "fi-sr-heart" : "fi-rr-heart"} text-base leading-none`}
+              className={`fi ${islikedByUser ? "fi-sr-heart" : "fi-br-heart"} text-base leading-none`}
             ></i>
             <span>{total_likes}</span>
           </button>
@@ -212,7 +212,7 @@ const BlogInteraction = () => {
             }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-grey hover:text-indigo-500 transition-all duration-200"
           >
-            <i className="fi fi-rr-comment-dots text-base leading-none"></i>
+            <i className="fi fi-br-comment-dots text-base leading-none"></i>
             <span>{total_comments}</span>
           </button>
 
@@ -222,7 +222,7 @@ const BlogInteraction = () => {
               onClick={() => setShowShareOptions((prev) => !prev)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-grey hover:text-emerald-500 transition-all duration-200"
             >
-              <i className="fi fi-rr-share text-base leading-none"></i>
+              <i className="fi fi-br-share text-base leading-none"></i>
               <span>{total_share}</span>
             </button>
 
@@ -237,7 +237,7 @@ const BlogInteraction = () => {
                   }}
                   className="w-9 h-9 rounded-xl bg-grey flex items-center justify-center hover:bg-grey/50 transition-colors duration-200 text-black"
                 >
-                  <i className="fi fi-rr-link text-base leading-none"></i>
+                  <i className="fi fi-br-link text-base leading-none"></i>
                 </button>
                 <TwitterShareButton
                   url={urlShare}
@@ -315,7 +315,7 @@ const BlogInteraction = () => {
             }`}
           >
             <i
-              className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-base leading-none`}
+              className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-br-bookmark"} text-base leading-none`}
             ></i>
           </button>
         </div>
@@ -328,7 +328,7 @@ const BlogInteraction = () => {
               to={blog.group ? `/group-editor/${blog_id}` : `/editor/${blog_id}`}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-grey hover:text-purple transition-all duration-200"
             >
-              <i className="fi fi-rr-edit text-base leading-none"></i>
+              <i className="fi fi-br-edit text-base leading-none"></i>
               <span className="hidden sm:inline">{currentTranslations.edit}</span>
             </Link>
           )}
@@ -342,7 +342,7 @@ const BlogInteraction = () => {
               }}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-indigo-500/10 hover:text-indigo-500 transition-all duration-200"
             >
-              <i className="fi fi-rr-link text-base leading-none"></i>
+              <i className="fi fi-br-link text-base leading-none"></i>
             </button>
             <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-[10px] uppercase font-bold tracking-wider rounded-lg py-1 px-2 whitespace-nowrap">
               {currentTranslations.copyLink}
@@ -359,7 +359,7 @@ const BlogInteraction = () => {
                   onClick={() => setShowConfirmModal(true)}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-bold text-dark-grey hover:bg-rose-500/10 hover:text-rose-500 transition-all duration-200"
                 >
-                  <i className="fi fi-rr-flag text-base leading-none"></i>
+                  <i className="fi fi-br-flag text-base leading-none"></i>
                 </button>
                 <span className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block bg-black text-white text-[10px] uppercase font-bold tracking-wider rounded-lg py-1 px-2 whitespace-nowrap">
                   {currentTranslations.reportBlog}
@@ -369,7 +369,7 @@ const BlogInteraction = () => {
                   <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
                     <div className="bg-white border border-grey rounded-2xl shadow-2xl p-6 w-80 mx-4">
                       <div className="w-12 h-12 bg-rose-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <i className="fi fi-rr-flag text-rose-500 text-xl leading-none"></i>
+                        <i className="fi fi-br-flag text-rose-500 text-xl leading-none"></i>
                       </div>
                       <p className="text-base font-bold text-black text-center mb-1">
                         {currentTranslations.confirmReportTitle}

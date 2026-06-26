@@ -478,7 +478,7 @@ const BlogPostCard = ({ content, author }) => {
                     className={
                       isLikedByUser
                         ? "fi fi-sr-heart text-sm leading-none mt-0.5"
-                        : "fi fi-rr-heart text-sm leading-none mt-0.5"
+                        : "fi fi-br-heart text-sm leading-none mt-0.5"
                     }
                   ></i>
                 </div>
@@ -489,7 +489,7 @@ const BlogPostCard = ({ content, author }) => {
                 onClick={handleCommentClick}
               >
                 <div className="w-8 h-8 rounded-lg bg-grey dark:bg-zinc-800/40 text-dark-grey group-hover/btn:bg-indigo-500/20 group-hover/btn:text-indigo-500 flex items-center justify-center transition-all">
-                  <i className="fi fi-rr-comment-alt text-sm leading-none mt-0.5"></i>
+                  <i className="fi fi-br-comment text-sm leading-none mt-0.5"></i>
                 </div>
                 <span className="font-extrabold">{total_comments}</span>
               </button>
@@ -500,10 +500,10 @@ const BlogPostCard = ({ content, author }) => {
                 onClick={handleSaveClick}
               >
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isSavedByUser ? "bg-amber-500/20 text-amber-500" : "bg-grey dark:bg-zinc-800/40 text-dark-grey group-hover/btn:bg-amber-500/20 group-hover/btn:text-amber-500"}`}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${isSavedByUser ? "bg-amber-500/25 text-amber-500 shadow-sm shadow-amber-500/10" : "bg-grey dark:bg-zinc-800/40 text-dark-grey group-hover/btn:bg-amber-500/20 group-hover/btn:text-amber-500"}`}
                 >
                   <i
-                    className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-sm leading-none mt-0.5`}
+                    className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-br-bookmark"} text-sm leading-none mt-0.5`}
                   ></i>
                 </div>
               </button>
@@ -512,7 +512,7 @@ const BlogPostCard = ({ content, author }) => {
                 onClick={handleShareClick}
               >
                 <div className="w-8 h-8 rounded-lg bg-grey dark:bg-zinc-800/40 text-dark-grey group-hover/btn:bg-emerald-500/20 group-hover/btn:text-emerald-500 flex items-center justify-center transition-all">
-                  <i className="fi fi-rr-share text-sm leading-none mt-0.5"></i>
+                  <i className="fi fi-br-share text-sm leading-none mt-0.5"></i>
                 </div>
               </button>
             </div>
@@ -632,7 +632,7 @@ const BlogPostCard = ({ content, author }) => {
             <img
               src={banner}
               alt={title}
-              className="w-full h-auto max-h-[300px] object-cover hover:scale-[1.02] transition-transform duration-500"
+              className="w-full h-auto hover:scale-[1.02] transition-transform duration-500"
             />
           </Link>
         )}
@@ -664,7 +664,7 @@ const BlogPostCard = ({ content, author }) => {
                 className={
                   isLikedByUser
                     ? "fi fi-sr-heart text-[15px] leading-none mt-0.5"
-                    : "fi fi-rr-heart text-[15px] leading-none mt-0.5"
+                    : "fi fi-br-heart text-[15px] leading-none mt-0.5"
                 }
               ></i>
             </div>
@@ -678,7 +678,7 @@ const BlogPostCard = ({ content, author }) => {
             onClick={handleCommentClick}
           >
             <div className="w-8 h-8 rounded-xl bg-grey dark:bg-zinc-800/40 text-dark-grey group-hover/btn:bg-indigo-500/20 group-hover/btn:text-indigo-500 flex items-center justify-center transition-all">
-              <i className="fi fi-rr-comment-alt text-[15px] leading-none mt-0.5"></i>
+              <i className="fi fi-br-comment text-[15px] leading-none mt-0.5"></i>
             </div>
             <span className="font-extrabold">
               {total_comments}{" "}
@@ -692,7 +692,7 @@ const BlogPostCard = ({ content, author }) => {
               onClick={handleShareClick}
             >
               <div className="w-8 h-8 rounded-xl bg-grey dark:bg-zinc-800/40 text-dark-grey group-hover/btn:bg-emerald-500/20 group-hover/btn:text-emerald-500 flex items-center justify-center transition-all">
-                <i className="fi fi-rr-share text-[15px] leading-none mt-0.5"></i>
+                <i className="fi fi-br-share text-[15px] leading-none mt-0.5"></i>
               </div>
               <span className="font-extrabold">Share</span>
             </button>
@@ -710,7 +710,7 @@ const BlogPostCard = ({ content, author }) => {
                   }}
                   className="w-9 h-9 rounded-xl bg-grey flex items-center justify-center hover:bg-grey/80 transition-all text-black active:scale-90"
                 >
-                  <i className="fi fi-rr-link text-sm leading-none"></i>
+                  <i className="fi fi-br-link text-sm leading-none"></i>
                 </button>
                 <TwitterShareButton
                   url={urlShare}
@@ -762,7 +762,7 @@ const BlogPostCard = ({ content, author }) => {
               className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isSavedByUser ? "bg-amber-500/25 text-amber-500 shadow-sm shadow-amber-500/10" : "bg-grey dark:bg-zinc-800/40 text-dark-grey group-hover/btn:bg-amber-500/20 group-hover/btn:text-amber-500"}`}
             >
               <i
-                className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-rr-bookmark"} text-[15px] leading-none mt-0.5`}
+                className={`fi ${isSavedByUser ? "fi-sr-bookmark" : "fi-br-bookmark"} text-[15px] leading-none mt-0.5`}
               ></i>
             </div>
             <span className="font-extrabold hidden sm:inline">
