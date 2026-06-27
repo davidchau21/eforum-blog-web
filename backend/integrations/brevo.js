@@ -21,7 +21,8 @@ const sendEmail = async ({ to, subject, html, attachments }) => {
 
 const mailService = {
   sendEmail: async (args) => {
-    if (mailConfig.isDevelopment) {
+    if (process.env.DISABLE_EMAIL === "true") {
+      console.log("Email sending is disabled via DISABLE_EMAIL=true");
       return Promise.resolve();
     }
 

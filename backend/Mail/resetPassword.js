@@ -1,297 +1,169 @@
-export default (name, link) => {
-  return `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-    <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-    
-    <head>
-      <!--[if gte mso 9]>
-    <xml>
-      <o:OfficeDocumentSettings>
-        <o:AllowPNG/>
-        <o:PixelsPerInch>96</o:PixelsPerInch>
-      </o:OfficeDocumentSettings>
-    </xml>
-    <![endif]-->
-      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <meta name="x-apple-disable-message-reformatting">
-      <!--[if !mso]><!-->
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <!--<![endif]-->
-      <title></title>
-    
-      <style type="text/css">
-        @media only screen and (min-width: 620px) {
-          .u-row {
-            width: 600px !important;
-          }
-          .u-row .u-col {
-            vertical-align: top;
-          }
-          .u-row .u-col-100 {
-            width: 600px !important;
-          }
-        }
+import { mailConfig } from "../config/mail.js";
+
+export default (name, otp) => {
+  const logoUrl = `${mailConfig.clientUrl}/logo.png`;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Reset Your Password</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    table {
+      border-collapse: collapse;
+      border-spacing: 0;
+      width: 100%;
+    }
+    td {
+      vertical-align: top;
+    }
+    .wrapper {
+      background-color: #f8fafc;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+      border: 1px solid #f1f5f9;
+    }
+    .header {
+      background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .logo-container {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .logo-img {
+      height: 40px;
+      width: auto;
+      margin-right: 12px;
+      vertical-align: middle;
+    }
+    .logo-text {
+      font-size: 28px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      vertical-align: middle;
+      display: inline-block;
+      margin: 0;
+    }
+    .subtitle {
+      color: #a7f3d0;
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-top: 5px;
+    }
+    .content {
+      padding: 40px 30px;
+      color: #334155;
+      line-height: 1.6;
+    }
+    h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    p {
+      margin-top: 0;
+      margin-bottom: 20px;
+      font-size: 15px;
+      color: #475569;
+    }
+    .otp-wrapper {
+      text-align: center;
+      margin: 30px 0;
+    }
+    .otp-box {
+      display: inline-block;
+      background-color: #f0fdf4;
+      color: #047857;
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 8px;
+      padding: 16px 36px 16px 44px; /* extra left padding offset to center letter spacing */
+      border-radius: 12px;
+      border: 2px dashed #059669;
+      box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.01);
+    }
+    .warning-box {
+      font-size: 13px;
+      color: #064e3b;
+      background-color: #f0fdf4;
+      border-left: 3px solid #059669;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 25px;
+    }
+    .footer {
+      background-color: #f8fafc;
+      padding: 30px;
+      text-align: center;
+      border-top: 1px solid #f1f5f9;
+    }
+    .footer p {
+      font-size: 12px;
+      color: #94a3b8;
+      margin: 0 0 10px 0;
+    }
+    .footer a {
+      color: #059669;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="container">
+      <div class="header">
+        <div class="logo-container">
+          <img class="logo-img" src="${logoUrl}" alt="EForum Logo">
+          <h1 class="logo-text">EForum</h1>
+        </div>
+        <div class="subtitle">Password Reset Request</div>
+      </div>
+      <div class="content">
+        <h1>Hello ${name},</h1>
+        <p>We received a request to reset the password for your EForum account. Please use the One-Time Password (OTP) code below to complete the authorization process:</p>
         
-        @media (max-width: 620px) {
-          .u-row-container {
-            max-width: 100% !important;
-            padding-left: 0px !important;
-            padding-right: 0px !important;
-          }
-          .u-row .u-col {
-            min-width: 320px !important;
-            max-width: 100% !important;
-            display: block !important;
-          }
-          .u-row {
-            width: 100% !important;
-          }
-          .u-col {
-            width: 100% !important;
-          }
-          .u-col>div {
-            margin: 0 auto;
-          }
-        }
+        <div class="otp-wrapper">
+          <div class="otp-box">${otp}</div>
+        </div>
         
-        body {
-          margin: 0;
-          padding: 0;
-        }
+        <div class="warning-box">
+          <strong>Security Notice:</strong> This code is valid for 10 minutes. If you did not request a password reset, please change your password immediately or contact our security team at <a href="mailto:security@edublog.com">security@edublog.com</a>.
+        </div>
         
-        table,
-        tr,
-        td {
-          vertical-align: top;
-          border-collapse: collapse;
-        }
-        
-        p {
-          margin: 0;
-        }
-        
-        .ie-container table,
-        .mso-container table {
-          table-layout: fixed;
-        }
-        
-        * {
-          line-height: inherit;
-        }
-        
-        a[x-apple-data-detectors='true'] {
-          color: inherit !important;
-          text-decoration: none !important;
-        }
-        
-        table,
-        td {
-          color: #000000;
-        }
-        
-        #u_body a {
-          color: #0000ee;
-          text-decoration: underline;
-        }
-      </style>
-    
-    
-    
-      <!--[if !mso]><!-->
-      <link href="https://fonts.googleapis.com/css?family=Cabin:400,700" rel="stylesheet" type="text/css">
-      <!--<![endif]-->
-    
-    </head>
-    
-    <body class="clean-body u_body" style="margin: 0;padding: 0;-webkit-text-size-adjust: 100%;background-color: #f9f9f9;color: #000000">
-      <!--[if IE]><div class="ie-container"><![endif]-->
-      <!--[if mso]><div class="mso-container"><![endif]-->
-      <table id="u_body" style="border-collapse: collapse;table-layout: fixed;border-spacing: 0;mso-table-lspace: 0pt;mso-table-rspace: 0pt;vertical-align: top;min-width: 320px;Margin: 0 auto;background-color: #f9f9f9;width:100%" cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr style="vertical-align: top">
-            <td style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-              <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td align="center" style="background-color: #f9f9f9;"><![endif]-->
-    
-    
-              <div class="u-row-container" style="padding: 0px;background-color: transparent">
-                <div class="u-row" style="Margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: #ffffff;">
-                  <div style="border-collapse: collapse;display: table;width: 100%;height: 100%;background-color: transparent;">
-                    <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:600px;"><tr style="background-color: #ffffff;"><![endif]-->
-    
-                    <!--[if (mso)|(IE)]><td align="center" width="600" style="width: 600px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;" valign="top"><![endif]-->
-                    <div class="u-col u-col-100" style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
-                      <div style="height: 100%;width: 100% !important;">
-                        <!--[if (!mso)&(!IE)]><!-->
-                        <div style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;">
-                          <!--<![endif]-->
-    
-                          <table style="font-family:'Cabin',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-                            <tbody>
-                              <tr>
-                                <td style="overflow-wrap:break-word;word-break:break-word;padding:20px;font-family:'Cabin',sans-serif;" align="left">
-    
-                                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                                    <tr>
-                                      <td style="padding-right: 0px;padding-left: 0px;" align="center">
-    
-                                        <img align="center" border="0" src="https://assets.unlayer.com/projects/47137/1675000768671-logo.ico" alt="Sateeq Logo" title="Sateeq Logo" style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 19%;max-width: 106.4px;"
-                                          width="106.4" />
-    
-                                      </td>
-                                    </tr>
-                                  </table>
-    
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-    
-                          <!--[if (!mso)&(!IE)]><!-->
-                        </div>
-                        <!--<![endif]-->
-                      </div>
-                    </div>
-                    <!--[if (mso)|(IE)]></td><![endif]-->
-                    <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-                  </div>
-                </div>
-              </div>
-    
-    
-    
-              <div class="u-row-container" style="padding: 0px;background-color: transparent">
-                <div class="u-row" style="Margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: #e5eaf5;">
-                  <div style="border-collapse: collapse;display: table;width: 100%;height: 100%;background-color: transparent;">
-                    <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:600px;"><tr style="background-color: #e5eaf5;"><![endif]-->
-    
-                    <!--[if (mso)|(IE)]><td align="center" width="600" style="width: 600px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;" valign="top"><![endif]-->
-                    <div class="u-col u-col-100" style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
-                      <div style="height: 100%;width: 100% !important;">
-                        <!--[if (!mso)&(!IE)]><!-->
-                        <div style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;">
-                          <!--<![endif]-->
-    
-                          <table style="font-family:'Cabin',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-                            <tbody>
-                              <tr>
-                                <td style="overflow-wrap:break-word;word-break:break-word;padding:55px;font-family:'Cabin',sans-serif;" align="left">
-    
-                                  <div style="color: #ffffff; line-height: 140%; text-align: left; word-wrap: break-word;">
-                                    <p style="font-size: 14px; line-height: 140%;"><span style="color: #000000; line-height: 19.6px;">Hello ${name},</span></p>
-                                    <p style="font-size: 14px; line-height: 140%;"> </p>
-                                    <p style="font-size: 14px; line-height: 140%;"><span style="color: #000000; line-height: 19.6px;">Please click on the given button to reset your password</span><br /><br /><span style="color: #000000; line-height: 19.6px;">Note: This link is valid for only 10 mins.</span></p>
-                                    <p style="font-size: 14px; line-height: 140%;"><br /><br /><span style="color: #000000; line-height: 19.6px;">Thanks &amp; Regards</span><br /><span style="color: #000000; line-height: 19.6px;">Team Task</span></p>
-                                  </div>
-    
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-    
-                          <!--[if (!mso)&(!IE)]><!-->
-                        </div>
-                        <!--<![endif]-->
-                      </div>
-                    </div>
-                    <!--[if (mso)|(IE)]></td><![endif]-->
-                    <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-                  </div>
-                </div>
-              </div>
-    
-    
-    
-              <div class="u-row-container" style="padding: 0px;background-color: transparent">
-                <div class="u-row" style="Margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: #e5eaf5;">
-                  <div style="border-collapse: collapse;display: table;width: 100%;height: 100%;background-color: transparent;">
-                    <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:600px;"><tr style="background-color: #e5eaf5;"><![endif]-->
-    
-                    <!--[if (mso)|(IE)]><td align="center" width="600" style="width: 600px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;" valign="top"><![endif]-->
-                    <div class="u-col u-col-100" style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
-                      <div style="height: 100%;width: 100% !important;">
-                        <!--[if (!mso)&(!IE)]><!-->
-                        <div style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;">
-                          <!--<![endif]-->
-    
-                          <table style="font-family:'Cabin',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-                            <tbody>
-                              <tr>
-                                <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Cabin',sans-serif;" align="left">
-    
-                                  <!--[if mso]><style>.v-button {background: transparent !important;}</style><![endif]-->
-                                  <div align="center">
-                                    <!--[if mso]><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${link}" style="height:56px; v-text-anchor:middle; width:156px;" arcsize="7%"  stroke="f" fillcolor="#115581"><w:anchorlock/><center style="color:#FFFFFF;font-family:'Cabin',sans-serif;"><![endif]-->
-                                    <a href="${link}" target="_blank" class="v-button" style="box-sizing: border-box;display: inline-block;font-family:'Cabin',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #FFFFFF; background-color: #115581; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;font-size: 14px;">
-                                      <span style="display:block;padding:20px 32px;line-height:120%;"><span style="line-height: 16.8px;">Reset Password</span></span>
-                                    </a>
-                                    <!--[if mso]></center></v:roundrect><![endif]-->
-                                  </div>
-    
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-    
-                          <!--[if (!mso)&(!IE)]><!-->
-                        </div>
-                        <!--<![endif]-->
-                      </div>
-                    </div>
-                    <!--[if (mso)|(IE)]></td><![endif]-->
-                    <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-                  </div>
-                </div>
-              </div>
-    
-    
-    
-              <div class="u-row-container" style="padding: 0px;background-color: transparent">
-                <div class="u-row" style="Margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
-                  <div style="border-collapse: collapse;display: table;width: 100%;height: 100%;background-color: transparent;">
-                    <!--[if (mso)|(IE)]><table width="100%" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding: 0px;background-color: transparent;" align="center"><table cellpadding="0" cellspacing="0" border="0" style="width:600px;"><tr style="background-color: transparent;"><![endif]-->
-    
-                    <!--[if (mso)|(IE)]><td align="center" width="600" style="width: 600px;padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;" valign="top"><![endif]-->
-                    <div class="u-col u-col-100" style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
-                      <div style="height: 100%;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
-                        <!--[if (!mso)&(!IE)]><!-->
-                        <div style="box-sizing: border-box; height: 100%; padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
-                          <!--<![endif]-->
-    
-                          <table style="font-family:'Cabin',sans-serif;" role="presentation" cellpadding="0" cellspacing="0" width="100%" border="0">
-                            <tbody>
-                              <tr>
-                                <td style="overflow-wrap:break-word;word-break:break-word;padding:48px;font-family:'Cabin',sans-serif;" align="left">
-    
-                                  <div style="color: #958d8d; line-height: 170%; text-align: center; word-wrap: break-word;">
-                                    <p style="font-size: 14px; line-height: 170%;">Love 💙 Team Tawk</p>
-                                    <p style="font-size: 14px; line-height: 170%;">For any assistance and queries write to us at <a rel="noopener" href="mailto:support@codingmonk.in?" target="_blank">Support@codingmonk.in</a><br /><br /></p>
-                                  </div>
-    
-                                </td>
-                              </tr>
-                            </tbody>
-                          </table>
-    
-                          <!--[if (!mso)&(!IE)]><!-->
-                        </div>
-                        <!--<![endif]-->
-                      </div>
-                    </div>
-                    <!--[if (mso)|(IE)]></td><![endif]-->
-                    <!--[if (mso)|(IE)]></tr></table></td></tr></table><![endif]-->
-                  </div>
-                </div>
-              </div>
-    
-    
-              <!--[if (mso)|(IE)]></td></tr></table><![endif]-->
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <!--[if mso]></div><![endif]-->
-      <!--[if IE]></div><![endif]-->
-    </body>
-    
-    </html>`;
+        <p>For your account's safety, never share this verification code with anyone. EForum employees will never ask for your passwords or codes.</p>
+      </div>
+      <div class="footer">
+        <p>Need help? Contact support at <a href="mailto:support@edublog.com">support@edublog.com</a></p>
+        <p>&copy; 2026 EForum. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
 };
