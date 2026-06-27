@@ -5,8 +5,9 @@ import otpGenerator from "otp-generator";
 import User from "../Schema/User.js";
 import UserAuth from "../Schema/UserAuth.js"; // maps to 'oauth' collection
 import { accessTokenSecret, refreshTokenSecret, verificationTokenSecret } from "../config/auth.js";
-import mailService from "../integrations/nodemailer.js";
+import mailService from "../integrations/brevo.js";
 import otpTemplate from "../Mail/otp.js";
+
 import resetPasswordTemplate from "../Mail/resetPassword.js";
 import { env } from "../config/env.js";
 import { nanoid } from "nanoid";
@@ -298,12 +299,13 @@ class AuthService {
       await authRecord.save();
 
       const subject = type === "reset" ? "Password Reset OTP Verification" : "Your OTP for Account Verification";
+      const htmlContent = type === "reset" ? resetPasswordTemplate(user.personal_info.username, otp) : otpTemplate(user.personal_info.username, otp);
 
       mailService.sendEmail({
         from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
         to: email,
         subject,
-        html: otpTemplate(user.personal_info.username, otp),
+        html: htmlContent,
       });
 
       return { message: "OTP sent to email", resendCount: count + 1, timeLeft: 30 };
@@ -325,12 +327,13 @@ class AuthService {
       await authRecord.save();
 
       const subject = type === "reset" ? "Password Reset OTP Verification" : "Your OTP for Account Verification";
+      const htmlContent = type === "reset" ? resetPasswordTemplate(user.personal_info.username, otp) : otpTemplate(user.personal_info.username, otp);
 
       mailService.sendEmail({
         from: { name: "Team Support EForum", email: "eforum@gmail.vn.com" },
         to: email,
         subject,
-        html: otpTemplate(user.personal_info.username, otp),
+        html: htmlContent,
       });
 
       return { message: "OTP sent to email", resendCount: 1, timeLeft: 30 };

@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
-import { mailConfig, smtpConfig } from "../config/mail.js";
+import { mailConfig, getActiveSmtpConfig } from "../config/mail.js";
 
-const transporter = nodemailer.createTransport(smtpConfig.gmail);
+const transporter = nodemailer.createTransport(getActiveSmtpConfig());
 
 const sendSEmail = async ({ to, subject, html, attachments }) => {
   try {
@@ -13,15 +13,17 @@ const sendSEmail = async ({ to, subject, html, attachments }) => {
       attachments,
     };
 
-    return transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    return info;
   } catch (error) {
-    console.error(error);
+    console.error("Nodemailer send email error:", error);
   }
 };
 
 const mailService = {
   sendEmail: async (args) => {
-    if (mailConfig.isDevelopment) {
+    if (process.env.DISABLE_EMAIL === "true") {
+      console.log("Email sending is disabled via DISABLE_EMAIL=true");
       return Promise.resolve();
     }
 
@@ -30,3 +32,4 @@ const mailService = {
 };
 
 export default mailService;
+
