@@ -261,7 +261,8 @@ class UserBlogController extends BaseController {
     try {
       const userId = req.user.id;
       const { id } = req.params;
-      const result = await blogService.reportBlog(id, userId);
+      const { reason } = req.body;
+      const result = await blogService.reportBlog(id, userId, reason);
       return this.sendSuccess(res, result);
     } catch (error) {
       return this.sendError(res, error.message);

@@ -800,15 +800,42 @@ class BlogService {
     return { blog };
   }
 
-  async reportBlog(blog_id, userId) {
+  async reportBlog(blog_id, userId, reason) {
     const reportUser = await User.findById(userId);
     if (!reportUser) throw new Error("User not found");
-    const blog = await Blog.findOneAndUpdate(
-      { blog_id },
-      { $set: { isReport: true, reportUser: reportUser._id } }
-    );
+
+    const blog = await Blog.findOne({ blog_id });
     if (!blog) throw new Error("Blog not found");
-    return { message: "Blog report successfully" };
+
+    // Prevent duplicate reports from the same user
+    const alreadyReported = blog.reports && blog.reports.some(r => String(r.user) === String(userId));
+    if (alreadyReported) {
+      throw new Error("Bạn đã báo cáo bài viết này rồi.");
+    }
+
+    if (!blog.reports) {
+      blog.reports = [];
+    }
+    blog.reports.push({
+      user: userId,
+      reason: reason,
+      reportedAt: new Date()
+    });
+
+    if (!blog.isReport) {
+      blog.isReport = true;
+      blog.reportUser = userId;
+      blog.reportReason = reason;
+    }
+
+    let message = "Báo cáo bài viết thành công!";
+    if (blog.reports.length >= 5) {
+      blog.isActive = false;
+      message = "Bài viết đã bị tự động ẩn do nhận nhiều báo cáo vi phạm.";
+    }
+
+    await blog.save();
+    return { message };
   }
 }
 

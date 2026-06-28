@@ -21,6 +21,7 @@ const CommentCard = ({ index, leftVal, commentData }) => {
     isReport,
     image,
     isHidden,
+    editedAt,
   } = commentData;
 
   let {
@@ -47,6 +48,9 @@ const CommentCard = ({ index, leftVal, commentData }) => {
   let [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isReplying, setReplying] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [localComment, setLocalComment] = useState(comment);
+  const [localEditedAt, setLocalEditedAt] = useState(commentData.editedAt || null);
 
   const getParentIndex = () => {
     let startingPoint = index - 1;
@@ -258,10 +262,30 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
   const canDelete =
     username === commented_by_username || username === blog_author;
+  const canEdit = username === commented_by_username;
   const canHide = username === blog_author;
   const canReport =
     access_token && username !== commented_by_username && !isReport;
-  const hasOptions = canDelete || canHide || canReport;
+  const hasOptions = canDelete || canHide || canReport || canEdit;
+
+  const handleEditSubmit = (newText) => {
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/comments/edit",
+        { _id, comment: newText },
+        { headers: { Authorization: `Bearer ${access_token}` } },
+      )
+      .then(({ data }) => {
+        setLocalComment(data.comment);
+        setLocalEditedAt(data.editedAt);
+        commentData.comment = data.comment;
+        commentData.editedAt = data.editedAt;
+        setBlog({ ...blog, comments: { results: commentsArr } });
+        setIsEditing(false);
+        toast.success("Đã cập nhật bình luận");
+      })
+      .catch((err) => toast.error(err.response?.data?.error || "Cập nhật thất bại"));
+  };
 
   return (
     <div
@@ -319,6 +343,20 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
             {showOptions && (
               <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-grey rounded-xl shadow-2xl py-1.5 z-10 flex flex-col overflow-hidden">
+                {/* Edit for Comment Author */}
+                {canEdit && (
+                  <button
+                    onClick={() => {
+                      setIsEditing(true);
+                      setShowOptions(false);
+                    }}
+                    className="flex items-center gap-2.5 px-4 py-2 text-[13px] font-bold text-dark-grey hover:bg-grey hover:text-black transition-colors w-full text-left"
+                  >
+                    <i className="fi fi-rr-edit w-4"></i>
+                    Chỉnh sửa
+                  </button>
+                )}
+
                 {/* Hide/Show for Blog Author */}
                 {canHide && (
                   <button
@@ -370,25 +408,60 @@ const CommentCard = ({ index, leftVal, commentData }) => {
 
       {/* Comment Content */}
       <div className={`${isReply ? "" : "pl-[52px]"}`}>
-        {/* Comment text */}
-        {isHidden && username !== blog_author ? (
-          <div className="relative group/hidden mb-4">
-            <div className="blur-md select-none opacity-40 pointer-events-none text-[14.5px] leading-relaxed text-black">
-              {comment}
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <p className="text-[12px] font-bold text-dark-grey bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-grey shadow-sm flex items-center gap-1.5">
-                <i className="fi fi-rr-eye-crossed"></i>
-                Hidden by author
-              </p>
-            </div>
+        {/* Edit mode inline */}
+        {isEditing ? (
+          <div className="mb-4">
+            <CommentField
+              action="Edit"
+              editMode={true}
+              editingCommentId={_id}
+              initialValue={localComment}
+              onEditSubmit={handleEditSubmit}
+              onEditCancel={() => setIsEditing(false)}
+            />
           </div>
         ) : (
-          <div
-            className={`whitespace-pre-wrap leading-relaxed text-black/80 mb-4 font-medium ${isReply ? "text-[14px]" : "text-[15px]"}`}
-          >
-            {comment}
-          </div>
+          <>
+            {/* Comment text */}
+            {isHidden && username !== blog_author ? (
+              <div className="relative group/hidden mb-4">
+                <div className="blur-md select-none opacity-40 pointer-events-none text-[14.5px] leading-relaxed text-black">
+                  {localComment}
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <p className="text-[12px] font-bold text-dark-grey bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full border border-grey shadow-sm flex items-center gap-1.5">
+                    <i className="fi fi-rr-eye-crossed"></i>
+                    Hidden by author
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div
+                className={`whitespace-pre-wrap leading-relaxed text-black/80 mb-1 font-medium ${isReply ? "text-[14px]" : "text-[15px]"}`}
+              >
+                {localComment.split(/(@\w+)/g).map((part, i) =>
+                  part.startsWith("@") ? (
+                    <a
+                      key={i}
+                      href={`/user/${part.slice(1)}`}
+                      className="text-indigo-600 font-bold hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {part}
+                    </a>
+                  ) : (
+                    <span key={i}>{part}</span>
+                  )
+                )}
+              </div>
+            )}
+            {/* Edited badge */}
+            {localEditedAt && (
+              <p className="text-[10px] text-dark-grey/50 font-medium mb-3 italic">
+                (đã chỉnh sửa)
+              </p>
+            )}
+          </>
         )}
 
         {/* Comment image */}

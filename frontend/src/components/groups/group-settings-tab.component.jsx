@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { uploadImage } from "../../common/aws";
 import { toast } from "react-hot-toast";
 import { GroupConfirmModal } from "./group-confirm-modal.component";
@@ -16,9 +16,16 @@ export const GroupSettingsTab = ({
   settingsMessage,
   handleSaveSettings,
   handleDeleteGroup,
+  myRole,
 }) => {
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const initialsUrl = `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(groupEditForm.name || "Group")}&backgroundColor=b3c5fc`;
+
+  useEffect(() => {
+    if (myRole !== "OWNER" && (settingsCategory === "moderator_perms" || settingsCategory === "danger")) {
+      setSettingsCategory("basic");
+    }
+  }, [myRole, settingsCategory, setSettingsCategory]);
 
   return (
     <div className="bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-[32px] p-6 shadow-sm flex flex-col md:flex-row gap-8 min-h-[480px]">
@@ -44,20 +51,24 @@ export const GroupSettingsTab = ({
             label: "Kiểm duyệt nội dung",
             icon: "fi-rr-shield-check",
           },
-          {
-            id: "moderator_perms",
-            label: "Quyền kiểm duyệt viên",
-            icon: "fi-rr-settings-sliders",
-          },
+          ...(myRole === "OWNER"
+            ? [
+                {
+                  id: "moderator_perms",
+                  label: "Phân quyền quản trị",
+                  icon: "fi-rr-settings-sliders",
+                },
+                {
+                  id: "danger",
+                  label: "Quản lý nâng cao",
+                  icon: "fi-rr-exclamation",
+                },
+              ]
+            : []),
           {
             id: "rules",
             label: "Quy định nhóm",
             icon: "fi-rr-list-check",
-          },
-          {
-            id: "danger",
-            label: "Quản lý nâng cao",
-            icon: "fi-rr-exclamation",
           },
         ].map((cat) => {
           const isActive = settingsCategory === cat.id;
@@ -352,18 +363,78 @@ export const GroupSettingsTab = ({
             </div>
           )}
 
-          {/* Section 3: Moderator Permissions */}
+          {/* Section 3: Admin Role Permissions */}
           {settingsCategory === "moderator_perms" && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
                 <h4 className="text-sm font-black text-slate-800 dark:text-white font-jakarta mb-1">
-                  Quyền hạn Kiểm duyệt viên
+                  Phân quyền quản trị nhóm
                 </h4>
                 <p className="text-[10px] text-slate-400">
-                  Phân cấp quyền hạn chi tiết cho vai trò Moderator trong nhóm
+                  Thiết lập chi tiết quyền hạn cho các vai trò quản lý (Phó nhóm & Kiểm duyệt viên)
                 </p>
               </div>
+
+              {/* ── QUYỀN HẠN PHÓ NHÓM (DEPUTY) ── */}
+              <div className="space-y-4 pt-2 border-b border-slate-100 dark:border-white/5 pb-6">
+                <h5 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-3">
+                  Quyền hạn của Phó nhóm (Vice-Admin)
+                </h5>
+                <Toggle
+                  enabled={settings.deputyCanApprove !== false}
+                  onChange={() =>
+                    setSettings({
+                      ...settings,
+                      deputyCanApprove: settings.deputyCanApprove === undefined ? false : !settings.deputyCanApprove,
+                    })
+                  }
+                  label="Phê duyệt bài viết & tài liệu"
+                  description="Cho phép phê duyệt hoặc từ chối bài viết, tài liệu học tập của thành viên."
+                  icon="fi-rr-document-signed"
+                />
+                <Toggle
+                  enabled={settings.deputyCanKick !== false}
+                  onChange={() =>
+                    setSettings({
+                      ...settings,
+                      deputyCanKick: settings.deputyCanKick === undefined ? false : !settings.deputyCanKick,
+                    })
+                  }
+                  label="Duyệt & Xóa thành viên"
+                  description="Cho phép xóa thành viên thường, phê duyệt/từ chối yêu cầu gia nhập."
+                  icon="fi-rr-delete-user"
+                />
+                <Toggle
+                  enabled={settings.deputyCanDeletePost !== false}
+                  onChange={() =>
+                    setSettings({
+                      ...settings,
+                      deputyCanDeletePost: settings.deputyCanDeletePost === undefined ? false : !settings.deputyCanDeletePost,
+                    })
+                  }
+                  label="Gỡ bài viết vi phạm"
+                  description="Cho phép xóa hoặc gỡ bỏ các bài viết bị báo cáo của thành viên thường."
+                  icon="fi-rr-trash"
+                />
+                <Toggle
+                  enabled={settings.deputyCanChangeSettings !== false}
+                  onChange={() =>
+                    setSettings({
+                      ...settings,
+                      deputyCanChangeSettings: settings.deputyCanChangeSettings === undefined ? false : !settings.deputyCanChangeSettings,
+                    })
+                  }
+                  label="Thay đổi cài đặt nhóm"
+                  description="Cho phép truy cập Cài đặt nhóm để chỉnh sửa thông tin và cấu hình kiểm duyệt."
+                  icon="fi-rr-settings"
+                />
+              </div>
+
+              {/* ── QUYỀN HẠN KIỂM DUYỆT VIÊN (MODERATOR) ── */}
               <div className="space-y-4 pt-2">
+                <h5 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-3">
+                  Quyền hạn của Kiểm duyệt viên (Moderator)
+                </h5>
                 <Toggle
                   enabled={settings.moderatorCanApprove}
                   onChange={() =>
@@ -372,8 +443,8 @@ export const GroupSettingsTab = ({
                       moderatorCanApprove: !settings.moderatorCanApprove,
                     })
                   }
-                  label="Duyệt yêu cầu gia nhập"
-                  description="Cho phép phê duyệt hoặc từ chối yêu cầu xin gia nhập nhóm."
+                  label="Duyệt bài viết & thành viên"
+                  description="Cho phép phê duyệt bài đăng chờ duyệt hoặc duyệt yêu cầu gia nhập."
                   icon="fi-rr-user-add"
                 />
                 <Toggle

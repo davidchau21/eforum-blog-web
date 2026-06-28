@@ -382,8 +382,13 @@ class GroupService {
       throw new Error("Bạn không có quyền thực hiện hành động này.");
     }
 
-    if (requesterMember.role === "DEPUTY" && targetMember.role === "OWNER") {
-      throw new Error("Phó nhóm không có quyền xóa Trưởng nhóm.");
+    if (requesterMember.role === "DEPUTY") {
+      if (targetMember.role === "OWNER") {
+        throw new Error("Phó nhóm không có quyền xóa Trưởng nhóm.");
+      }
+      if (group.settings && group.settings.deputyCanKick === false) {
+        throw new Error("Phó nhóm không có quyền xóa thành viên trong nhóm này.");
+      }
     }
 
     if (requesterMember.role === "MODERATOR") {
@@ -485,13 +490,29 @@ class GroupService {
       throw new Error("Chỉ Trưởng nhóm hoặc Phó nhóm mới có quyền thay đổi cài đặt.");
     }
 
-    const allowedKeys = [
+    if (reqMember.role === "DEPUTY" && (!group.settings || !group.settings.deputyCanChangeSettings)) {
+      throw new Error("Phó nhóm không có quyền thay đổi cài đặt của nhóm này.");
+    }
+
+    let allowedKeys = [
       "memberPostApprovalRequired",
       "memberUploadApprovalRequired",
       "moderatorCanKick",
       "moderatorCanApprove",
-      "moderatorCanDeletePost"
+      "moderatorCanDeletePost",
+      "deputyCanKick",
+      "deputyCanApprove",
+      "deputyCanDeletePost",
+      "deputyCanChangeSettings"
     ];
+
+    if (reqMember.role === "DEPUTY") {
+      // Deputies can only update basic content approval settings
+      allowedKeys = [
+        "memberPostApprovalRequired",
+        "memberUploadApprovalRequired"
+      ];
+    }
 
     if (!group.settings) {
       group.settings = {};
@@ -779,17 +800,17 @@ class GroupService {
     const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
     if (!requesterMember) throw new Error("Bạn không phải thành viên nhóm.");
 
-    const isOwnerOrDeputy = requesterMember.role === "OWNER" || requesterMember.role === "DEPUTY";
-    const isMod = requesterMember.role === "MODERATOR";
-
-    if (!isOwnerOrDeputy && !isMod) {
-      throw new Error("Bạn không có quyền duyệt bài viết.");
+    let hasApprovePermission = false;
+    if (requesterMember.role === "OWNER") {
+      hasApprovePermission = true;
+    } else if (requesterMember.role === "DEPUTY" && (!group.settings || group.settings.deputyCanApprove !== false)) {
+      hasApprovePermission = true;
+    } else if (requesterMember.role === "MODERATOR" && group.settings && group.settings.moderatorCanApprove) {
+      hasApprovePermission = true;
     }
 
-    if (isMod) {
-      if (!group.settings || !group.settings.moderatorCanApprove) {
-        throw new Error("Kiểm duyệt viên không có quyền duyệt bài viết trong nhóm này.");
-      }
+    if (!hasApprovePermission) {
+      throw new Error("Bạn không có quyền duyệt bài viết.");
     }
 
     const blog = await Blog.findOne({ _id: blogId, group: groupId, isActive: false });
@@ -837,17 +858,17 @@ class GroupService {
     const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
     if (!requesterMember) throw new Error("Bạn không phải thành viên nhóm.");
 
-    const isOwnerOrDeputy = requesterMember.role === "OWNER" || requesterMember.role === "DEPUTY";
-    const isMod = requesterMember.role === "MODERATOR";
-
-    if (!isOwnerOrDeputy && !isMod) {
-      throw new Error("Bạn không có quyền từ chối bài viết.");
+    let hasRejectPermission = false;
+    if (requesterMember.role === "OWNER") {
+      hasRejectPermission = true;
+    } else if (requesterMember.role === "DEPUTY" && (!group.settings || group.settings.deputyCanDeletePost !== false)) {
+      hasRejectPermission = true;
+    } else if (requesterMember.role === "MODERATOR" && group.settings && group.settings.moderatorCanDeletePost) {
+      hasRejectPermission = true;
     }
 
-    if (isMod) {
-      if (!group.settings || !group.settings.moderatorCanDeletePost) {
-        throw new Error("Kiểm duyệt viên không có quyền xóa bài viết trong nhóm này.");
-      }
+    if (!hasRejectPermission) {
+      throw new Error("Bạn không có quyền từ chối bài viết.");
     }
 
     const blog = await Blog.findOne({ _id: blogId, group: groupId, isActive: false });
@@ -860,6 +881,94 @@ class GroupService {
     blog.draft = false;
     await blog.save();
     return { success: true, message: "Từ chối bài viết thành công." };
+  }
+
+  /**
+   * Get reported group blogs
+   */
+  async getReportedBlogs(groupId, requesterId) {
+    const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!requesterMember || (requesterMember.role !== "OWNER" && requesterMember.role !== "DEPUTY" && requesterMember.role !== "MODERATOR")) {
+      throw new Error("Chỉ Trưởng nhóm, Phó nhóm hoặc Kiểm duyệt viên mới có quyền xem bài viết bị báo cáo.");
+    }
+
+    const list = await Blog.find({ group: groupId, isReport: true })
+      .populate("author", "personal_info.fullname personal_info.username personal_info.profile_img")
+      .populate("reports.user", "personal_info.fullname personal_info.username")
+      .sort({ createdAt: -1 });
+
+    return { list };
+  }
+
+  /**
+   * Dismiss reports on a group blog post (keep it, mark isReport as false)
+   */
+  async dismissReportedGroupBlog(groupId, blogId, requesterId) {
+    const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!requesterMember) throw new Error("Bạn không phải thành viên nhóm.");
+
+    const group = await Group.findById(groupId);
+    if (!group) throw new Error("Nhóm không tồn tại.");
+
+    let hasDismissPermission = false;
+    if (requesterMember.role === "OWNER") {
+      hasDismissPermission = true;
+    } else if (requesterMember.role === "DEPUTY" && (!group.settings || group.settings.deputyCanDeletePost !== false)) {
+      hasDismissPermission = true;
+    } else if (requesterMember.role === "MODERATOR" && group.settings && group.settings.moderatorCanDeletePost) {
+      hasDismissPermission = true;
+    }
+
+    if (!hasDismissPermission) {
+      throw new Error("Bạn không có quyền xử lý báo cáo bài viết.");
+    }
+
+    const blog = await Blog.findOneAndUpdate(
+      { _id: blogId, group: groupId },
+      { $set: { isReport: false, reports: [] }, $unset: { reportUser: 1, reportReason: 1 } },
+      { new: true }
+    );
+
+    if (!blog) throw new Error("Không tìm thấy bài viết.");
+    return { success: true, message: "Bỏ qua báo cáo bài viết thành công." };
+  }
+
+  /**
+   * Delete a reported group blog post
+   */
+  async deleteReportedGroupBlog(groupId, blogId, requesterId) {
+    const group = await Group.findById(groupId);
+    if (!group) throw new Error("Nhóm không tồn tại.");
+
+    const requesterMember = await GroupMember.findOne({ group: groupId, user: requesterId, status: "JOINED" });
+    if (!requesterMember) throw new Error("Bạn không phải thành viên nhóm.");
+
+    let hasDeletePermission = false;
+    if (requesterMember.role === "OWNER") {
+      hasDeletePermission = true;
+    } else if (requesterMember.role === "DEPUTY" && (!group.settings || group.settings.deputyCanDeletePost !== false)) {
+      hasDeletePermission = true;
+    } else if (requesterMember.role === "MODERATOR" && group.settings && group.settings.moderatorCanDeletePost) {
+      hasDeletePermission = true;
+    }
+
+    if (!hasDeletePermission) {
+      throw new Error("Bạn không có quyền xóa bài viết bị báo cáo.");
+    }
+
+    const blog = await Blog.findOne({ _id: blogId, group: groupId });
+    if (!blog) {
+      throw new Error("Không tìm thấy bài viết.");
+    }
+
+    // Set isActive: false and delete it
+    blog.isActive = false;
+    blog.isRejected = true;
+    blog.isReport = false;
+    blog.reports = [];
+    await blog.save();
+
+    return { success: true, message: "Gỡ bài viết vi phạm thành công." };
   }
 
   /**

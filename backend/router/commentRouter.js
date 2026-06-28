@@ -7,6 +7,12 @@ const commnentRouter = express.Router();
 // Report route
 commnentRouter.post("/report/:id", isAuthenticate, (req, res) => commentController.reportComment(req, res));
 
+// Edit route
+commnentRouter.post("/edit", isAuthenticate, (req, res) => commentController.editComment(req, res));
+
+// Mention search route
+commnentRouter.get("/mention-users", (req, res) => commentController.searchUsersForMention(req, res));
+
 // Comment routes
 commnentRouter.post("/add", isAuthenticate, (req, res) => commentController.addComment(req, res));
 commnentRouter.post("/get-blog-comments", (req, res) => commentController.getBlogComments(req, res));

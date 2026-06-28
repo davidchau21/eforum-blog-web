@@ -60,6 +60,26 @@ class CommentController extends BaseController {
       return this.sendError(res, error.message);
     }
   }
+
+  async editComment(req, res) {
+    try {
+      const userId = req.user.id || req.user;
+      const result = await commentService.editComment(userId, req.body);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async searchUsersForMention(req, res) {
+    try {
+      const { query } = req.query;
+      const result = await commentService.searchUsers(query);
+      return this.sendSuccess(res, { users: result });
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
 }
 
 export default new CommentController();
