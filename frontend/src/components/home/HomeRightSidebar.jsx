@@ -5,6 +5,7 @@ import {
 } from "../skeleton.component";
 import AnimationWrapper from "../../common/page-animation";
 import MinimalBlogPost from "../nobanner-blog-post.component";
+import { Link } from "react-router-dom";
 
 const HomeRightSidebar = ({
   trendingTopics,
@@ -133,24 +134,24 @@ const HomeRightSidebar = ({
       {/* Footer Links */}
       <div className="mt-auto px-5 py-4">
         <nav className="flex flex-col space-y-2.5">
-          <a
+          <Link
             className="text-dark-grey dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
-            href="#"
+            to="/policy"
           >
             <i className="fi fi-rr-shield text-xs"></i> Community Guidelines
-          </a>
-          <a
+          </Link>
+          <Link
             className="text-dark-grey dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
-            href="#"
+            to="/contact"
           >
             <i className="fi fi-rr-interrogation text-xs"></i> Support
-          </a>
-          <a
+          </Link>
+          <Link
             className="text-dark-grey dark:text-zinc-500 hover:text-black dark:hover:text-white transition-colors flex items-center gap-2.5 text-[10px] uppercase font-bold tracking-wider"
-            href="#"
+            to="/contact"
           >
             <i className="fi fi-rr-comment-alt text-xs"></i> Feedback
-          </a>
+          </Link>
         </nav>
       </div>
     </aside>

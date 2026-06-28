@@ -38,16 +38,14 @@ export const fetchComments = async ({
 };
 
 const CommentsContainer = () => {
-  let {
+  const {
     blog,
     blog: {
       _id,
       title,
-      comments: { results: commentsArr },
-      activity: { total_parent_comments },
-    },
-    commentsWrapper,
-    setCommentsWrapper,
+      comments: { results: commentsArr = [] } = {},
+      activity: { total_parent_comments = 0 } = {},
+    } = {},
     totalParentCommentsLoaded,
     setTotalParentCommentsLoaded,
     setBlog,

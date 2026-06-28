@@ -27,6 +27,12 @@ const BlogPostCard = ({ content, author, members = [] }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showAuthorPopover, setShowAuthorPopover] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedReason, setSelectedReason] = useState(
+    "Spam hoặc quảng cáo không phép",
+  );
+  const [customReason, setCustomReason] = useState("");
   const { conversations } = useGetConversations();
   const { setSelectedConversation } = useConversation();
   const currentUsername = localStorage.getItem("username");
@@ -157,7 +163,7 @@ const BlogPostCard = ({ content, author, members = [] }) => {
   const [newColName, setNewColName] = useState("");
 
   const [groupMembership, setGroupMembership] = useState(
-    content.group?.myMembership || null
+    content.group?.myMembership || null,
   );
 
   useEffect(() => {
@@ -169,7 +175,11 @@ const BlogPostCard = ({ content, author, members = [] }) => {
     e.stopPropagation();
 
     if (!access_token) {
-      toast.error(language === "vi" ? "Vui lòng đăng nhập để tham gia nhóm." : "Please log in to join the group.");
+      toast.error(
+        language === "vi"
+          ? "Vui lòng đăng nhập để tham gia nhóm."
+          : "Please log in to join the group.",
+      );
       navigate("/signin");
       return;
     }
@@ -184,6 +194,57 @@ const BlogPostCard = ({ content, author, members = [] }) => {
         toast.error(err.response?.data?.error || "Không thể tham gia nhóm.");
       });
   };
+
+  const handleReportClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowMenu(false);
+
+    if (!access_token) {
+      return toast.error("Vui lòng đăng nhập để báo cáo bài viết");
+    }
+
+    setShowReportModal(true);
+  };
+
+  const submitReport = (e) => {
+    e.preventDefault();
+
+    if (!access_token) {
+      return toast.error("Vui lòng đăng nhập để báo cáo bài viết");
+    }
+
+    const finalReason =
+      selectedReason === "Khác"
+        ? customReason.trim()
+        : selectedReason +
+          (customReason.trim() ? `: ${customReason.trim()}` : "");
+
+    if (!finalReason.trim()) {
+      return toast.error("Vui lòng cung cấp lý do báo cáo bài viết");
+    }
+
+    axios
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + `/blogs/report/${id}`,
+        { reason: finalReason },
+        {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        },
+      )
+      .then(({ data }) => {
+        toast.success(data.message || "Báo cáo bài viết thành công!");
+        setShowReportModal(false);
+        setSelectedReason("Spam hoặc quảng cáo không phép");
+        setCustomReason("");
+      })
+      .catch((err) => {
+        toast.error(err.response?.data?.error || "Báo cáo bài viết thất bại");
+      });
+  };
+
   const [showMemberModal, setShowMemberModal] = useState(false);
 
   const shareMenuRef = useRef(null);
@@ -440,7 +501,10 @@ const BlogPostCard = ({ content, author, members = [] }) => {
                     to={`/user/${username}`}
                     className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full overflow-hidden border border-white shadow-sm"
                   >
-                    <img src={profile_img} className="w-full h-full object-cover" />
+                    <img
+                      src={profile_img}
+                      className="w-full h-full object-cover"
+                    />
                   </Link>
                 </div>
                 <div className="flex flex-col">
@@ -452,7 +516,10 @@ const BlogPostCard = ({ content, author, members = [] }) => {
                   </Link>
                   <div className="flex items-center gap-1 text-[10px] text-dark-grey mt-0.5 leading-none">
                     <span>By</span>
-                    <Link to={`/user/${username}`} className="font-bold hover:text-indigo-500 truncate max-w-[60px]">
+                    <Link
+                      to={`/user/${username}`}
+                      className="font-bold hover:text-indigo-500 truncate max-w-[60px]"
+                    >
                       {fullname}
                     </Link>
                   </div>
@@ -474,14 +541,15 @@ const BlogPostCard = ({ content, author, members = [] }) => {
               </Link>
             )}
             <div className="flex items-center gap-2">
-              {content.group && (!groupMembership || groupMembership.status !== "JOINED") && (
-                <button
-                  onClick={handleJoinGroup}
-                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all"
-                >
-                  Tham gia
-                </button>
-              )}
+              {content.group &&
+                (!groupMembership || groupMembership.status !== "JOINED") && (
+                  <button
+                    onClick={handleJoinGroup}
+                    className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-all"
+                  >
+                    Tham gia
+                  </button>
+                )}
               <span className="text-dark-grey text-xs whitespace-nowrap opacity-60 font-medium">
                 {getDisplayDate(publishedAt)}
               </span>
@@ -595,7 +663,10 @@ const BlogPostCard = ({ content, author, members = [] }) => {
                     setShowMemberModal(true);
                   }}
                 >
-                  <img src={profile_img} className="w-full h-full object-cover" />
+                  <img
+                    src={profile_img}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               </div>
               <div className="flex flex-col justify-center">
@@ -618,7 +689,9 @@ const BlogPostCard = ({ content, author, members = [] }) => {
                     {fullname}
                   </span>
                   <span>•</span>
-                  <span className="opacity-75">{getDisplayDate(publishedAt)}</span>
+                  <span className="opacity-75">
+                    {getDisplayDate(publishedAt)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -645,111 +718,126 @@ const BlogPostCard = ({ content, author, members = [] }) => {
 
                 {/* Popover Hover Card */}
                 <AnimatePresence>
-                  {showAuthorPopover && author && (() => {
-                    const memberInfo = (members || []).find(
-                      (m) => m.user?._id === authorId,
-                    ) || {
-                      role: "MEMBER",
-                      user: {
-                        ...author,
-                        personal_info: {
-                          ...author.personal_info,
-                          bio: "Thành viên.",
+                  {showAuthorPopover &&
+                    author &&
+                    (() => {
+                      const memberInfo = (members || []).find(
+                        (m) => m.user?._id === authorId,
+                      ) || {
+                        role: "MEMBER",
+                        user: {
+                          ...author,
+                          personal_info: {
+                            ...author.personal_info,
+                            bio: "Thành viên.",
+                          },
+                          account_info: {
+                            total_followers: 0,
+                            total_following: 0,
+                          },
                         },
-                        account_info: {
-                          total_followers: 0,
-                          total_following: 0,
-                        },
-                      },
-                    };
-                    const roleInfo = getRoleDetails(memberInfo.role);
-                    const isSelf = memberInfo.user.personal_info?.username === currentUsername;
+                      };
+                      const roleInfo = getRoleDetails(memberInfo.role);
+                      const isSelf =
+                        memberInfo.user.personal_info?.username ===
+                        currentUsername;
 
-                    return (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute left-0 bottom-full mb-3.5 z-50 w-72 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xl pointer-events-auto font-inter text-left"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex items-start gap-3">
-                          <img
-                            src={memberInfo.user.personal_info?.profile_img || profile_img}
-                            className="w-12 h-12 rounded-xl object-cover border border-slate-200/60 dark:border-white/5 bg-slate-100 dark:bg-zinc-800"
-                            alt=""
-                          />
-                          <div className="min-w-0 flex-grow">
-                            <h5 className="text-xs font-black text-slate-900 dark:text-white font-jakarta leading-snug truncate">
-                              {memberInfo.user.personal_info?.fullname || fullname}
-                            </h5>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-none mt-0.5 truncate">
-                              @{memberInfo.user.personal_info?.username || username}
-                            </p>
+                      return (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.18, ease: "easeOut" }}
+                          className="absolute left-0 bottom-full mb-3.5 z-50 w-72 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-zinc-800/80 rounded-2xl p-4 shadow-xl pointer-events-auto font-inter text-left"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-start gap-3">
+                            <img
+                              src={
+                                memberInfo.user.personal_info?.profile_img ||
+                                profile_img
+                              }
+                              className="w-12 h-12 rounded-xl object-cover border border-slate-200/60 dark:border-white/5 bg-slate-100 dark:bg-zinc-800"
+                              alt=""
+                            />
+                            <div className="min-w-0 flex-grow">
+                              <h5 className="text-xs font-black text-slate-900 dark:text-white font-jakarta leading-snug truncate">
+                                {memberInfo.user.personal_info?.fullname ||
+                                  fullname}
+                              </h5>
+                              <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-none mt-0.5 truncate">
+                                @
+                                {memberInfo.user.personal_info?.username ||
+                                  username}
+                              </p>
 
-                            <span
-                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wider ${roleInfo.badgeStyle} leading-none mt-2`}
+                              <span
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-wider ${roleInfo.badgeStyle} leading-none mt-2`}
+                              >
+                                <i
+                                  className={`fi ${roleInfo.icon} text-[7px]`}
+                                ></i>
+                                {roleInfo.label}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Bio */}
+                          <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-3 bg-slate-50 dark:bg-[#1f1f23] p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800/45 italic line-clamp-2">
+                            {memberInfo.user.personal_info?.bio ||
+                              "Không có giới thiệu tiểu sử."}
+                          </p>
+
+                          {/* Stats */}
+                          <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/40 text-center">
+                            <div>
+                              <p className="text-xs font-black text-slate-800 dark:text-white font-jakarta">
+                                {memberInfo.user.account_info
+                                  ?.total_followers || 0}
+                              </p>
+                              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                                Theo dõi
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-black text-slate-800 dark:text-white font-jakarta">
+                                {memberInfo.user.account_info
+                                  ?.total_following || 0}
+                              </p>
+                              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
+                                Đang theo dõi
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Action buttons */}
+                          <div className="mt-4 flex gap-2">
+                            <Link
+                              to={`/user/${memberInfo.user.personal_info?.username}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center"
                             >
-                              <i className={`fi ${roleInfo.icon} text-[7px]`}></i>
-                              {roleInfo.label}
-                            </span>
+                              <i className="fi fi-rr-user text-[10px]"></i>
+                              Trang cá nhân
+                            </Link>
+                            {!isSelf && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleStartChat(memberInfo.user);
+                                }}
+                                className="flex-1 py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer"
+                              >
+                                <i className="fi fi-rr-paper-plane text-[10px]"></i>
+                                Nhắn tin
+                              </button>
+                            )}
                           </div>
-                        </div>
-
-                        {/* Bio */}
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal mt-3 bg-slate-50 dark:bg-[#1f1f23] p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800/45 italic line-clamp-2">
-                          {memberInfo.user.personal_info?.bio || "Không có giới thiệu tiểu sử."}
-                        </p>
-
-                        {/* Stats */}
-                        <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/40 text-center">
-                          <div>
-                            <p className="text-xs font-black text-slate-800 dark:text-white font-jakarta">
-                              {memberInfo.user.account_info?.total_followers || 0}
-                            </p>
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                              Theo dõi
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-black text-slate-800 dark:text-white font-jakarta">
-                              {memberInfo.user.account_info?.total_following || 0}
-                            </p>
-                            <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                              Đang theo dõi
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Action buttons */}
-                        <div className="mt-4 flex gap-2">
-                          <Link
-                            to={`/user/${memberInfo.user.personal_info?.username}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="flex-1 py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer text-center"
-                          >
-                            <i className="fi fi-rr-user text-[10px]"></i>
-                            Trang cá nhân
-                          </Link>
-                          {!isSelf && (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleStartChat(memberInfo.user);
-                              }}
-                              className="flex-1 py-2.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md shadow-indigo-500/15 cursor-pointer"
-                            >
-                              <i className="fi fi-rr-paper-plane text-[10px]"></i>
-                              Nhắn tin
-                            </button>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })()}
+                        </motion.div>
+                      );
+                    })()}
                 </AnimatePresence>
               </div>
               <span className="text-dark-grey text-xs opacity-60 font-medium ml-2">
@@ -758,17 +846,40 @@ const BlogPostCard = ({ content, author, members = [] }) => {
             </div>
           )}
           <div className="flex items-center gap-2">
-            {content.group && (!groupMembership || groupMembership.status !== "JOINED") && (
+            {content.group &&
+              (!groupMembership || groupMembership.status !== "JOINED") && (
+                <button
+                  onClick={handleJoinGroup}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                >
+                  Tham gia
+                </button>
+              )}
+            <div className="relative">
               <button
-                onClick={handleJoinGroup}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowMenu((prev) => !prev);
+                }}
+                className="text-dark-grey hover:text-black w-8 h-8 flex items-center justify-center rounded-xl transition-colors opacity-40 hover:opacity-100 hover:bg-grey/40 dark:hover:bg-zinc-800"
               >
-                Tham gia
+                <i className="fi fi-rr-menu-dots text-sm"></i>
               </button>
-            )}
-            <button className="text-dark-grey hover:text-black w-6 h-6 flex items-center justify-center rounded transition-colors opacity-40 hover:opacity-100">
-              <i className="fi fi-rr-menu-dots text-sm"></i>
-            </button>
+              {showMenu && (
+                <div
+                  className="absolute right-0 mt-2 w-40 bg-white dark:bg-[#18181b] border border-slate-200 dark:border-zinc-800 rounded-xl shadow-lg py-1.5 z-50 animate-fade-in"
+                  onMouseLeave={() => setShowMenu(false)}
+                >
+                  <button
+                    onClick={handleReportClick}
+                    className="w-full text-left px-4 py-2 text-xs font-bold text-rose-500 hover:bg-rose-50/60 dark:hover:bg-rose-500/10 flex items-center gap-2 transition-all"
+                  >
+                    <i className="fi fi-rr-info text-sm"></i> Báo cáo bài viết
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -789,10 +900,10 @@ const BlogPostCard = ({ content, author, members = [] }) => {
         {/* Media Banner or Video Player */}
         {(() => {
           const firstVideoBlock = content.content?.blocks?.find(
-            (block) => block.type === "video"
+            (block) => block.type === "video",
           );
           const firstEmbedBlock = content.content?.blocks?.find(
-            (block) => block.type === "embed"
+            (block) => block.type === "embed",
           );
 
           if (firstVideoBlock) {
@@ -1118,6 +1229,77 @@ const BlogPostCard = ({ content, author, members = [] }) => {
                 Xong
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showReportModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[1000] p-6 animate-fade-in">
+          <div className="bg-white dark:bg-[#18181b] rounded-3xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-slate-200 dark:border-zinc-800 animate-in">
+            <h3 className="text-xl font-bold text-black dark:text-white mb-4">
+              Báo cáo bài viết
+            </h3>
+            <form onSubmit={submitReport} className="space-y-4">
+              <div className="space-y-2">
+                {[
+                  "Spam hoặc quảng cáo không phép",
+                  "Nội dung quấy rối, bắt nạt hoặc công kích cá nhân",
+                  "Thông tin sai lệch, gây hiểu lầm hoặc xuyên tạc",
+                  "Vi phạm bản quyền học liệu, tài liệu",
+                  "Khác",
+                ].map((reasonOption, idx) => (
+                  <label
+                    key={idx}
+                    className="flex items-start gap-3 cursor-pointer text-sm font-medium text-black dark:text-zinc-200"
+                  >
+                    <input
+                      type="radio"
+                      name="reportReason"
+                      value={reasonOption}
+                      checked={selectedReason === reasonOption}
+                      onChange={(e) => setSelectedReason(e.target.value)}
+                      className="mt-1 accent-indigo-600"
+                    />
+                    <span>{reasonOption}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div className="space-y-1.5 mt-4">
+                <label className="text-[12px] font-bold text-dark-grey dark:text-zinc-400 uppercase tracking-wider">
+                  {selectedReason === "Khác"
+                    ? "Nhập lý do chi tiết (bắt buộc)"
+                    : "Chi tiết thêm (tùy chọn)"}
+                </label>
+                <textarea
+                  value={customReason}
+                  onChange={(e) => setCustomReason(e.target.value)}
+                  className="w-full min-h-[90px] p-4 bg-grey/30 dark:bg-zinc-800/40 border border-grey dark:border-zinc-800 rounded-2xl resize-none text-sm text-black dark:text-white placeholder:text-dark-grey focus:border-indigo-500/50 outline-none"
+                  placeholder="Mô tả cụ thể hành vi vi phạm..."
+                  required={selectedReason === "Khác"}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReportModal(false);
+                    setSelectedReason("Spam hoặc quảng cáo không phép");
+                    setCustomReason("");
+                  }}
+                  className="flex-1 py-3 px-6 bg-grey dark:bg-zinc-800/40 text-black dark:text-white font-bold rounded-2xl hover:bg-black/5 dark:hover:bg-zinc-800 transition-all active:scale-95 text-xs"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 px-6 bg-rose-500 text-white font-bold rounded-2xl hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 active:scale-95 text-xs"
+                >
+                  Gửi báo cáo
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

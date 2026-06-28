@@ -24,6 +24,9 @@ import {
   updateGroupSettings,
   deleteGroup,
   approveRequest,
+  getReportedBlogs,
+  dismissReportedBlog,
+  deleteReportedBlog,
 } from "../services/group.service";
 
 // Premium Custom Select Component using Framer Motion
@@ -188,6 +191,11 @@ const GroupAdminPage = () => {
   const [pendingBlogs, setPendingBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(false);
 
+  // Reported Blogs States
+  const [reportedBlogs, setReportedBlogs] = useState([]);
+  const [loadingReportedBlogs, setLoadingReportedBlogs] = useState(false);
+  const [blogSubSection, setBlogSubSection] = useState("pending");
+
   // Group Settings States
   const [settings, setSettings] = useState({
     memberPostApprovalRequired: false,
@@ -284,6 +292,18 @@ const GroupAdminPage = () => {
     }
   };
 
+  const fetchReportedBlogsList = async () => {
+    try {
+      setLoadingReportedBlogs(true);
+      const data = await getReportedBlogs(id, userAuth.access_token);
+      setReportedBlogs(data.list || []);
+    } catch (err) {
+      console.error("Failed to load reported blogs:", err);
+    } finally {
+      setLoadingReportedBlogs(false);
+    }
+  };
+
   useEffect(() => {
     if (!userAuth.access_token) {
       toast.error("Vui lòng đăng nhập để truy cập quản trị nhóm.");
@@ -297,6 +317,7 @@ const GroupAdminPage = () => {
     if (isAdminOrMod) {
       fetchMembersList();
       fetchPendingPostsList();
+      fetchReportedBlogsList();
     }
   }, [isAdminOrMod]);
 
@@ -306,6 +327,13 @@ const GroupAdminPage = () => {
       setActiveSection(sec);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (activeSection === "settings" && myRole === "MODERATOR") {
+      setActiveSection("dashboard");
+      setSearchParams({ sec: "dashboard" });
+    }
+  }, [activeSection, myRole, setSearchParams]);
 
   const handleSectionChange = (section) => {
     setActiveSection(section);
@@ -376,6 +404,28 @@ const GroupAdminPage = () => {
       fetchPendingPostsList();
     } catch (err) {
       toast.error(err.response?.data?.error || "Lỗi khi từ chối bài viết.");
+    }
+  };
+
+  const handleDismissReport = async (blogId) => {
+    try {
+      await dismissReportedBlog(id, blogId, userAuth.access_token);
+      toast.success("Bỏ qua báo cáo thành công!");
+      fetchReportedBlogsList();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Xử lý báo cáo thất bại.");
+    }
+  };
+
+  const handleRemoveReportedBlog = async (blogId) => {
+    if (!window.confirm("Bạn có chắc muốn gỡ bài viết vi phạm này khỏi nhóm?"))
+      return;
+    try {
+      await deleteReportedBlog(id, blogId, userAuth.access_token);
+      toast.success("Gỡ bài viết vi phạm thành công!");
+      fetchReportedBlogsList();
+    } catch (err) {
+      toast.error(err.response?.data?.error || "Gỡ bài viết thất bại.");
     }
   };
 
@@ -501,9 +551,11 @@ const GroupAdminPage = () => {
       id: "blogs",
       label: "Quản Lý Bài Viết",
       icon: "fi-rr-document-signed",
-      badge: pendingBlogs.length,
+      badge: pendingBlogs.length + reportedBlogs.length,
     },
-    { id: "settings", label: "Cài Đặt Nhóm", icon: "fi-rr-settings" },
+    ...(myRole === "OWNER" || myRole === "DEPUTY"
+      ? [{ id: "settings", label: "Cài Đặt Nhóm", icon: "fi-rr-settings" }]
+      : []),
   ];
 
   return (
@@ -975,7 +1027,7 @@ const GroupAdminPage = () => {
                   );
                 })()}
 
-              {/* SECTION 3: PENDING DISCUSSION POSTS */}
+              {/* SECTION 3: PENDING/REPORTED DISCUSSION POSTS */}
               {activeSection === "blogs" && (
                 <div className="space-y-6">
                   {/* Section Title */}
@@ -984,84 +1036,175 @@ const GroupAdminPage = () => {
                       Quản Lý Bài viết
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Kiểm duyệt các bài viết trước khi được đăng công khai lên
-                      bản tin nhóm
+                      Kiểm duyệt các bài viết chờ duyệt hoặc xử lý các bài viết bị báo cáo vi phạm
                     </p>
+                  </div>
+
+                  {/* Sub-tabs */}
+                  <div className="flex gap-2 border-b border-slate-100 dark:border-white/5 pb-3">
+                    <button
+                      onClick={() => setBlogSubSection("pending")}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        blogSubSection === "pending"
+                          ? "bg-slate-950 text-white dark:bg-white dark:text-black font-extrabold"
+                          : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      Chờ duyệt ({pendingBlogs.length})
+                    </button>
+                    <button
+                      onClick={() => setBlogSubSection("reported")}
+                      className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
+                        blogSubSection === "reported"
+                          ? "bg-slate-950 text-white dark:bg-white dark:text-black font-extrabold"
+                          : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                      }`}
+                    >
+                      Bị báo cáo ({reportedBlogs.length})
+                    </button>
                   </div>
 
                   {/* List */}
                   <div className="bg-white dark:bg-[#111113] border border-slate-200/60 dark:border-white/5 rounded-[28px] p-6 shadow-sm space-y-4">
-                    {loadingBlogs ? (
-                      <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs">
-                        Đang tải danh sách bài viết...
-                      </div>
-                    ) : pendingBlogs.length > 0 ? (
-                      <div className="divide-y divide-slate-100 dark:divide-white/5">
-                        {pendingBlogs.map((blog) => {
-                          const authorDetails =
-                            blog.author?.personal_info || {};
-                          return (
-                            <div
-                              key={blog._id}
-                              className="py-5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-start justify-between gap-6"
-                            >
-                              <div className="space-y-3 flex-1 min-w-0">
-                                {/* Title and summary */}
-                                <h3 className="text-sm font-black text-slate-800 dark:text-white font-jakarta leading-snug">
-                                  {blog.title}
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
-                                  {blog.des ||
-                                    "Bài viết không có mô tả chi tiết."}
-                                </p>
-
-                                {/* Author metadata */}
-                                <div className="flex items-center gap-2.5 text-[10px] text-slate-400 dark:text-slate-500 font-bold">
-                                  <img
-                                    src={authorDetails.profile_img}
-                                    alt="Author avatar"
-                                    className="w-5 h-5 rounded-md object-cover"
-                                  />
-                                  <span>
-                                    Đăng bởi @{authorDetails.username}
-                                  </span>
-                                  <span>•</span>
-                                  <span>
-                                    Yêu cầu lúc:{" "}
-                                    {new Date(
-                                      blog.createdAt || new Date(),
-                                    ).toLocaleString()}
-                                  </span>
+                    {blogSubSection === "pending" ? (
+                      loadingBlogs ? (
+                        <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs">
+                          Đang tải danh sách bài viết...
+                        </div>
+                      ) : pendingBlogs.length > 0 ? (
+                        <div className="divide-y divide-slate-100 dark:divide-white/5">
+                          {pendingBlogs.map((blog) => {
+                            const authorDetails =
+                              blog.author?.personal_info || {};
+                            return (
+                              <div
+                                key={blog._id}
+                                className="py-5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-start justify-between gap-6"
+                              >
+                                <div className="space-y-3 flex-1 min-w-0">
+                                  <h3 className="text-sm font-black text-slate-800 dark:text-white font-jakarta leading-snug">
+                                    {blog.title}
+                                  </h3>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                                    {blog.des || "Bài viết không có mô tả chi tiết."}
+                                  </p>
+                                  <div className="flex items-center gap-2.5 text-[10px] text-slate-400 dark:text-slate-500 font-bold">
+                                    <img
+                                      src={authorDetails.profile_img}
+                                      alt="Author avatar"
+                                      className="w-5 h-5 rounded-md object-cover"
+                                    />
+                                    <span>Đăng bởi @{authorDetails.username}</span>
+                                    <span>•</span>
+                                    <span>
+                                      Yêu cầu lúc: {new Date(blog.createdAt || new Date()).toLocaleString()}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 shrink-0 self-end sm:self-start">
+                                  <button
+                                    onClick={() => handleRejectBlog(blog._id)}
+                                    className="px-4 py-2 border border-rose-500/25 hover:bg-rose-500/10 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
+                                  >
+                                    <i className="fi fi-rr-cross-small"></i>
+                                    Từ chối
+                                  </button>
+                                  <button
+                                    onClick={() => handleApproveBlog(blog._id)}
+                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+                                  >
+                                    <i className="fi fi-rr-check"></i>
+                                    Phê duyệt
+                                  </button>
                                 </div>
                               </div>
-
-                              <div className="flex gap-2 shrink-0 self-end sm:self-start">
-                                <button
-                                  onClick={() => handleRejectBlog(blog._id)}
-                                  className="px-4 py-2 border border-rose-500/25 hover:bg-rose-500/10 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
-                                >
-                                  <i className="fi fi-rr-cross-small"></i>
-                                  Từ chối
-                                </button>
-                                <button
-                                  onClick={() => handleApproveBlog(blog._id)}
-                                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
-                                >
-                                  <i className="fi fi-rr-check"></i>
-                                  Phê duyệt
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs">
-                        <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mx-auto mb-3">
-                          <i className="fi fi-rr-check"></i>
+                            );
+                          })}
                         </div>
-                        Tuyệt vời! Không có bài đăng nào đang chờ kiểm duyệt.
-                      </div>
+                      ) : (
+                        <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs">
+                          <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mx-auto mb-3">
+                            <i className="fi fi-rr-check"></i>
+                          </div>
+                          Tuyệt vời! Không có bài đăng nào đang chờ kiểm duyệt.
+                        </div>
+                      )
+                    ) : (
+                      // Reported blogs list
+                      loadingReportedBlogs ? (
+                        <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs">
+                          Đang tải bài viết bị báo cáo...
+                        </div>
+                      ) : reportedBlogs.length > 0 ? (
+                        <div className="divide-y divide-slate-100 dark:divide-white/5">
+                          {reportedBlogs.map((blog) => {
+                            const authorDetails = blog.author?.personal_info || {};
+                            return (
+                              <div
+                                key={blog._id}
+                                className="py-5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-start justify-between gap-6"
+                              >
+                                <div className="space-y-3 flex-1 min-w-0">
+                                  <h3 className="text-sm font-black text-slate-800 dark:text-white font-jakarta leading-snug">
+                                    {blog.title}
+                                  </h3>
+                                  <div className="flex items-center gap-2.5 text-[10px] text-slate-400 dark:text-slate-500 font-bold">
+                                    <img
+                                      src={authorDetails.profile_img}
+                                      alt="Author avatar"
+                                      className="w-5 h-5 rounded-md object-cover"
+                                    />
+                                    <span>Đăng bởi @{authorDetails.username}</span>
+                                    <span>•</span>
+                                    <span className="text-rose-500 bg-rose-500/10 px-2.5 py-0.5 rounded-full font-extrabold">
+                                      {blog.reports?.length || 0} lượt báo cáo
+                                    </span>
+                                  </div>
+
+                                  {/* List of reports / reasons */}
+                                  <div className="bg-slate-50 dark:bg-zinc-900/50 rounded-2xl p-4 space-y-2 mt-2">
+                                    <p className="text-[10px] font-black text-dark-grey dark:text-zinc-400 uppercase tracking-widest">
+                                      Lý do báo cáo chi tiết:
+                                    </p>
+                                    <div className="space-y-2 max-h-36 overflow-y-auto pr-2 custom-scrollbar">
+                                      {blog.reports && blog.reports.map((report, rIdx) => (
+                                        <div key={rIdx} className="text-xs text-slate-600 dark:text-slate-400 border-l-2 border-rose-500 pl-3 py-0.5">
+                                          <span className="font-extrabold text-black dark:text-white">@{report.user?.personal_info?.username || "Ẩn danh"}: </span>
+                                          <span>{report.reason}</span>
+                                          <span className="text-[10px] opacity-60 ml-2 font-medium">({new Date(report.reportedAt).toLocaleDateString("en-GB")})</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2 shrink-0 self-end sm:self-start">
+                                  <button
+                                    onClick={() => handleDismissReport(blog._id)}
+                                    className="px-4 py-2 border border-slate-300 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
+                                  >
+                                    <i className="fi fi-rr-check"></i>
+                                    Bỏ qua
+                                  </button>
+                                  <button
+                                    onClick={() => handleRemoveReportedBlog(blog._id)}
+                                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+                                  >
+                                    <i className="fi fi-rr-trash"></i>
+                                    Gỡ bài viết
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs">
+                          <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mx-auto mb-3">
+                            <i className="fi fi-rr-check"></i>
+                          </div>
+                          Không có bài viết nào bị báo cáo vi phạm.
+                        </div>
+                      )
                     )}
                   </div>
                 </div>
@@ -1093,6 +1236,7 @@ const GroupAdminPage = () => {
                     settingsMessage={settingsMessage}
                     handleSaveSettings={handleSaveSettings}
                     handleDeleteGroup={handleDeleteGroup}
+                    myRole={myRole}
                   />
                 </div>
               )}

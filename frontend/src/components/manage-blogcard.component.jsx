@@ -155,41 +155,72 @@ export const ManagePublishedBlogCard = ({ blog }) => {
 };
 
 export const ManageDraftBlogPost = ({ blog }) => {
-  let { title, des, blog_id, index } = blog;
+  let { banner, title, des, blog_id, publishedAt, index } = blog;
   let {
     userAuth: { access_token },
   } = useContext(UserContext);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  index++;
-
   const deleteBlogHandler = () => {
     deleteBlog(blog, access_token);
     setShowConfirmModal(false);
   };
 
+  const getDisplayDate = (date) => {
+    const now = new Date();
+    const publishedDate = new Date(date);
+
+    const diffTime = Math.abs(now - publishedDate);
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+
+    if (now.toDateString() === publishedDate.toDateString()) {
+      if (diffHours < 1) {
+        return `${diffMinutes} minutes ago`;
+      } else {
+        return `${diffHours} hours ago`;
+      }
+    }
+
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 7) {
+      return `${diffDays} days ago`;
+    } else {
+      return publishedDate.toLocaleDateString("en-GB");
+    }
+  };
+
+  const editorLink = blog.group ? `/group-editor/${blog_id}` : `/editor/${blog_id}`;
+
   return (
     <>
-      <div className="flex gap-5 lg:gap-10 py-6 border-b border-grey group transition-all duration-300">
+      <div className="flex gap-6 border-b border-grey py-6 items-start group transition-all duration-300">
+        <img
+          src={banner}
+          className="max-md:hidden lg:hidden xl:block w-32 h-32 flex-none rounded-2xl bg-grey object-cover border border-grey shadow-sm group-hover:shadow-md transition-shadow"
+        />
         <div className="flex flex-col justify-between py-1 w-full">
           <div>
-            <h1 className="text-[17px] font-semibold text-black leading-snug hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
-               {title.length ? title : "Untitled Draft"}
-            </h1>
-            <p className="line-clamp-2 font-gelasio text-[16px] text-black/60 italic leading-relaxed">
-              {des.length ? des : "No description provided for this draft."}
+            <Link
+              to={editorLink}
+              className="text-[17px] font-semibold text-black leading-snug hover:text-indigo-600 transition-colors line-clamp-2 mb-2"
+            >
+              {title.length ? title : "Untitled Draft"}
+            </Link>
+            <p className="text-[13px] text-dark-grey">
+              Draft updated {getDisplayDate(publishedAt)}
             </p>
           </div>
 
           <div className="flex items-center gap-2 mt-5">
             <Link 
-              to={blog.group ? `/group-editor/${blog_id}` : `/editor/${blog_id}`} 
+              to={editorLink} 
               className="text-[13px] font-medium text-indigo-600 hover:bg-indigo-500/10 px-3 py-1.5 rounded-lg transition-all"
             >
               Edit
             </Link>
-
             <button
               className="text-[13px] font-medium text-rose-500 hover:bg-rose-500/10 px-3 py-1.5 rounded-lg transition-all"
               onClick={() => setShowConfirmModal(true)}

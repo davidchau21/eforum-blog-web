@@ -5,6 +5,7 @@ import User from "../Schema/User.js";
 import Notification from "../Schema/Notification.js";
 import File from "../Schema/File.js";
 import EE from "../socket/eventManager.js";
+import UserModel from "../Schema/User.js";
 
 class CommentService {
   async deleteCommentsRecursive(_id) {
@@ -159,6 +160,34 @@ class CommentService {
     comment.isHidden = !comment.isHidden;
     await comment.save();
     return { status: "done", isHidden: comment.isHidden };
+  }
+
+  async editComment(userId, { _id, comment }) {
+    if (!comment || !comment.trim()) throw new Error("Nội dung bình luận không được để trống.");
+
+    const existing = await Comment.findById(_id);
+    if (!existing) throw new Error("Bình luận không tồn tại.");
+    if (String(existing.commented_by) !== String(userId)) {
+      throw new Error("Bạn chỉ có thể chỉnh sửa bình luận của chính mình.");
+    }
+
+    existing.comment = comment.trim();
+    existing.editedAt = new Date();
+    await existing.save();
+    return { status: "done", comment: existing.comment, editedAt: existing.editedAt };
+  }
+
+  async searchUsers(query) {
+    if (!query || query.length < 1) return [];
+    const users = await UserModel.find({
+      $or: [
+        { "personal_info.username": { $regex: query, $options: "i" } },
+        { "personal_info.fullname": { $regex: query, $options: "i" } },
+      ],
+    })
+      .select("personal_info.username personal_info.fullname personal_info.profile_img")
+      .limit(5);
+    return users;
   }
 
   async reportComment(userId, commentId) {

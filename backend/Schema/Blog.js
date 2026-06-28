@@ -73,6 +73,17 @@ const blogSchema = mongoose.Schema(
       default: false,
     },
     reportUser: { type: Schema.Types.ObjectId, required: false, ref: "users" },
+    reportReason: { type: String, required: false },
+    reports: {
+      type: [
+        {
+          user: { type: Schema.Types.ObjectId, ref: "users" },
+          reason: { type: String },
+          reportedAt: { type: Date, default: Date.now }
+        }
+      ],
+      default: []
+    },
     group: {
       type: Schema.Types.ObjectId,
       ref: "groups",

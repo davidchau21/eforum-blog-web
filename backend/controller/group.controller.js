@@ -261,6 +261,41 @@ class GroupController extends BaseController {
     }
   }
 
+  async getReportedBlogs(req, res) {
+    try {
+      const groupId = req.params.id;
+      const requesterId = req.user.id;
+      const result = await groupService.getReportedBlogs(groupId, requesterId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
+
+  async dismissReportedBlog(req, res) {
+    try {
+      const groupId = req.params.id;
+      const blogId = req.params.blogId;
+      const requesterId = req.user.id;
+      const result = await groupService.dismissReportedGroupBlog(groupId, blogId, requesterId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
+
+  async deleteReportedBlog(req, res) {
+    try {
+      const groupId = req.params.id;
+      const blogId = req.params.blogId;
+      const requesterId = req.user.id;
+      const result = await groupService.deleteReportedGroupBlog(groupId, blogId, requesterId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message, 400);
+    }
+  }
+
   async getGroupStats(req, res) {
     try {
       const groupId = req.params.id;

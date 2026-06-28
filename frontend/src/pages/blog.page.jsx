@@ -23,7 +23,13 @@ export const blogStructure = {
   banner: "",
   publishedAt: "",
   tags: [],
-  activity: { total_likes: 0, total_comments: 0, total_share: 0 },
+  activity: {
+    total_likes: 0,
+    total_comments: 0,
+    total_share: 0,
+    total_parent_comments: 0,
+  },
+  comments: { results: [] },
 };
 
 export const BlogContext = createContext({});
@@ -83,7 +89,10 @@ const BlogPage = () => {
     } = {},
     publishedAt,
     activity,
+    group,
   } = blog;
+
+  const blocks = Array.isArray(content) ? content[0]?.blocks : content?.blocks;
 
   // Reading progress bar
   useEffect(() => {
@@ -100,8 +109,15 @@ const BlogPage = () => {
   }, []);
 
   const fetchBlog = () => {
+    const headers = access_token
+      ? { Authorization: `Bearer ${access_token}` }
+      : {};
     axios
-      .post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-blog", { blog_id })
+      .post(
+        import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-blog",
+        { blog_id },
+        { headers },
+      )
       .then(async ({ data: { blog } }) => {
         blog.comments = await fetchComments({
           blog_id: blog._id,
@@ -124,18 +140,25 @@ const BlogPage = () => {
         if (access_token) {
           axios
             .post(
-              import.meta.env.VITE_SERVER_DOMAIN + "/users/is-following",
+              import.meta.env.VITE_SERVER_DOMAIN +
+                "/users/get-following-status",
               { target_id: blog.author._id },
               { headers: { Authorization: `Bearer ${access_token}` } },
             )
-            .then(({ data }) => setIsFollowingAuthor(data.is_following))
+            .then(({ data }) => setIsFollowingAuthor(data.followed_status))
             .catch((err) => console.log(err));
         }
 
         setLoading(false);
       })
       .catch((err) => {
-        console.log(err);
+        console.error(
+          "Fetch blog failed:",
+          err.config?.url,
+          err.response?.status,
+          err.message,
+        );
+        toast.error(err.response?.data?.error || "Không thể tải bài viết");
         setLoading(false);
       });
   };
@@ -201,9 +224,9 @@ const BlogPage = () => {
 
   const hasRealBanner = banner && banner !== bannerDefault;
 
-  const estimateReadTime = (content) => {
-    if (!content || !content[0]) return 1;
-    const text = content[0].blocks.map((b) => b.data?.text || "").join(" ");
+  const estimateReadTime = () => {
+    if (!blocks) return 1;
+    const text = blocks.map((b) => b.data?.text || "").join(" ");
     return Math.max(1, Math.ceil(text.split(" ").length / 200));
   };
 
@@ -243,7 +266,15 @@ const BlogPage = () => {
               <div className="flex-1 min-w-0 w-full">
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-[13px] font-bold text-dark-grey mb-6 capitalize tracking-wide opacity-60 uppercase">
-                  {tags && tags.length > 0 ? (
+                  {group ? (
+                    <>
+                      <Link to={`/group/${group._id}`} className="hover:text-indigo-500 transition-colors">
+                        {group.name}
+                      </Link>
+                      <i className="fi fi-rr-angle-small-right text-dark-grey"></i>
+                      <span>Bài viết</span>
+                    </>
+                  ) : tags && tags.length > 0 ? (
                     <>
                       <span>{tags[0]}</span>
                       {tags[1] && (
@@ -261,12 +292,30 @@ const BlogPage = () => {
                 {/* MAIN ARTICLE CARD */}
                 <article className="bg-white rounded-2xl border border-grey p-6 md:p-8 shadow-sm mb-10">
                   {/* Card Header */}
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-3 mb-6 flex-wrap">
                     <span className="px-3 py-1 bg-grey text-dark-grey rounded-full text-[11px] font-bold tracking-widest uppercase">
                       {translations.post || "Post"}
                     </span>
+                    {group && (
+                      <Link
+                        to={`/group/${group._id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500 hover:text-white rounded-full text-[11px] font-bold transition-all"
+                      >
+                        <img
+                          src={group.avatar || "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca"}
+                          className="w-3.5 h-3.5 rounded-full object-cover"
+                          alt=""
+                        />
+                        <span>{group.name}</span>
+                      </Link>
+                    )}
                     <span className="text-[13px] text-dark-grey font-medium opacity-60">
                       Posted {new Date(publishedAt).toLocaleDateString("en-GB")}
+                    </span>
+                    <span className="text-[13px] text-dark-grey font-medium opacity-60 flex items-center gap-1">
+                      • <i className="fi fi-rr-time-past mt-0.5"></i>{" "}
+                      {estimateReadTime()}{" "}
+                      {language === "vi" ? "phút đọc" : "min read"}
                     </span>
                   </div>
 
@@ -299,7 +348,7 @@ const BlogPage = () => {
 
                   {/* Body Content */}
                   <div className="blog-page-content font-inter leading-relaxed text-black text-[1.05rem] opacity-90">
-                    {content[0].blocks.map((block, i) => (
+                    {blocks?.map((block, i) => (
                       <div key={i} className="my-5 md:my-7">
                         <BlogContent block={block} />
                       </div>
@@ -394,6 +443,8 @@ const BlogPage = () => {
                     </button>
                   )}
                 </div>
+
+
 
                 {/* Related Stream Placeholder */}
                 {similarBlogs && similarBlogs.length > 0 && (

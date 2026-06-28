@@ -61,6 +61,22 @@ const groupSchema = new mongoose.Schema(
         type: Boolean,
         default: true,
       },
+      deputyCanKick: {
+        type: Boolean,
+        default: true,
+      },
+      deputyCanApprove: {
+        type: Boolean,
+        default: true,
+      },
+      deputyCanDeletePost: {
+        type: Boolean,
+        default: true,
+      },
+      deputyCanChangeSettings: {
+        type: Boolean,
+        default: true,
+      },
     },
   },
   {

@@ -31,6 +31,9 @@ groupRouter.get("/id/:id/my-blogs", isAuthenticate, (req, res) => groupControlle
 groupRouter.get("/id/:id/blogs/pending", isAuthenticate, (req, res) => groupController.getPendingBlogs(req, res));
 groupRouter.post("/id/:id/blogs/:blogId/approve", isAuthenticate, (req, res) => groupController.approveBlog(req, res));
 groupRouter.delete("/id/:id/blogs/:blogId/reject", isAuthenticate, (req, res) => groupController.rejectBlog(req, res));
+groupRouter.get("/id/:id/blogs/reported", isAuthenticate, (req, res) => groupController.getReportedBlogs(req, res));
+groupRouter.post("/id/:id/blogs/:blogId/dismiss-report", isAuthenticate, (req, res) => groupController.dismissReportedBlog(req, res));
+groupRouter.delete("/id/:id/blogs/:blogId/remove-reported", isAuthenticate, (req, res) => groupController.deleteReportedBlog(req, res));
 groupRouter.get("/id/:id/documents", isAuthenticateOptional, (req, res) => groupController.getGroupDocuments(req, res));
 
 export default groupRouter;

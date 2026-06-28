@@ -31,12 +31,14 @@ const Editor = () => {
             return setLoading(false);
         }
 
-        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-blog", { blog_id, draft: true, mode: 'edit' })
+        const headers = access_token ? { Authorization: `Bearer ${access_token}` } : {};
+        axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/blogs/get-blog", { blog_id, draft: true, mode: 'edit' }, { headers })
         .then(( { data: { blog }} ) => {
             setBlog(blog);
             setLoading(false);
         })
         .catch(err => {
+            console.error("Failed to load blog draft", err);
             setBlog(blogStructure);
             setLoading(false);
         })

@@ -277,3 +277,37 @@ export const getGroupStats = async (id, range, token, startDate = null, endDate 
   const { data } = await axios.get(url, getHeaders(token));
   return data;
 };
+
+/**
+ * Fetch reported blogs in the group.
+ */
+export const getReportedBlogs = async (id, token) => {
+  const { data } = await axios.get(
+    `${API_BASE}/groups/id/${id}/blogs/reported`,
+    getHeaders(token)
+  );
+  return data;
+};
+
+/**
+ * Dismiss reports on a group blog post.
+ */
+export const dismissReportedBlog = async (id, blogId, token) => {
+  const { data } = await axios.post(
+    `${API_BASE}/groups/id/${id}/blogs/${blogId}/dismiss-report`,
+    {},
+    getHeaders(token)
+  );
+  return data;
+};
+
+/**
+ * Delete a reported group blog post.
+ */
+export const deleteReportedBlog = async (id, blogId, token) => {
+  const { data } = await axios.delete(
+    `${API_BASE}/groups/id/${id}/blogs/${blogId}/remove-reported`,
+    getHeaders(token)
+  );
+  return data;
+};
