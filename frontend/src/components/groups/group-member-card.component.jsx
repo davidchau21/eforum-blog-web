@@ -139,7 +139,7 @@ export const GroupMemberCard = ({
         },
         className: "text-rose-600 dark:text-rose-400 hover:bg-rose-500/5",
       });
-    } else if (myRole === "DEPUTY") {
+    } else if (myRole === "DEPUTY" && settings?.deputyCanKick !== false) {
       if (member.role === "MODERATOR") {
         actions.push({
           label: "Gỡ Kiểm duyệt viên",
