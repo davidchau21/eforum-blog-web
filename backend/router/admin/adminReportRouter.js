@@ -13,5 +13,7 @@ adminReportRouter.get("/blog-statistic", isAdmin, (req, res) => adminReportContr
 adminReportRouter.get("/weekly-interactions", isAdmin, (req, res) => adminReportController.weeklyInteractionStatistics(req, res));
 adminReportRouter.get("/blog-statistics-bydate", isAdmin, (req, res) => adminReportController.blogStatisticsByDate(req, res));
 adminReportRouter.get("/get-stats", isAdmin, (req, res) => adminReportController.getStats(req, res));
+adminReportRouter.get("/summary-by-date", isAdmin, (req, res) => adminReportController.summaryByDate(req, res));
+adminReportRouter.get("/interactions-by-date", isAdmin, (req, res) => adminReportController.interactionsByDate(req, res));
 
 export default adminReportRouter;

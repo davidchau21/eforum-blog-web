@@ -99,7 +99,7 @@ const ManageDocumentCard = ({ doc, onClick, onDelete, onDownload, t }) => {
           <i className={`${fileStyles.icon} text-2xl mt-1`}></i>
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-extrabold text-black dark:text-white text-base leading-snug truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+          <h3 className="font-extrabold text-black text-base leading-snug truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
             {title}
           </h3>
           {description && (
@@ -350,7 +350,7 @@ const ManageDocuments = () => {
         {/* Header Title & Count */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-grey pb-5">
           <div>
-            <h1 className="text-2xl font-black text-black dark:text-white">
+            <h1 className="text-2xl font-black text-black">
               {t.title}
             </h1>
             <p className="text-sm text-dark-grey mt-1">
@@ -377,7 +377,7 @@ const ManageDocuments = () => {
               placeholder={t.searchPlaceholder}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full bg-grey/30 dark:bg-zinc-800/50 pt-2.5 pb-2.5 pl-11 pr-10 rounded-xl focus:outline-none focus:bg-grey/50 dark:focus:bg-zinc-800/80 focus:ring-1 focus:ring-indigo-500/20 text-sm text-black dark:text-white transition-all font-bold placeholder:text-dark-grey"
+              className="w-full bg-grey/30 dark:bg-zinc-800/50 pt-2.5 pb-2.5 pl-11 pr-10 rounded-xl focus:outline-none focus:bg-grey/50 dark:focus:bg-zinc-800/80 focus:ring-1 focus:ring-indigo-500/20 text-sm text-black transition-all font-bold placeholder:text-dark-grey"
             />
             {searchInput && (
               <button
@@ -464,7 +464,7 @@ const ManageDocuments = () => {
             <div className="w-16 h-16 rounded-full bg-rose-500/10 flex items-center justify-center mb-6 mx-auto">
               <i className="fi fi-rr-trash text-rose-500 text-2xl"></i>
             </div>
-            <h3 className="text-xl font-bold text-black dark:text-white text-center mb-2">
+            <h3 className="text-xl font-bold text-black text-center mb-2">
               {t.confirmDelete}
             </h3>
             <p className="text-sm text-dark-grey text-center leading-relaxed mb-8">
@@ -476,7 +476,7 @@ const ManageDocuments = () => {
                   setShowConfirmModal(false);
                   setDocToDelete(null);
                 }}
-                className="flex-1 py-3 px-6 bg-grey dark:bg-zinc-800 text-black dark:text-white font-bold rounded-2xl hover:bg-black/5 dark:hover:bg-zinc-700/50 transition-all active:scale-95 cursor-pointer"
+                className="flex-1 py-3 px-6 bg-grey dark:bg-zinc-800 text-black font-bold rounded-2xl hover:bg-black/5 dark:hover:bg-zinc-700/50 transition-all active:scale-95 cursor-pointer"
               >
                 {t.cancel}
               </button>

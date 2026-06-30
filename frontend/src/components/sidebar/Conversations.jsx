@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import Conversation from "./Conversation";
-import useGetConversations from "../../hook/useGetConversations";
-import Loader from "../loader.component";
+import Conversation from "./Conversation.jsx";
+import useGetConversations from "../../hook/useGetConversations.jsx";
+import Loader from "../loader.component.jsx";
 import { useSocketContext } from "../../socket/SocketContext.jsx";
 
 import useOnline from "../../hook/useOnline.jsx";
 
-const Conversations = () => {
+const Conversations = ({ closeSidebar }) => {
   const { loading, conversations } = useGetConversations();
   const [online, setOnline] = useState([]);
   const { socket } = useSocketContext();
@@ -50,6 +50,7 @@ const Conversations = () => {
             online={online}
             conversation={conversation}
             lastIndex={index === filteredConversations.length - 1}
+            closeSidebar={closeSidebar}
           />
         ))
       )}

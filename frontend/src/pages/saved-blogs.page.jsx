@@ -64,7 +64,7 @@ const SavedBlogCard = ({ blog, collections, onMove, onDelete }) => {
       <div className="flex flex-col flex-1 min-w-0 justify-between py-1">
         <div>
           <Link to={`/blog/${blog_id}`}>
-            <h2 className="text-xl font-bold text-slate-900 line-clamp-2 hover:text-indigo-600 transition-colors">
+            <h2 className="text-xl font-bold text-black line-clamp-2 hover:text-indigo-600 transition-colors">
               {title}
             </h2>
           </Link>
@@ -85,9 +85,9 @@ const SavedBlogCard = ({ blog, collections, onMove, onDelete }) => {
               className="w-6 h-6 rounded-full object-cover"
               alt="author"
             />
-            <span className="text-sm text-slate-700">
+            <span className="text-sm text-dark-grey">
               Đã lưu từ bài viết của{" "}
-              <span className="font-semibold text-slate-900">{authorName}</span>
+              <span className="font-semibold text-black">{authorName}</span>
             </span>
           </div>
         </div>
@@ -354,13 +354,13 @@ const SavedBlogsPage = () => {
       {showCreateModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-800">
+            <div className="px-6 py-4 border-b border-grey flex items-center justify-between">
+              <h3 className="text-xl font-bold text-black">
                 Tạo bộ sưu tập mới
               </h3>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-grey text-dark-grey"
               >
                 <i className="fi fi-rr-cross-small text-xl"></i>
               </button>
@@ -369,7 +369,7 @@ const SavedBlogsPage = () => {
               <input
                 type="text"
                 placeholder="Nhập tên bộ sưu tập..."
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all outline-none"
+                className="w-full px-4 py-3 bg-grey border border-grey rounded-xl focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all outline-none text-black"
                 value={newCollectionName}
                 onChange={(e) => setNewCollectionName(e.target.value)}
                 autoFocus
@@ -378,7 +378,7 @@ const SavedBlogsPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="flex-1 py-3 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                  className="flex-1 py-3 font-semibold text-dark-grey bg-grey hover:bg-grey/80 rounded-xl transition-colors"
                 >
                   Hủy
                 </button>
@@ -399,8 +399,8 @@ const SavedBlogsPage = () => {
       {showEditModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in-up">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-slate-800">
+            <div className="px-6 py-4 border-b border-grey flex items-center justify-between">
+              <h3 className="text-xl font-bold text-black">
                 Đổi tên bộ sưu tập
               </h3>
               <button
@@ -408,7 +408,7 @@ const SavedBlogsPage = () => {
                   setShowEditModal(false);
                   setEditingCollection(null);
                 }}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-500"
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-grey text-dark-grey"
               >
                 <i className="fi fi-rr-cross-small text-xl"></i>
               </button>
@@ -417,7 +417,7 @@ const SavedBlogsPage = () => {
               <input
                 type="text"
                 placeholder="Nhập tên bộ sưu tập mới..."
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all outline-none"
+                className="w-full px-4 py-3 bg-grey border border-grey rounded-xl focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 transition-all outline-none text-black"
                 value={editCollectionName}
                 onChange={(e) => setEditCollectionName(e.target.value)}
                 autoFocus
@@ -429,7 +429,7 @@ const SavedBlogsPage = () => {
                     setShowEditModal(false);
                     setEditingCollection(null);
                   }}
-                  className="flex-1 py-3 font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                  className="flex-1 py-3 font-semibold text-dark-grey bg-grey hover:bg-grey/80 rounded-xl transition-colors"
                 >
                   Hủy
                 </button>
@@ -461,14 +461,14 @@ const SavedBlogsPage = () => {
             <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto my-3 flex-shrink-0"></div>
             
             {/* Header */}
-            <div className="px-6 pb-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+            <div className="px-6 pb-4 border-b border-grey flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-2">
                 <i className="fi fi-rr-folder-open text-indigo-600 text-lg mt-0.5"></i>
-                <h3 className="text-lg font-bold text-slate-800">Quản lý bộ sưu tập</h3>
+                <h3 className="text-lg font-bold text-black">Quản lý bộ sưu tập</h3>
               </div>
               <button
                 onClick={() => setShowMobileCollections(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 hover:bg-slate-100 text-slate-500"
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-grey hover:bg-grey/80 text-dark-grey"
               >
                 <i className="fi fi-rr-cross-small text-xl"></i>
               </button>
@@ -482,12 +482,12 @@ const SavedBlogsPage = () => {
                   setActiveCollection("all");
                   setShowMobileCollections(false);
                 }}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${activeCollection === "all" ? "bg-indigo-50 border border-indigo-100" : "hover:bg-slate-50 border border-transparent"}`}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${activeCollection === "all" ? "bg-indigo-50/10 border border-indigo-500/20" : "hover:bg-grey/30 border border-transparent"}`}
               >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs flex-shrink-0 ${activeCollection === "all" ? "bg-indigo-600 text-white" : "bg-slate-150 text-slate-600"}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs flex-shrink-0 ${activeCollection === "all" ? "bg-indigo-600 text-[#ffffff]" : "bg-grey text-dark-grey"}`}>
                   <i className="fi fi-sr-apps text-md mt-1"></i>
                 </div>
-                <span className={`font-semibold text-sm ${activeCollection === "all" ? "text-indigo-700" : "text-slate-700"}`}>
+                <span className={`font-semibold text-sm ${activeCollection === "all" ? "text-indigo-600 dark:text-indigo-400" : "text-black"}`}>
                   Tất cả mục đã lưu
                 </span>
               </button>
@@ -498,21 +498,21 @@ const SavedBlogsPage = () => {
                   setActiveCollection("default");
                   setShowMobileCollections(false);
                 }}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${activeCollection === "default" ? "bg-indigo-50 border border-indigo-100" : "hover:bg-slate-50 border border-transparent"}`}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${activeCollection === "default" ? "bg-indigo-50/10 border border-indigo-500/20" : "hover:bg-grey/30 border border-transparent"}`}
               >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs flex-shrink-0 ${activeCollection === "default" ? "bg-indigo-600 text-white" : "bg-slate-150 text-slate-600"}`}>
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-xs flex-shrink-0 ${activeCollection === "default" ? "bg-indigo-600 text-[#ffffff]" : "bg-grey text-dark-grey"}`}>
                   <i className="fi fi-sr-bookmark text-md mt-1"></i>
                 </div>
-                <span className={`font-semibold text-sm ${activeCollection === "default" ? "text-indigo-700" : "text-slate-700"}`}>
+                <span className={`font-semibold text-sm ${activeCollection === "default" ? "text-indigo-600 dark:text-indigo-400" : "text-black"}`}>
                   Mục mặc định
                 </span>
               </button>
 
               {/* Divider */}
-              <div className="h-[1px] bg-slate-100 my-2"></div>
+              <div className="h-[1px] bg-grey my-2"></div>
               
               <div className="px-2 pb-1">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Bộ sưu tập của tôi</span>
+                <span className="text-xs font-bold text-dark-grey uppercase tracking-wider">Bộ sưu tập của tôi</span>
               </div>
 
               {/* Custom Collections */}
@@ -531,7 +531,7 @@ const SavedBlogsPage = () => {
                   return (
                     <div
                       key={col._id}
-                      className={`w-full flex items-center justify-between p-2.5 rounded-xl border transition-all ${isActive ? "bg-slate-50 border-indigo-200" : "hover:bg-slate-50/50 border-transparent"}`}
+                      className={`w-full flex items-center justify-between p-2.5 rounded-xl border transition-all ${isActive ? "bg-grey/50 border-indigo-500/30" : "hover:bg-grey/30 border-transparent"}`}
                     >
                       <button
                         onClick={() => {
@@ -544,10 +544,10 @@ const SavedBlogsPage = () => {
                           <i className="fi fi-rr-folder text-lg mt-1"></i>
                         </div>
                         <div className="flex flex-col flex-1 min-w-0">
-                          <span className={`font-semibold text-sm truncate ${isActive ? "text-indigo-700 font-bold" : "text-slate-700"}`}>
+                          <span className={`font-semibold text-sm truncate ${isActive ? "text-indigo-600 dark:text-indigo-400 font-bold" : "text-black"}`}>
                             {col.name}
                           </span>
-                          <span className="text-[10px] text-slate-400 mt-0.5">Chỉ mình tôi</span>
+                          <span className="text-[10px] text-dark-grey mt-0.5">Chỉ mình tôi</span>
                         </div>
                       </button>
                       
@@ -561,7 +561,7 @@ const SavedBlogsPage = () => {
                             setEditCollectionName(col.name);
                             setShowEditModal(true);
                           }}
-                          className="w-9 h-9 rounded-xl bg-slate-50 active:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors border border-slate-100"
+                          className="w-9 h-9 rounded-xl bg-grey hover:bg-grey/80 text-dark-grey flex items-center justify-center transition-colors border border-grey"
                         >
                           <i className="fi fi-rr-edit text-xs"></i>
                         </button>
@@ -580,14 +580,14 @@ const SavedBlogsPage = () => {
                   );
                 })
               ) : (
-                <div className="text-center py-6 text-slate-400 text-xs">
+                <div className="text-center py-6 text-dark-grey text-xs">
                   Chưa có bộ sưu tập tùy chỉnh nào
                 </div>
               )}
             </div>
             
             {/* Sticky bottom add button */}
-            <div className="p-4 border-t border-slate-100 bg-white">
+            <div className="p-4 border-t border-grey bg-white">
               <button
                 onClick={() => {
                   setShowCreateModal(true);
@@ -602,28 +602,28 @@ const SavedBlogsPage = () => {
         </div>
       )}
 
-      <div className="flex min-h-[calc(100vh-80px)] bg-[#F0F2F5]">
+      <div className="flex min-h-[calc(100vh-80px)] bg-grey/30">
         {/* Left Sidebar */}
-        <aside className="w-[360px] bg-white border-r border-slate-200 hidden md:flex flex-col sticky top-[80px] h-[calc(100vh-80px)] overflow-y-auto scrollbar-hide shadow-sm z-10">
+        <aside className="w-[360px] bg-white border-r border-grey hidden md:flex flex-col sticky top-[80px] h-[calc(100vh-80px)] overflow-y-auto scrollbar-hide shadow-sm z-10">
           <div className="p-4 flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-slate-900">Đã lưu</h1>
-            <button className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors">
-              <i className="fi fi-rr-settings text-slate-700"></i>
+            <h1 className="text-2xl font-bold text-black">Đã lưu</h1>
+            <button className="w-9 h-9 rounded-full bg-grey flex items-center justify-center hover:bg-grey/80 transition-colors">
+              <i className="fi fi-rr-settings text-dark-grey"></i>
             </button>
           </div>
 
           <div className="px-2 space-y-1">
             <button
               onClick={() => setActiveCollection("all")}
-              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${activeCollection === "all" ? "bg-indigo-50" : "hover:bg-slate-50"}`}
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${activeCollection === "all" ? "bg-indigo-50/10 border border-indigo-500/20" : "hover:bg-grey/30 border border-transparent"}`}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${activeCollection === "all" ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${activeCollection === "all" ? "bg-indigo-600 text-[#ffffff]" : "bg-grey text-dark-grey"}`}
               >
                 <i className="fi fi-sr-apps text-lg mt-1"></i>
               </div>
               <span
-                className={`font-semibold text-[15px] ${activeCollection === "all" ? "text-indigo-700" : "text-slate-700"}`}
+                className={`font-semibold text-[15px] ${activeCollection === "all" ? "text-indigo-600 dark:text-indigo-400" : "text-black"}`}
               >
                 Tất cả mục đã lưu
               </span>
@@ -631,24 +631,24 @@ const SavedBlogsPage = () => {
 
             <button
               onClick={() => setActiveCollection("default")}
-              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${activeCollection === "default" ? "bg-indigo-50" : "hover:bg-slate-50"}`}
+              className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${activeCollection === "default" ? "bg-indigo-50/10 border border-indigo-500/20" : "hover:bg-grey/30 border border-transparent"}`}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${activeCollection === "default" ? "bg-indigo-600 text-white" : "bg-slate-200 text-slate-600"}`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${activeCollection === "default" ? "bg-indigo-600 text-[#ffffff]" : "bg-grey text-dark-grey"}`}
               >
                 <i className="fi fi-sr-bookmark text-lg mt-1"></i>
               </div>
               <span
-                className={`font-semibold text-[15px] ${activeCollection === "default" ? "text-indigo-700" : "text-slate-700"}`}
+                className={`font-semibold text-[15px] ${activeCollection === "default" ? "text-indigo-600 dark:text-indigo-400" : "text-black"}`}
               >
                 Mục mặc định
               </span>
             </button>
           </div>
 
-          <div className="mt-4 border-t border-slate-200 pt-4">
+          <div className="mt-4 border-t border-grey pt-4">
             <div className="px-5 mb-2">
-              <h3 className="font-semibold text-slate-900 text-[17px]">
+              <h3 className="font-semibold text-black text-[17px]">
                 Bộ sưu tập của tôi
               </h3>
             </div>
@@ -670,7 +670,7 @@ const SavedBlogsPage = () => {
                   <button
                     key={col._id}
                     onClick={() => setActiveCollection(col._id)}
-                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors group ${isActive ? "bg-slate-100" : "hover:bg-slate-50"}`}
+                    className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-colors group ${isActive ? "bg-grey/50 border border-indigo-500/20" : "hover:bg-grey/30 border border-transparent"}`}
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div
@@ -680,11 +680,11 @@ const SavedBlogsPage = () => {
                       </div>
                       <div className="flex flex-col items-start flex-1 min-w-0">
                         <span
-                          className={`font-semibold text-[15px] truncate w-full text-left ${isActive ? "text-indigo-700" : "text-slate-800"}`}
+                          className={`font-semibold text-[15px] truncate w-full text-left ${isActive ? "text-indigo-600 dark:text-indigo-400" : "text-black"}`}
                         >
                           {col.name}
                         </span>
-                        <div className="flex items-center gap-1.5 text-[12px] text-slate-500 mt-0.5">
+                        <div className="flex items-center gap-1.5 text-[12px] text-dark-grey mt-0.5">
                           <i className="fi fi-rr-lock text-[10px]"></i>
                           <span>Chỉ mình tôi</span>
                         </div>
@@ -700,7 +700,7 @@ const SavedBlogsPage = () => {
                           setEditCollectionName(col.name);
                           setShowEditModal(true);
                         }}
-                        className="w-8 h-8 rounded-full hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-all"
+                        className="w-8 h-8 rounded-full hover:bg-grey text-dark-grey flex items-center justify-center transition-all"
                         title="Sửa bộ sưu tập"
                       >
                         <i className="fi fi-rr-edit text-xs"></i>
@@ -719,10 +719,10 @@ const SavedBlogsPage = () => {
             </div>
           </div>
 
-          <div className="p-4 mt-auto border-t border-slate-200 bg-white sticky bottom-0">
+          <div className="p-4 mt-auto border-t border-grey bg-white sticky bottom-0">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2.5 bg-indigo-50/15 hover:bg-indigo-50/25 text-indigo-600 dark:text-indigo-400 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <i className="fi fi-rr-plus"></i>
               Tạo bộ sưu tập mới
@@ -734,14 +734,14 @@ const SavedBlogsPage = () => {
         <main className="flex-1 min-w-0 p-4 md:p-8 overflow-y-auto">
           <div className="max-w-3xl mx-auto">
             {/* Mobile Collection Selector Bar */}
-            <div className="md:hidden mb-6 flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="md:hidden mb-6 flex items-center justify-between bg-white p-4 rounded-2xl border border-grey shadow-sm">
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 flex-shrink-0">
                   <i className="fi fi-rr-folder text-lg mt-1"></i>
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-xs text-slate-500 font-medium">Bộ sưu tập hiện tại</span>
-                  <span className="font-bold text-slate-800 text-sm truncate">
+                  <span className="text-xs text-dark-grey font-medium">Bộ sưu tập hiện tại</span>
+                  <span className="font-bold text-black text-sm truncate">
                     {activeCollection === "all"
                       ? "Tất cả mục đã lưu"
                       : activeCollection === "default"
@@ -752,7 +752,7 @@ const SavedBlogsPage = () => {
               </div>
               <button 
                 onClick={() => setShowMobileCollections(true)}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-[#ffffff] rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
               >
                 <i className="fi fi-rr-settings-sliders mt-0.5"></i>
                 Thay đổi
@@ -760,7 +760,7 @@ const SavedBlogsPage = () => {
             </div>
 
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-slate-900">
+              <h2 className="text-xl font-bold text-black">
                 {activeCollection === "all"
                   ? "Tất cả mục đã lưu"
                   : activeCollection === "default"
@@ -768,7 +768,7 @@ const SavedBlogsPage = () => {
                     : collections.find((c) => c._id === activeCollection)
                         ?.name || "Bộ sưu tập"}
               </h2>
-              <div className="bg-slate-200/50 text-slate-600 px-3 py-1 rounded-full text-sm font-semibold">
+              <div className="bg-grey text-dark-grey px-3 py-1 rounded-full text-sm font-semibold">
                 {totalDocs} mục
               </div>
             </div>
@@ -787,22 +787,22 @@ const SavedBlogsPage = () => {
                   onClick={() => setFilterType(f.id)}
                   className={`px-4 py-1.5 rounded-full font-semibold text-sm whitespace-nowrap transition-colors border ${
                     filterType === f.id
-                      ? "bg-slate-800 text-white border-slate-800"
-                      : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      ? "bg-black text-white border-black"
+                      : "bg-white text-black border-grey hover:bg-grey/30"
                   }`}
                 >
                   {f.label}
                 </button>
               ))}
 
-              <div className="h-6 w-[1px] bg-slate-300 mx-1"></div>
+              <div className="h-6 w-[1px] bg-grey mx-1"></div>
 
               {/* Date Sort */}
               <button
                 onClick={() =>
                   setSortDate((prev) => (prev === "desc" ? "asc" : "desc"))
                 }
-                className="px-4 py-1.5 rounded-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold text-sm whitespace-nowrap flex items-center gap-2 transition-colors"
+                className="px-4 py-1.5 rounded-full bg-white border border-grey hover:bg-grey/30 text-black font-semibold text-sm whitespace-nowrap flex items-center gap-2 transition-colors"
               >
                 <i className="fi fi-rr-calendar"></i>
                 {sortDate === "desc" ? "Gần đây nhất" : "Cũ nhất trước"}
@@ -835,26 +835,26 @@ const SavedBlogsPage = () => {
                 {blogs.length < totalDocs && (
                   <button
                     onClick={() => fetchSavedBlogs(page + 1)}
-                    className="w-full py-3 mt-4 bg-white border border-slate-200 rounded-xl text-slate-700 font-semibold hover:bg-slate-50 transition-colors shadow-sm"
+                    className="w-full py-3 mt-4 bg-white border border-grey rounded-xl text-black font-semibold hover:bg-grey/35 transition-colors shadow-sm"
                   >
                     Tải thêm
                   </button>
                 )}
               </div>
             ) : (
-              <div className="bg-white rounded-xl p-12 flex flex-col items-center justify-center border border-slate-200 text-center shadow-sm">
-                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                  <i className="fi fi-rr-folder-open text-3xl text-slate-300 mt-2"></i>
+              <div className="bg-white rounded-xl p-12 flex flex-col items-center justify-center border border-grey text-center shadow-sm">
+                <div className="w-20 h-20 bg-grey rounded-full flex items-center justify-center mb-4">
+                  <i className="fi fi-rr-folder-open text-3xl text-dark-grey mt-2"></i>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                <h3 className="text-xl font-bold text-black mb-2">
                   Chưa có bài viết nào
                 </h3>
-                <p className="text-slate-500 max-w-sm">
+                <p className="text-dark-grey max-w-sm">
                   Hãy khám phá và lưu các bài viết thú vị vào đây nhé!
                 </p>
                 <Link
                   to="/feed"
-                  className="mt-6 px-6 py-2.5 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
+                  className="mt-6 px-6 py-2.5 bg-indigo-600 text-[#ffffff] font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                   Khám phá ngay
                 </Link>

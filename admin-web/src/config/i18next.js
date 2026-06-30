@@ -36,6 +36,7 @@ const resources = {
         notifications: "Notifications",
         roles: "Roles & Permissions",
         logs: "System Audit Logs",
+        groups: "Study Groups",
         logout: "Logout"
       },
       roles: {
@@ -96,7 +97,10 @@ const resources = {
         USER_UPDATE: "Update staff/member info",
         USER_BLOCK: "Block/Unblock user comments",
         USER_DELETE: "Delete user accounts",
-        ROLE_MANAGE: "Manage roles & privileges"
+        ROLE_MANAGE: "Manage roles & privileges",
+        GROUP_VIEW: "View study groups",
+        GROUP_DISABLE: "Lock/Unlock study groups",
+        GROUP_DELETE: "Permanently delete study groups"
       },
       modules: {
         "Bài viết": "Blogs",
@@ -104,7 +108,8 @@ const resources = {
         "Thông báo": "Notifications",
         "Danh mục": "Categories",
         "Thành viên": "Users",
-        "Phân quyền": "Permissions"
+        "Phân quyền": "Permissions",
+        "Nhóm học tập": "Study Groups"
       },
       users: {
         title: "User Management",
@@ -174,6 +179,7 @@ const resources = {
         notifications: "Thông báo",
         roles: "Phân quyền",
         logs: "Nhật ký hệ thống",
+        groups: "Nhóm học tập",
         logout: "Đăng xuất"
       },
       roles: {
@@ -234,7 +240,10 @@ const resources = {
         USER_UPDATE: "Cập nhật thành viên",
         USER_BLOCK: "Khóa/Mở khóa tài khoản",
         USER_DELETE: "Xóa tài khoản thành viên",
-        ROLE_MANAGE: "Cấu hình vai trò & gán quyền"
+        ROLE_MANAGE: "Cấu hình vai trò & gán quyền",
+        GROUP_VIEW: "Xem danh sách nhóm học tập",
+        GROUP_DISABLE: "Khóa/Mở khóa nhóm học tập",
+        GROUP_DELETE: "Xóa vĩnh viễn nhóm học tập"
       },
       modules: {
         "Bài viết": "Bài viết",
@@ -242,7 +251,8 @@ const resources = {
         "Thông báo": "Thông báo",
         "Danh mục": "Danh mục",
         "Thành viên": "Thành viên",
-        "Phân quyền": "Phân quyền"
+        "Phân quyền": "Phân quyền",
+        "Nhóm học tập": "Nhóm học tập"
       },
       users: {
         title: "Quản lý người dùng",

@@ -168,7 +168,7 @@ const UploadDocumentModal = ({ isOpen, onClose, onUploadSuccess }) => {
               <div className="w-14 h-14 bg-indigo-500/10 dark:bg-indigo-500/20 rounded-2xl flex items-center justify-center text-indigo-500 mb-4">
                 <i className="fi fi-rr-cloud-upload text-3xl mt-1"></i>
               </div>
-              <p className="font-extrabold text-sm text-black dark:text-white mb-1">
+              <p className="font-extrabold text-sm text-black mb-1">
                 Kéo thả file tài liệu vào đây
               </p>
               <p className="text-xs text-dark-grey mb-3">
@@ -186,7 +186,7 @@ const UploadDocumentModal = ({ isOpen, onClose, onUploadSuccess }) => {
                   <i className="fi fi-rr-file-check text-2xl mt-1"></i>
                 </div>
                 <div className="min-w-0">
-                  <p className="font-extrabold text-sm text-black dark:text-white truncate">
+                  <p className="font-extrabold text-sm text-black truncate">
                     {file.name}
                   </p>
                   <p className="text-[10px] text-dark-grey font-bold">
@@ -207,7 +207,7 @@ const UploadDocumentModal = ({ isOpen, onClose, onUploadSuccess }) => {
 
           {/* Title input */}
           <div className="space-y-2">
-            <label className="text-xs font-black text-black dark:text-white uppercase tracking-wider">
+            <label className="text-xs font-black text-black uppercase tracking-wider">
               Tiêu đề tài liệu <span className="text-rose-500">*</span>
             </label>
             <input
@@ -215,7 +215,7 @@ const UploadDocumentModal = ({ isOpen, onClose, onUploadSuccess }) => {
               placeholder="Nhập tiêu đề hoặc tên tài liệu..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-grey/30 focus:bg-grey/50 dark:bg-zinc-800/50 dark:focus:bg-zinc-800/80 border-none rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/20 text-black dark:text-white"
+              className="w-full bg-grey/30 focus:bg-grey/50 dark:bg-zinc-800/50 dark:focus:bg-zinc-800/80 border-none rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/20 text-black"
               disabled={isUploading}
               required
             />
@@ -223,7 +223,7 @@ const UploadDocumentModal = ({ isOpen, onClose, onUploadSuccess }) => {
 
           {/* Description input */}
           <div className="space-y-2">
-            <label className="text-xs font-black text-black dark:text-white uppercase tracking-wider">
+            <label className="text-xs font-black text-black uppercase tracking-wider">
               Mô tả chi tiết (Tùy chọn)
             </label>
             <textarea
@@ -231,7 +231,7 @@ const UploadDocumentModal = ({ isOpen, onClose, onUploadSuccess }) => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              className="w-full bg-grey/30 focus:bg-grey/50 dark:bg-zinc-800/50 dark:focus:bg-zinc-800/80 border-none rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/20 text-black dark:text-white resize-none"
+              className="w-full bg-grey/30 focus:bg-grey/50 dark:bg-zinc-800/50 dark:focus:bg-zinc-800/80 border-none rounded-xl p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/10 dark:focus:ring-indigo-400/20 text-black resize-none"
               disabled={isUploading}
             />
           </div>
@@ -241,7 +241,7 @@ const UploadDocumentModal = ({ isOpen, onClose, onUploadSuccess }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-grey dark:border-zinc-800 text-black dark:text-white py-3.5 rounded-xl text-sm font-extrabold hover:bg-grey/40 dark:hover:bg-zinc-800/40 transition-all active:scale-95 text-center"
+              className="flex-1 border border-grey dark:border-zinc-800 text-black py-3.5 rounded-xl text-sm font-extrabold hover:bg-grey/40 dark:hover:bg-zinc-800/40 transition-all active:scale-95 text-center"
               disabled={isUploading}
             >
               Hủy bỏ

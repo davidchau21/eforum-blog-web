@@ -9,6 +9,7 @@ import {
   Share2,
   BookOpen,
   TrendingUp,
+  TrendingDown,
   Activity,
   Wifi,
   Database,
@@ -20,6 +21,7 @@ import {
   Shield,
   Download,
   ArrowUpRight,
+  ArrowDownRight,
   RefreshCw,
   ExternalLink,
 } from "lucide-react";
@@ -56,7 +58,8 @@ const colorMap = {
     bg: "from-blue-500/10 to-indigo-500/5",
     border: "hover:border-blue-200/60",
     text: "text-blue-600",
-    iconBg: "bg-gradient-to-tr from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20",
+    iconBg:
+      "bg-gradient-to-tr from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/20",
     accent: "bg-blue-500/5",
     hover: "group-hover:bg-blue-500/10",
   },
@@ -64,7 +67,8 @@ const colorMap = {
     bg: "from-emerald-500/10 to-teal-500/5",
     border: "hover:border-emerald-200/60",
     text: "text-emerald-600",
-    iconBg: "bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20",
+    iconBg:
+      "bg-gradient-to-tr from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20",
     accent: "bg-emerald-500/5",
     hover: "group-hover:bg-emerald-500/10",
   },
@@ -72,7 +76,8 @@ const colorMap = {
     bg: "from-purple-500/10 to-violet-500/5",
     border: "hover:border-purple-200/60",
     text: "text-purple-600",
-    iconBg: "bg-gradient-to-tr from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/20",
+    iconBg:
+      "bg-gradient-to-tr from-purple-500 to-violet-600 text-white shadow-md shadow-purple-500/20",
     accent: "bg-purple-500/5",
     hover: "group-hover:bg-purple-500/10",
   },
@@ -80,7 +85,8 @@ const colorMap = {
     bg: "from-rose-500/10 to-pink-500/5",
     border: "hover:border-rose-200/60",
     text: "text-rose-600",
-    iconBg: "bg-gradient-to-tr from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/20",
+    iconBg:
+      "bg-gradient-to-tr from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/20",
     accent: "bg-rose-500/5",
     hover: "group-hover:bg-rose-500/10",
   },
@@ -88,7 +94,8 @@ const colorMap = {
     bg: "from-amber-500/10 to-orange-500/5",
     border: "hover:border-amber-200/60",
     text: "text-amber-600",
-    iconBg: "bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20",
+    iconBg:
+      "bg-gradient-to-tr from-amber-500 to-orange-600 text-white shadow-md shadow-amber-500/20",
     accent: "bg-amber-500/5",
     hover: "group-hover:bg-amber-500/10",
   },
@@ -96,7 +103,8 @@ const colorMap = {
     bg: "from-indigo-500/10 to-blue-500/5",
     border: "hover:border-indigo-200/60",
     text: "text-indigo-600",
-    iconBg: "bg-gradient-to-tr from-indigo-500 to-blue-600 text-white shadow-md shadow-indigo-500/20",
+    iconBg:
+      "bg-gradient-to-tr from-indigo-500 to-blue-600 text-white shadow-md shadow-indigo-500/20",
     accent: "bg-indigo-500/5",
     hover: "group-hover:bg-indigo-500/10",
   },
@@ -110,6 +118,16 @@ const Dashboard = () => {
   const [totalShare, setTotalShare] = useState(0);
   const [totalRead, setTotalRead] = useState(0);
 
+  // Percentage changes vs previous same-length period
+  const [trends, setTrends] = useState({
+    user: null,
+    blog: null,
+    comment: null,
+    read: null,
+    like: null,
+    share: null,
+  });
+
   const [topBlogs, setTopBlogs] = useState([]);
   const [loadingBlogs, setLoadingBlogs] = useState(false);
   const [activePreset, setActivePreset] = useState("7"); // "7", "30", "month", "all"
@@ -121,13 +139,22 @@ const Dashboard = () => {
       { name: "Bài viết mới", data: [] },
     ],
     options: {
-      chart: { type: "area", toolbar: { show: false }, fontFamily: "Exo 2, sans-serif" },
+      chart: {
+        type: "area",
+        toolbar: { show: false },
+        fontFamily: "Exo 2, sans-serif",
+      },
       colors: ["#3b82f6", "#10b981"],
       dataLabels: { enabled: false },
       stroke: { curve: "smooth", width: 3 },
       fill: {
         type: "gradient",
-        gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1, stops: [0, 90, 100] },
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.4,
+          opacityTo: 0.1,
+          stops: [0, 90, 100],
+        },
       },
       xaxis: { categories: [], labels: { style: { colors: "#64748b" } } },
       yaxis: { labels: { style: { colors: "#64748b" } } },
@@ -142,13 +169,31 @@ const Dashboard = () => {
       { name: "Lượt bình luận", data: [] },
     ],
     options: {
-      chart: { type: "bar", stacked: true, toolbar: { show: false }, fontFamily: "Exo 2, sans-serif" },
+      chart: {
+        type: "bar",
+        stacked: false,
+        toolbar: { show: false },
+        fontFamily: "Exo 2, sans-serif",
+      },
       colors: ["#3b82f6", "#f59e0b", "#8b5cf6"],
-      plotOptions: { bar: { borderRadius: 6, columnWidth: "45%" } },
+      plotOptions: {
+        bar: {
+          borderRadius: 4,
+          borderRadiusApplication: "end",
+          columnWidth: "60%",
+        },
+      },
+      dataLabels: { enabled: false },
       xaxis: { categories: [], labels: { style: { colors: "#64748b" } } },
       yaxis: { labels: { style: { colors: "#64748b" } } },
       legend: { position: "bottom", fontFamily: "Exo 2, sans-serif" },
-      grid: { borderColor: "#f1f5f9" },
+      grid: { borderColor: "#f1f5f9", strokeDashArray: 4 },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        theme: "light",
+        style: { fontFamily: "Exo 2, sans-serif" },
+      },
     },
   });
 
@@ -158,19 +203,61 @@ const Dashboard = () => {
       chart: { type: "donut", fontFamily: "Exo 2, sans-serif" },
       labels: ["Lượt thích", "Lượt chia sẻ", "Lượt bình luận"],
       colors: ["#3b82f6", "#f59e0b", "#8b5cf6"],
-      legend: { position: "bottom", fontFamily: "Exo 2, sans-serif" },
+      legend: { show: false },
       plotOptions: {
         pie: {
           donut: {
-            size: "75%",
+            size: "72%",
             labels: {
               show: true,
-              total: { show: true, label: "Tổng tương tác", color: "#64748b", fontSize: "14px" },
+              name: {
+                show: true,
+                fontSize: "13px",
+                fontFamily: "Exo 2, sans-serif",
+                fontWeight: 700,
+                color: "#64748b",
+                offsetY: -10,
+              },
+              value: {
+                show: true,
+                fontSize: "26px",
+                fontFamily: "Exo 2, sans-serif",
+                fontWeight: 900,
+                color: "#0f172a",
+                offsetY: 8,
+                formatter: (val) => Number(val).toLocaleString(),
+              },
+              total: {
+                show: true,
+                label: "Tổng",
+                color: "#94a3b8",
+                fontSize: "12px",
+                fontFamily: "Exo 2, sans-serif",
+                fontWeight: 700,
+                formatter: (w) =>
+                  w.globals.seriesTotals
+                    .reduce((a, b) => a + b, 0)
+                    .toLocaleString(),
+              },
             },
           },
         },
       },
       dataLabels: { enabled: false },
+      tooltip: {
+        theme: "light",
+        fillSeriesColor: false,
+        y: {
+          formatter: (val, { w }) => {
+            const series = w?.config?.series || [];
+            const total = series.reduce((a, b) => Number(a) + Number(b), 0);
+            const pct = total > 0 ? ((val / total) * 100).toFixed(1) : "0.0";
+            return `${Number(val).toLocaleString()} (${pct}%)`;
+          },
+        },
+        style: { fontFamily: "Exo 2, sans-serif", fontSize: "13px" },
+      },
+      stroke: { width: 2, colors: ["#ffffff"] },
     },
   });
 
@@ -186,24 +273,6 @@ const Dashboard = () => {
   const [isFiltering, setIsFiltering] = useState(false);
 
   useEffect(() => {
-    reportApi.totalUser().then((res) => {
-      if (res.ok && res.body) setTotalUser(res.body.totalUser || 0);
-    });
-    reportApi.totalBlog().then((res) => {
-      if (res.ok && res.body) setTotalBlog(res.body.totalBlog || 0);
-    });
-    reportApi.totalComment().then((res) => {
-      if (res.ok && res.body) setTotalComment(res.body.totalComment || 0);
-    });
-
-    reportApi.getStats().then((res) => {
-      if (res.ok && res.body) {
-        setTotalLike(res.body.totalLikes || 0);
-        setTotalShare(res.body.totalShares || 0);
-        setTotalRead(res.body.totalReads || 0);
-      }
-    });
-
     fetchTopBlogs();
     fetchFilteredData(startDate, endDate);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -211,7 +280,8 @@ const Dashboard = () => {
 
   const fetchTopBlogs = () => {
     setLoadingBlogs(true);
-    blogApi.getAllBlogs({ limit: 5 })
+    blogApi
+      .getAllBlogs({ limit: 5 })
       .then((res) => {
         if (res.ok && res.body && res.body.list) {
           setTopBlogs(res.body.list);
@@ -228,50 +298,119 @@ const Dashboard = () => {
     Promise.all([
       reportApi.userChartByDate(start, end),
       reportApi.blogStatisticsByDate(start, end),
-      reportApi.weeklyInteractions(),
-    ]).then(([userResponse, blogResponse, interactionResponse]) => {
-      if (!userResponse.ok || !blogResponse.ok || !interactionResponse.ok) {
-        setIsFiltering(false);
-        return;
-      }
+      reportApi.interactionsByDate(start, end),
+      reportApi.summaryByDate(start, end),
+    ])
+      .then(
+        ([
+          userResponse,
+          blogResponse,
+          interactionResponse,
+          summaryResponse,
+        ]) => {
+          if (!userResponse.ok || !blogResponse.ok || !interactionResponse.ok) {
+            setIsFiltering(false);
+            return;
+          }
 
-      const userGrowth = userResponse.body?.growthData || [];
-      const blogGrowth = blogResponse.body || [];
-      const labels = userGrowth.map((entry) => entry.date);
+          // Update stat cards with date-filtered values
+          if (summaryResponse.ok && summaryResponse.body) {
+            const { current: c, previous: p } = summaryResponse.body;
+            setTotalUser(c.totalUser ?? 0);
+            setTotalBlog(c.totalBlog ?? 0);
+            setTotalComment(c.totalComment ?? 0);
+            setTotalLike(c.totalLikes ?? 0);
+            setTotalShare(c.totalShares ?? 0);
+            setTotalRead(c.totalReads ?? 0);
 
-      setGrowthChart((prev) => ({
-        ...prev,
-        series: [
-          { name: "Người dùng mới", data: userGrowth.map((entry) => entry.userCount) },
-          { name: "Bài viết mới", data: blogGrowth.map((entry) => entry.totalBlogs) },
-        ],
-        options: { ...prev.options, xaxis: { categories: labels } },
-      }));
+            // Compute % change vs previous period
+            const pct = (curr, prev) => {
+              if (!prev && !curr) return null; // both 0 – no data
+              if (!prev) return 100; // went from 0 to something
+              return parseFloat((((curr - prev) / prev) * 100).toFixed(1));
+            };
+            setTrends({
+              user: pct(c.totalUser, p?.totalUser ?? 0),
+              blog: pct(c.totalBlog, p?.totalBlog ?? 0),
+              comment: pct(c.totalComment, p?.totalComment ?? 0),
+              read: pct(c.totalReads, p?.totalReads ?? 0),
+              like: pct(c.totalLikes, p?.totalLikes ?? 0),
+              share: pct(c.totalShares, p?.totalShares ?? 0),
+            });
+          }
 
-      const interactions = interactionResponse.body || [];
-      const interactionLabels = interactions.map((entry) => entry.date);
+          const userGrowth = userResponse.body?.growthData || [];
+          const blogGrowth = blogResponse.body || [];
+          const labels = userGrowth.map((entry) => entry.date);
 
-      setInteractionChart((prev) => ({
-        ...prev,
-        series: [
-          { name: "Lượt thích", data: interactions.map((entry) => entry.totalLikes) },
-          { name: "Lượt chia sẻ", data: interactions.map((entry) => entry.totalShares) },
-          { name: "Lượt bình luận", data: interactions.map((entry) => entry.totalComments) },
-        ],
-        options: { ...prev.options, xaxis: { categories: interactionLabels } },
-      }));
+          setGrowthChart((prev) => ({
+            ...prev,
+            series: [
+              {
+                name: "Người dùng mới",
+                data: userGrowth.map((entry) => entry.userCount),
+              },
+              {
+                name: "Bài viết mới",
+                data: blogGrowth.map((entry) => entry.totalBlogs),
+              },
+            ],
+            options: { ...prev.options, xaxis: { categories: labels } },
+          }));
 
-      const totalL = interactions.reduce((a, b) => a + b.totalLikes, 0);
-      const totalS = interactions.reduce((a, b) => a + b.totalShares, 0);
-      const totalC = interactions.reduce((a, b) => a + b.totalComments, 0);
+          const interactions = interactionResponse.body || [];
+          const interactionLabels = interactions.map((entry) => entry.date);
 
-      setDonutChart((prev) => ({
-        ...prev,
-        series: [totalL, totalS, totalC],
-      }));
+          setInteractionChart((prev) => ({
+            ...prev,
+            series: [
+              {
+                name: "Lượt thích",
+                data: interactions.map((entry) => entry.totalLikes),
+              },
+              {
+                name: "Lượt chia sẻ",
+                data: interactions.map((entry) => entry.totalShares),
+              },
+              {
+                name: "Lượt bình luận",
+                data: interactions.map((entry) => entry.totalComments),
+              },
+            ],
+            options: {
+              ...prev.options,
+              xaxis: { categories: interactionLabels },
+            },
+          }));
 
-      setTimeout(() => setIsFiltering(false), 300);
-    }).catch(() => setIsFiltering(false));
+          // Use summaryResponse for donut chart — more reliable than interactionsByDate
+          if (summaryResponse.ok && summaryResponse.body?.current) {
+            const c = summaryResponse.body.current;
+            setDonutChart((prev) => ({
+              ...prev,
+              series: [
+                c.totalLikes ?? 0,
+                c.totalShares ?? 0,
+                c.totalComments ?? 0,
+              ],
+            }));
+          } else {
+            const totalL = interactions.reduce((a, b) => a + b.totalLikes, 0);
+            const totalS = interactions.reduce((a, b) => a + b.totalShares, 0);
+            const totalC = interactions.reduce(
+              (a, b) => a + b.totalComments,
+              0,
+            );
+            setDonutChart((prev) => ({
+              ...prev,
+              series: [totalL, totalS, totalC],
+            }));
+          }
+
+          setTimeout(() => setIsFiltering(false), 300);
+        },
+      )
+      .catch(() => setIsFiltering(false));
   };
 
   const handleDateChange = () => {
@@ -318,19 +457,20 @@ const Dashboard = () => {
 
     csvContent += "DỮ LIỆU TĂNG TRƯỞNG THEO NGÀY\n";
     csvContent += "Ngày,Người dùng mới,Bài viết mới\n";
-    
+
     const dates = growthChart.options.xaxis.categories || [];
     const newUsers = growthChart.series[0]?.data || [];
     const newBlogs = growthChart.series[1]?.data || [];
-    
+
     dates.forEach((date, i) => {
       csvContent += `${date},${newUsers[i] || 0},${newBlogs[i] || 0}\n`;
     });
-    
+
     csvContent += "\n";
 
     csvContent += "DANH SÁCH BÀI VIẾT MỚI NHẤT\n";
-    csvContent += "ID Bài viết,Tiêu đề,Tác giả,Lượt thích,Lượt bình luận,Trạng thái\n";
+    csvContent +=
+      "ID Bài viết,Tiêu đề,Tác giả,Lượt thích,Lượt bình luận,Trạng thái\n";
     topBlogs.forEach((blog) => {
       const authorName = blog.author?.personal_info?.fullname || "Ẩn danh";
       const likes = blog.activity?.total_likes || 0;
@@ -344,27 +484,91 @@ const Dashboard = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Bao-cao-EduBlog-${startDate}-to-${endDate}.csv`);
+    link.setAttribute(
+      "download",
+      `Bao-cao-EduBlog-${startDate}-to-${endDate}.csv`,
+    );
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   const statCards = [
-    { label: "Tổng người dùng", value: totalUser, icon: User2Icon, color: "blue", trend: "+12%" },
-    { label: "Tổng bài viết", value: totalBlog, icon: FileIcon, color: "emerald", trend: "+5%" },
-    { label: "Tổng bình luận", value: totalComment, icon: MessageCircleIcon, color: "purple", trend: "+18%" },
-    { label: "Tổng lượt đọc", value: totalRead, icon: BookOpen, color: "indigo", trend: "+15%" },
-    { label: "Lượt thích", value: totalLike, icon: ThumbsUp, color: "rose", trend: "+24%" },
-    { label: "Lượt chia sẻ", value: totalShare, icon: Share2, color: "amber", trend: "+8%" },
+    {
+      label: "Người dùng mới",
+      value: totalUser,
+      icon: User2Icon,
+      color: "blue",
+      trendKey: "user",
+    },
+    {
+      label: "Bài viết mới",
+      value: totalBlog,
+      icon: FileIcon,
+      color: "emerald",
+      trendKey: "blog",
+    },
+    {
+      label: "Bình luận mới",
+      value: totalComment,
+      icon: MessageCircleIcon,
+      color: "purple",
+      trendKey: "comment",
+    },
+    {
+      label: "Lượt đọc",
+      value: totalRead,
+      icon: BookOpen,
+      color: "indigo",
+      trendKey: "read",
+    },
+    {
+      label: "Lượt thích",
+      value: totalLike,
+      icon: ThumbsUp,
+      color: "rose",
+      trendKey: "like",
+    },
+    {
+      label: "Lượt chia sẻ",
+      value: totalShare,
+      icon: Share2,
+      color: "amber",
+      trendKey: "share",
+    },
   ];
 
   const quickActions = [
-    { label: "Viết bài mới", path: "/blogs/create", icon: PenTool, color: "from-blue-500 to-indigo-500" },
-    { label: "Duyệt bài viết", path: "/blogs", icon: CheckSquare, color: "from-emerald-500 to-teal-500" },
-    { label: "Quản lý Staff", path: "/users", icon: Users, color: "from-purple-500 to-violet-500" },
-    { label: "Nhật ký hệ thống", path: "/logs", icon: Activity, color: "from-amber-500 to-orange-500" },
-    { label: "Cấu hình vai trò", path: "/roles", icon: Shield, color: "from-rose-500 to-pink-500" },
+    {
+      label: "Viết bài mới",
+      path: "/blogs/create",
+      icon: PenTool,
+      color: "from-blue-500 to-indigo-500",
+    },
+    {
+      label: "Duyệt bài viết",
+      path: "/blogs",
+      icon: CheckSquare,
+      color: "from-emerald-500 to-teal-500",
+    },
+    {
+      label: "Quản lý Staff",
+      path: "/users",
+      icon: Users,
+      color: "from-purple-500 to-violet-500",
+    },
+    {
+      label: "Nhật ký hệ thống",
+      path: "/logs",
+      icon: Activity,
+      color: "from-amber-500 to-orange-500",
+    },
+    {
+      label: "Cấu hình vai trò",
+      path: "/roles",
+      icon: Shield,
+      color: "from-rose-500 to-pink-500",
+    },
   ];
 
   return (
@@ -375,7 +579,9 @@ const Dashboard = () => {
       className="p-8 space-y-8 bg-slate-50 min-h-full font-exo-2 text-slate-800 dashboard-container"
     >
       {/* Dynamic styling for @media print */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @media print {
           /* Hide layout header, sidebar, any other sibling components */
           header, 
@@ -449,18 +655,28 @@ const Dashboard = () => {
             background: transparent !important;
           }
         }
-      `}} />
+      `,
+        }}
+      />
 
       {/* Printable Executive PDF Header */}
       <div className="hidden print:block w-full border-b-2 border-slate-200 pb-4 mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">EDU BLOG - HỆ THỐNG QUẢN TRỊ</h1>
-            <p className="text-xs text-slate-500 font-bold mt-1">BÁO CÁO THỐNG KÊ CHI TIẾT HỆ THỐNG</p>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              EDU BLOG - HỆ THỐNG QUẢN TRỊ
+            </h1>
+            <p className="text-xs text-slate-500 font-bold mt-1">
+              BÁO CÁO THỐNG KÊ CHI TIẾT HỆ THỐNG
+            </p>
           </div>
           <div className="text-right">
-            <p className="text-xs font-bold text-slate-700">Ngày lập báo cáo: {new Date().toLocaleDateString("vi-VN")}</p>
-            <p className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">Khoảng lọc: {startDate} đến {endDate}</p>
+            <p className="text-xs font-bold text-slate-700">
+              Ngày lập báo cáo: {new Date().toLocaleDateString("vi-VN")}
+            </p>
+            <p className="text-[10px] text-slate-400 font-bold mt-0.5 uppercase">
+              Khoảng lọc: {startDate} đến {endDate}
+            </p>
           </div>
         </div>
       </div>
@@ -472,7 +688,8 @@ const Dashboard = () => {
             Bảng điều khiển quản trị
           </h1>
           <p className="text-slate-500 mt-1 font-medium no-print">
-            Theo dõi sức khỏe hệ thống, tăng trưởng và tương tác bài viết của Edu Blog.
+            Theo dõi sức khỏe hệ thống, tăng trưởng và tương tác bài viết của
+            Edu Blog.
           </p>
           <p className="hidden print:block text-xs font-bold text-indigo-600 mt-1">
             Báo cáo trực quan dạng tài liệu được lập bởi Quản trị viên
@@ -536,7 +753,10 @@ const Dashboard = () => {
               className="p-1.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 text-white rounded-lg transition-colors cursor-pointer"
               title="Lọc thủ công"
             >
-              <RefreshCw size={14} className={isFiltering ? "animate-spin" : ""} />
+              <RefreshCw
+                size={14}
+                className={isFiltering ? "animate-spin" : ""}
+              />
             </button>
           </div>
 
@@ -552,8 +772,8 @@ const Dashboard = () => {
 
             {showExportMenu && (
               <>
-                <div 
-                  className="fixed inset-0 z-40 bg-transparent" 
+                <div
+                  className="fixed inset-0 z-40 bg-transparent"
                   onClick={() => setShowExportMenu(false)}
                 />
                 <motion.div
@@ -562,9 +782,11 @@ const Dashboard = () => {
                   className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 overflow-hidden"
                 >
                   <div className="px-3 py-2 border-b border-slate-50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Chọn định dạng báo cáo</p>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      Chọn định dạng báo cáo
+                    </p>
                   </div>
-                  
+
                   <button
                     onClick={() => {
                       handleExportCSV();
@@ -576,8 +798,12 @@ const Dashboard = () => {
                       <FileIcon size={16} />
                     </div>
                     <div>
-                      <p className="text-xs font-black text-slate-800">Xuất file Excel / CSV</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Tải xuống dữ liệu bảng tính thô</p>
+                      <p className="text-xs font-black text-slate-800">
+                        Xuất file Excel / CSV
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Tải xuống dữ liệu bảng tính thô
+                      </p>
                     </div>
                   </button>
 
@@ -594,8 +820,12 @@ const Dashboard = () => {
                       <BookOpen size={16} />
                     </div>
                     <div>
-                      <p className="text-xs font-black text-slate-800">Xuất báo cáo PDF</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">Lưu báo cáo A4 trực quan</p>
+                      <p className="text-xs font-black text-slate-800">
+                        Xuất báo cáo PDF
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Lưu báo cáo A4 trực quan
+                      </p>
                     </div>
                   </button>
                 </motion.div>
@@ -619,19 +849,49 @@ const Dashboard = () => {
                 className={`group relative overflow-hidden bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm ${colors.border} transition-all duration-300 flex flex-col justify-between h-[160px] print-card`}
               >
                 {/* Glowing Background Overlay */}
-                <div className={`absolute top-0 right-0 w-28 h-28 -mr-6 -mt-6 rounded-full bg-gradient-to-br ${colors.bg} opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-500 print:hidden`} />
-                
+                <div
+                  className={`absolute top-0 right-0 w-28 h-28 -mr-6 -mt-6 rounded-full bg-gradient-to-br ${colors.bg} opacity-50 blur-lg group-hover:opacity-80 transition-opacity duration-500 print:hidden`}
+                />
+
                 <div className="flex items-start justify-between z-10">
-                  <div className={`p-3.5 rounded-2xl ${colors.iconBg} print:bg-slate-100 print:text-slate-800 print:shadow-none`}>
+                  <div
+                    className={`p-3.5 rounded-2xl ${colors.iconBg} print:bg-slate-100 print:text-slate-800 print:shadow-none`}
+                  >
                     <card.icon size={22} />
                   </div>
-                  <div className="flex items-center gap-1 text-emerald-600 text-xs font-extrabold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100 shadow-sm print:hidden">
-                    <TrendingUp size={12} /> {card.trend}
-                  </div>
+                  {(() => {
+                    const t = trends[card.trendKey];
+                    if (t === null || t === undefined)
+                      return (
+                        <span className="text-xs font-extrabold bg-slate-100 text-slate-400 px-2.5 py-1 rounded-full print:hidden">
+                          —
+                        </span>
+                      );
+                    const isUp = t >= 0;
+                    return (
+                      <div
+                        className={`flex items-center gap-1 text-xs font-extrabold px-2.5 py-1 rounded-full border shadow-sm print:hidden ${
+                          isUp
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                            : "bg-rose-50 text-rose-600 border-rose-100"
+                        }`}
+                      >
+                        {isUp ? (
+                          <TrendingUp size={12} />
+                        ) : (
+                          <TrendingDown size={12} />
+                        )}
+                        {isUp ? "+" : ""}
+                        {t}%
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="z-10">
-                  <p className="text-slate-400 font-semibold text-xs tracking-wider uppercase">{card.label}</p>
+                  <p className="text-slate-400 font-semibold text-xs tracking-wider uppercase">
+                    {card.label}
+                  </p>
                   <h3 className="text-3xl font-black text-slate-900 mt-1 tracking-tight">
                     {card.value.toLocaleString()}
                   </h3>
@@ -644,33 +904,101 @@ const Dashboard = () => {
         {/* Donut Chart Bento Box */}
         <motion.div
           variants={itemVariants}
-          className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col justify-between print-card"
+          className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex flex-col print-card"
         >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-extrabold text-slate-900">Tỷ lệ tương tác</h3>
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-xl print:hidden">
-                <Activity size={16} />
-              </div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-extrabold text-slate-900">
+                Tỷ lệ tương tác
+              </h3>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
+                Phân bổ trong kỳ lọc
+              </p>
             </div>
-            <div className="relative min-h-[190px] flex items-center justify-center">
-              <Chart options={donutChart.options} series={donutChart.series} type="donut" width="100%" height="190" />
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-xl print:hidden">
+              <Activity size={16} />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-slate-50 text-center">
-            {[
-              { label: "Thích", value: totalLike, color: "text-blue-500 print:text-slate-800" },
-              { label: "Chia sẻ", value: totalShare, color: "text-amber-500 print:text-slate-800" },
-              { label: "Bình luận", value: totalComment, color: "text-purple-500 print:text-slate-800" },
-            ].map((item) => (
-              <div key={item.label}>
-                <p className="text-[10px] text-slate-400 font-bold uppercase">{item.label}</p>
-                <p className={`text-sm font-black ${item.color} mt-0.5`}>
-                  {item.value >= 1000 ? `${(item.value / 1000).toFixed(1)}k` : item.value}
-                </p>
+
+          {/* Chart or empty state */}
+          {donutChart.series.every((v) => v === 0) ? (
+            <div className="flex flex-col items-center justify-center py-10 gap-2 text-slate-400">
+              <Activity size={32} className="opacity-30" />
+              <p className="text-xs font-bold">
+                Chưa có dữ liệu tương tác trong kỳ này
+              </p>
+            </div>
+          ) : (
+            <div className="relative flex items-center justify-center">
+              <Chart
+                options={donutChart.options}
+                series={donutChart.series}
+                type="donut"
+                width="100%"
+                height="220"
+              />
+            </div>
+          )}
+
+          {/* Custom Legend with % */}
+          {(() => {
+            const total = donutChart.series.reduce((a, b) => a + b, 0);
+            const items = [
+              {
+                label: "Lượt thích",
+                value: donutChart.series[0],
+                dot: "bg-blue-500",
+                badge: "bg-blue-50 text-blue-600",
+              },
+              {
+                label: "Chia sẻ",
+                value: donutChart.series[1],
+                dot: "bg-amber-500",
+                badge: "bg-amber-50 text-amber-600",
+              },
+              {
+                label: "Bình luận",
+                value: donutChart.series[2],
+                dot: "bg-purple-500",
+                badge: "bg-purple-50 text-purple-600",
+              },
+            ];
+            return (
+              <div className="mt-4 pt-4 border-t border-slate-100 space-y-2.5">
+                {items.map((item) => {
+                  const pct =
+                    total > 0 ? ((item.value / total) * 100).toFixed(1) : "0.0";
+                  return (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between gap-3"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className={`w-2.5 h-2.5 rounded-full shrink-0 ${item.dot}`}
+                        />
+                        <span className="text-xs font-bold text-slate-600 truncate">
+                          {item.label}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-slate-400 font-medium">
+                          {item.value >= 1000
+                            ? `${(item.value / 1000).toFixed(1)}k`
+                            : item.value.toLocaleString()}
+                        </span>
+                        <span
+                          className={`text-[11px] font-black px-2 py-0.5 rounded-full tabular-nums ${item.badge}`}
+                        >
+                          {pct}%
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
+            );
+          })()}
         </motion.div>
       </div>
 
@@ -684,8 +1012,12 @@ const Dashboard = () => {
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h3 className="text-xl font-extrabold text-slate-950">Bài viết mới cập nhật</h3>
-                <p className="text-slate-400 text-xs mt-0.5 no-print">Danh sách các bài đăng mới nhất trên hệ thống blog.</p>
+                <h3 className="text-xl font-extrabold text-slate-950">
+                  Bài viết mới cập nhật
+                </h3>
+                <p className="text-slate-400 text-xs mt-0.5 no-print">
+                  Danh sách các bài đăng mới nhất trên hệ thống blog.
+                </p>
               </div>
               <Link
                 to="/blogs"
@@ -699,7 +1031,9 @@ const Dashboard = () => {
             {loadingBlogs ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-3">
                 <RefreshCw size={24} className="animate-spin text-indigo-500" />
-                <span className="text-xs text-slate-400 font-bold">Đang lấy danh sách...</span>
+                <span className="text-xs text-slate-400 font-bold">
+                  Đang lấy danh sách...
+                </span>
               </div>
             ) : topBlogs.length === 0 ? (
               <div className="text-center py-12 text-slate-400 font-medium text-sm">
@@ -719,12 +1053,19 @@ const Dashboard = () => {
                   </thead>
                   <tbody className="divide-y divide-slate-50">
                     {topBlogs.map((blog) => (
-                      <tr key={blog.blog_id} className="group/row hover:bg-slate-50/50 transition-colors">
+                      <tr
+                        key={blog.blog_id}
+                        className="group/row hover:bg-slate-50/50 transition-colors"
+                      >
                         <td className="py-3.5 pr-2 max-w-[240px]">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0 border border-slate-100 print:hidden">
                               {blog.banner ? (
-                                <img src={blog.banner} alt="" className="w-full h-full object-cover" />
+                                <img
+                                  src={blog.banner}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center bg-indigo-50 text-indigo-600 font-black text-sm">
                                   B
@@ -732,11 +1073,16 @@ const Dashboard = () => {
                               )}
                             </div>
                             <div className="truncate">
-                              <p className="font-extrabold text-sm text-slate-900 truncate group-hover/row:text-indigo-600 transition-colors" title={blog.title}>
+                              <p
+                                className="font-extrabold text-sm text-slate-900 truncate group-hover/row:text-indigo-600 transition-colors"
+                                title={blog.title}
+                              >
                                 {blog.title}
                               </p>
                               <p className="text-[10px] text-slate-400 font-semibold mt-0.5">
-                                {new Date(blog.publishedAt).toLocaleDateString("vi-VN")}
+                                {new Date(blog.publishedAt).toLocaleDateString(
+                                  "vi-VN",
+                                )}
                               </p>
                             </div>
                           </div>
@@ -751,22 +1097,37 @@ const Dashboard = () => {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <span className="text-[9px] font-bold text-slate-500">U</span>
+                                <span className="text-[9px] font-bold text-slate-500">
+                                  U
+                                </span>
                               )}
                             </div>
                             <span className="text-xs font-bold text-slate-700">
-                              {blog.author?.personal_info?.fullname || "Ẩn danh"}
+                              {blog.author?.personal_info?.fullname ||
+                                "Ẩn danh"}
                             </span>
                           </div>
                         </td>
                         <td className="py-3.5 text-center">
                           <div className="flex items-center justify-center gap-3 text-xs font-bold text-slate-500">
-                            <div className="flex items-center gap-1 font-bold" title="Lượt thích">
-                              <ThumbsUp size={12} className="text-rose-400 print:text-slate-500" />
+                            <div
+                              className="flex items-center gap-1 font-bold"
+                              title="Lượt thích"
+                            >
+                              <ThumbsUp
+                                size={12}
+                                className="text-rose-400 print:text-slate-500"
+                              />
                               <span>{blog.activity?.total_likes || 0}</span>
                             </div>
-                            <div className="flex items-center gap-1 font-bold" title="Bình luận">
-                              <MessageCircleIcon size={12} className="text-purple-400 print:text-slate-500" />
+                            <div
+                              className="flex items-center gap-1 font-bold"
+                              title="Bình luận"
+                            >
+                              <MessageCircleIcon
+                                size={12}
+                                className="text-purple-400 print:text-slate-500"
+                              />
                               <span>{blog.activity?.total_comments || 0}</span>
                             </div>
                           </div>
@@ -819,14 +1180,19 @@ const Dashboard = () => {
                   className="flex items-center justify-between p-3.5 bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-100 group transition-all duration-300 hover:translate-x-1"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl bg-gradient-to-tr ${action.color} text-white`}>
+                    <div
+                      className={`p-2.5 rounded-xl bg-gradient-to-tr ${action.color} text-white`}
+                    >
                       <action.icon size={15} />
                     </div>
                     <span className="text-xs font-black text-slate-700 group-hover:text-slate-900 transition-colors">
                       {action.label}
                     </span>
                   </div>
-                  <ArrowUpRight size={14} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
+                  <ArrowUpRight
+                    size={14}
+                    className="text-slate-400 group-hover:text-indigo-500 transition-colors"
+                  />
                 </Link>
               ))}
             </div>
@@ -838,7 +1204,9 @@ const Dashboard = () => {
             className="bg-gradient-to-tr from-slate-900 to-indigo-950 p-6 rounded-[2rem] text-white shadow-lg shadow-indigo-950/20 system-health-card"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-extrabold tracking-wider uppercase text-slate-400">Trạng thái hệ thống</h3>
+              <h3 className="text-sm font-extrabold tracking-wider uppercase text-slate-400">
+                Trạng thái hệ thống
+              </h3>
               <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-[10px] font-black">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Hoạt động</span>
@@ -849,25 +1217,37 @@ const Dashboard = () => {
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5">
                 <div className="flex items-center gap-2">
                   <Wifi size={14} className="text-indigo-400" />
-                  <span className="text-xs font-bold text-slate-300">Khách online (Live)</span>
+                  <span className="text-xs font-bold text-slate-300">
+                    Khách online (Live)
+                  </span>
                 </div>
-                <span className="text-sm font-black text-white">42 người dùng</span>
+                <span className="text-sm font-black text-white">
+                  42 người dùng
+                </span>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5">
                 <div className="flex items-center gap-2">
                   <Database size={14} className="text-indigo-400" />
-                  <span className="text-xs font-bold text-slate-300">Kết nối Database</span>
+                  <span className="text-xs font-bold text-slate-300">
+                    Kết nối Database
+                  </span>
                 </div>
-                <span className="text-xs font-black text-emerald-400">Ổn định (OK)</span>
+                <span className="text-xs font-black text-emerald-400">
+                  Ổn định (OK)
+                </span>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-white/5 rounded-2xl border border-white/5">
                 <div className="flex items-center gap-2">
                   <Cpu size={14} className="text-indigo-400" />
-                  <span className="text-xs font-bold text-slate-300">Thời gian phản hồi API</span>
+                  <span className="text-xs font-bold text-slate-300">
+                    Thời gian phản hồi API
+                  </span>
                 </div>
-                <span className="text-xs font-black text-slate-200">124 ms</span>
+                <span className="text-xs font-black text-slate-200">
+                  124 ms
+                </span>
               </div>
             </div>
           </motion.div>
@@ -883,12 +1263,21 @@ const Dashboard = () => {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900">Tăng trưởng hệ thống</h3>
-              <p className="text-xs text-slate-400 mt-0.5 no-print">Biểu đồ thể hiện bài viết mới và người dùng mới đăng ký.</p>
+              <h3 className="text-lg font-extrabold text-slate-900">
+                Tăng trưởng hệ thống
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5 no-print">
+                Biểu đồ thể hiện bài viết mới và người dùng mới đăng ký.
+              </p>
             </div>
           </div>
           <div className="min-h-[320px]">
-            <Chart options={growthChart.options} series={growthChart.series} type="area" height="320" />
+            <Chart
+              options={growthChart.options}
+              series={growthChart.series}
+              type="area"
+              height="320"
+            />
           </div>
         </motion.div>
 
@@ -899,12 +1288,21 @@ const Dashboard = () => {
         >
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h3 className="text-lg font-extrabold text-slate-900">Tương tác theo thời gian</h3>
-              <p className="text-xs text-slate-400 mt-0.5 no-print">Thống kê chi tiết lượng Thích, Chia sẻ và Bình luận theo ngày.</p>
+              <h3 className="text-lg font-extrabold text-slate-900">
+                Tương tác theo thời gian
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5 no-print">
+                Thống kê chi tiết lượng Thích, Chia sẻ và Bình luận theo ngày.
+              </p>
             </div>
           </div>
           <div className="min-h-[320px]">
-            <Chart options={interactionChart.options} series={interactionChart.series} type="bar" height="320" />
+            <Chart
+              options={interactionChart.options}
+              series={interactionChart.series}
+              type="bar"
+              height="320"
+            />
           </div>
         </motion.div>
       </div>

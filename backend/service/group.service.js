@@ -322,18 +322,24 @@ class GroupService {
       throw new Error("Bạn không phải thành viên nhóm.");
     }
 
-    const isOwnerOrDeputy = requesterMember.role === "OWNER" || requesterMember.role === "DEPUTY";
-    const isMod = requesterMember.role === "MODERATOR";
+    const group = await Group.findById(groupId);
+    if (!group) throw new Error("Nhóm không tồn tại.");
 
-    if (!isOwnerOrDeputy && !isMod) {
-      throw new Error("Bạn không có quyền duyệt yêu cầu tham gia.");
+    let canApprove = false;
+    if (requesterMember.role === "OWNER") {
+      canApprove = true;
+    } else if (requesterMember.role === "DEPUTY") {
+      if (!group.settings || group.settings.deputyCanKick !== false) {
+        canApprove = true;
+      }
+    } else if (requesterMember.role === "MODERATOR") {
+      if (group.settings && group.settings.moderatorCanApprove) {
+        canApprove = true;
+      }
     }
 
-    if (isMod) {
-      const group = await Group.findById(groupId);
-      if (!group || !group.settings || !group.settings.moderatorCanApprove) {
-        throw new Error("Kiểm duyệt viên không có quyền duyệt thành viên mới trong nhóm này.");
-      }
+    if (!canApprove) {
+      throw new Error("Bạn không có quyền duyệt yêu cầu tham gia.");
     }
 
     const targetMember = await GroupMember.findOne({ group: groupId, user: targetUserId, status: "PENDING" });

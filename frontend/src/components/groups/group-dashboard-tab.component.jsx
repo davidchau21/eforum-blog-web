@@ -245,7 +245,7 @@ export const GroupDashboardTab = ({ groupId, token }) => {
 
             <button
               onClick={fetchStats}
-              className="px-4 py-2 bg-slate-950 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-950 rounded-xl text-xs font-black tracking-wider uppercase transition-all flex items-center gap-2 active:scale-95 cursor-pointer shadow-sm min-h-[36px]"
+              className="px-4 py-2 bg-slate-950 dark:bg-black hover:bg-slate-800 dark:hover:bg-black/90 text-white rounded-xl text-xs font-black tracking-wider uppercase transition-all flex items-center gap-2 active:scale-95 cursor-pointer shadow-sm min-h-[36px]"
             >
               <i className="fi fi-rr-refresh text-xs"></i>
               Làm mới

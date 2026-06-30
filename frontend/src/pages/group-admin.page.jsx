@@ -217,6 +217,31 @@ const GroupAdminPage = () => {
   });
   const [settingsCategory, setSettingsCategory] = useState("basic"); // basic, moderation, moderator_perms
 
+  // Group Permissions based on Roles & Owner Settings
+  const canAccessSettings =
+    myRole === "OWNER" ||
+    (myRole === "DEPUTY" && settings?.deputyCanChangeSettings !== false);
+
+  const canManageMembers =
+    myRole === "OWNER" ||
+    (myRole === "DEPUTY" && settings?.deputyCanKick !== false) ||
+    (myRole === "MODERATOR" && settings?.moderatorCanKick);
+
+  const canApproveRequests =
+    myRole === "OWNER" ||
+    (myRole === "DEPUTY" && settings?.deputyCanKick !== false) ||
+    (myRole === "MODERATOR" && settings?.moderatorCanApprove);
+
+  const canApproveBlogs =
+    myRole === "OWNER" ||
+    (myRole === "DEPUTY" && settings?.deputyCanApprove !== false) ||
+    (myRole === "MODERATOR" && settings?.moderatorCanApprove);
+
+  const canDeleteBlogs =
+    myRole === "OWNER" ||
+    (myRole === "DEPUTY" && settings?.deputyCanDeletePost !== false) ||
+    (myRole === "MODERATOR" && settings?.moderatorCanDeletePost);
+
   const fetchGroupDetails = async () => {
     try {
       setLoading(true);
@@ -329,11 +354,11 @@ const GroupAdminPage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (activeSection === "settings" && myRole === "MODERATOR") {
+    if (activeSection === "settings" && !canAccessSettings && !loading) {
       setActiveSection("dashboard");
       setSearchParams({ sec: "dashboard" });
     }
-  }, [activeSection, myRole, setSearchParams]);
+  }, [activeSection, canAccessSettings, loading, setSearchParams]);
 
   const handleSectionChange = (section) => {
     setActiveSection(section);
@@ -553,7 +578,7 @@ const GroupAdminPage = () => {
       icon: "fi-rr-document-signed",
       badge: pendingBlogs.length + reportedBlogs.length,
     },
-    ...(myRole === "OWNER" || myRole === "DEPUTY"
+    ...(canAccessSettings
       ? [{ id: "settings", label: "Cài Đặt Nhóm", icon: "fi-rr-settings" }]
       : []),
   ];
@@ -602,8 +627,8 @@ const GroupAdminPage = () => {
                   onClick={() => handleSectionChange(opt.id)}
                   className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition-colors duration-200 flex items-center justify-between cursor-pointer ${
                     isActive
-                      ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 shadow-md"
-                      : "text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                      ? "bg-slate-950 dark:bg-black text-white shadow-md"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-black hover:bg-slate-50 dark:hover:bg-slate-900/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -704,7 +729,7 @@ const GroupAdminPage = () => {
                   );
                   const canManageMembers =
                     myRole === "OWNER" ||
-                    myRole === "DEPUTY" ||
+                    (myRole === "DEPUTY" && settings?.deputyCanKick !== false) ||
                     (myRole === "MODERATOR" && settings?.moderatorCanKick);
 
                   return (
@@ -727,8 +752,8 @@ const GroupAdminPage = () => {
                             onClick={() => setMemberSubTab("active")}
                             className={`px-4 py-2 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer ${
                               memberSubTab === "active"
-                                ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 shadow-sm"
-                                : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                                ? "bg-slate-950 dark:bg-black text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-800 dark:hover:text-black"
                             }`}
                           >
                             Thành viên ({members.length})
@@ -737,8 +762,8 @@ const GroupAdminPage = () => {
                             onClick={() => setMemberSubTab("pending")}
                             className={`px-4 py-2 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer flex items-center gap-2 ${
                               memberSubTab === "pending"
-                                ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 shadow-sm"
-                                : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                                ? "bg-slate-950 dark:bg-black text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-800 dark:hover:text-black"
                             }`}
                           >
                             Yêu cầu tham gia
@@ -789,24 +814,30 @@ const GroupAdminPage = () => {
                                       </div>
                                     </div>
                                     <div className="flex gap-2 shrink-0">
-                                      <button
-                                        onClick={() =>
-                                          handleRejectRequest(reqUser.user?._id)
-                                        }
-                                        className="px-3.5 py-2 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer"
-                                      >
-                                        Từ chối
-                                      </button>
-                                      <button
-                                        onClick={() =>
-                                          handleApproveRequest(
-                                            reqUser.user?._id,
-                                          )
-                                        }
-                                        className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
-                                      >
-                                        Duyệt nhận
-                                      </button>
+                                      {canApproveRequests ? (
+                                        <>
+                                          <button
+                                            onClick={() =>
+                                              handleRejectRequest(reqUser.user?._id)
+                                            }
+                                            className="px-3.5 py-2 border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer"
+                                          >
+                                            Từ chối
+                                          </button>
+                                          <button
+                                            onClick={() =>
+                                              handleApproveRequest(
+                                                reqUser.user?._id,
+                                              )
+                                            }
+                                            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-750 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+                                          >
+                                            Duyệt nhận
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-white/5 px-2.5 py-1.5 rounded-lg">Không có quyền duyệt</span>
+                                      )}
                                     </div>
                                   </div>
                                 );
@@ -1046,7 +1077,7 @@ const GroupAdminPage = () => {
                       onClick={() => setBlogSubSection("pending")}
                       className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                         blogSubSection === "pending"
-                          ? "bg-slate-950 text-white dark:bg-white dark:text-black font-extrabold"
+                          ? "bg-slate-950 text-white dark:bg-black font-extrabold"
                           : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
                       }`}
                     >
@@ -1056,7 +1087,7 @@ const GroupAdminPage = () => {
                       onClick={() => setBlogSubSection("reported")}
                       className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                         blogSubSection === "reported"
-                          ? "bg-slate-950 text-white dark:bg-white dark:text-black font-extrabold"
+                          ? "bg-slate-950 text-white dark:bg-black font-extrabold"
                           : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
                       }`}
                     >
@@ -1102,20 +1133,26 @@ const GroupAdminPage = () => {
                                   </div>
                                 </div>
                                 <div className="flex gap-2 shrink-0 self-end sm:self-start">
-                                  <button
-                                    onClick={() => handleRejectBlog(blog._id)}
-                                    className="px-4 py-2 border border-rose-500/25 hover:bg-rose-500/10 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
-                                  >
-                                    <i className="fi fi-rr-cross-small"></i>
-                                    Từ chối
-                                  </button>
-                                  <button
-                                    onClick={() => handleApproveBlog(blog._id)}
-                                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
-                                  >
-                                    <i className="fi fi-rr-check"></i>
-                                    Phê duyệt
-                                  </button>
+                                  {canApproveBlogs ? (
+                                    <>
+                                      <button
+                                        onClick={() => handleRejectBlog(blog._id)}
+                                        className="px-4 py-2 border border-rose-500/25 hover:bg-rose-500/10 text-rose-500 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
+                                      >
+                                        <i className="fi fi-rr-cross-small"></i>
+                                        Từ chối
+                                      </button>
+                                      <button
+                                        onClick={() => handleApproveBlog(blog._id)}
+                                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+                                      >
+                                        <i className="fi fi-rr-check"></i>
+                                        Phê duyệt
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-white/5 px-2.5 py-1.5 rounded-lg">Không có quyền duyệt</span>
+                                  )}
                                 </div>
                               </div>
                             );
@@ -1178,20 +1215,26 @@ const GroupAdminPage = () => {
                                   </div>
                                 </div>
                                 <div className="flex gap-2 shrink-0 self-end sm:self-start">
-                                  <button
-                                    onClick={() => handleDismissReport(blog._id)}
-                                    className="px-4 py-2 border border-slate-300 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
-                                  >
-                                    <i className="fi fi-rr-check"></i>
-                                    Bỏ qua
-                                  </button>
-                                  <button
-                                    onClick={() => handleRemoveReportedBlog(blog._id)}
-                                    className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
-                                  >
-                                    <i className="fi fi-rr-trash"></i>
-                                    Gỡ bài viết
-                                  </button>
+                                  {canDeleteBlogs ? (
+                                    <>
+                                      <button
+                                        onClick={() => handleDismissReport(blog._id)}
+                                        className="px-4 py-2 border border-slate-300 dark:border-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-slate-350 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5"
+                                      >
+                                        <i className="fi fi-rr-check"></i>
+                                        Bỏ qua
+                                      </button>
+                                      <button
+                                        onClick={() => handleRemoveReportedBlog(blog._id)}
+                                        className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
+                                      >
+                                        <i className="fi fi-rr-trash"></i>
+                                        Gỡ bài viết
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-400 font-bold bg-slate-100 dark:bg-white/5 px-2.5 py-1.5 rounded-lg">Không có quyền gỡ</span>
+                                  )}
                                 </div>
                               </div>
                             );

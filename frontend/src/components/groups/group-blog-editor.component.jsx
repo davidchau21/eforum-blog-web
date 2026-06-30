@@ -351,7 +351,7 @@ const GroupBlogEditor = ({ isModal = false }) => {
               {currentTranslations.publish}
             </button>
             <button
-              className="whitespace-nowrap bg-grey/80 dark:bg-grey/30 text-black dark:text-white rounded-full py-2 px-6 text-[15px] font-semibold hover:bg-grey dark:hover:bg-grey/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shrink-0"
+              className="whitespace-nowrap bg-grey/80 dark:bg-grey/30 text-black rounded-full py-2 px-6 text-[15px] font-semibold hover:bg-grey dark:hover:bg-grey/50 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 shrink-0"
               onClick={handleSaveDraft}
             >
               {currentTranslations.saveDraft}

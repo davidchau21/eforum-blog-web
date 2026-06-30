@@ -16,17 +16,17 @@ import useConversation from "../../zustand/useConversation";
 const MessageSkeleton = () => (
   <div className="flex flex-col gap-6 mb-8 animate-pulse">
     <div className="flex items-end gap-3 px-4">
-      <div className="w-9 h-9 rounded-full bg-slate-200 shadow-sm"></div>
+      <div className="w-9 h-9 rounded-full bg-grey shadow-sm"></div>
       <div className="flex flex-col gap-2">
-        <div className="w-56 h-12 bg-slate-100 rounded-2xl rounded-tl-none border border-slate-50"></div>
-        <div className="w-28 h-4 bg-slate-100/60 rounded-full ml-1"></div>
+        <div className="w-56 h-12 bg-grey/60 rounded-2xl rounded-tl-none border border-grey/30"></div>
+        <div className="w-28 h-4 bg-grey/40 rounded-full ml-1"></div>
       </div>
     </div>
     <div className="flex items-end flex-row-reverse gap-3 px-4">
-      <div className="w-9 h-9 rounded-full bg-slate-200 shadow-sm"></div>
+      <div className="w-9 h-9 rounded-full bg-grey shadow-sm"></div>
       <div className="flex flex-col items-end gap-2">
-        <div className="w-44 h-12 bg-indigo-50 rounded-2xl rounded-tr-none border border-indigo-100/50"></div>
-        <div className="w-20 h-4 bg-indigo-50/60 rounded-full mr-1"></div>
+        <div className="w-44 h-12 bg-grey/60 rounded-2xl rounded-tr-none border border-grey/30"></div>
+        <div className="w-20 h-4 bg-grey/40 rounded-full mr-1"></div>
       </div>
     </div>
   </div>
@@ -208,7 +208,7 @@ const Messages = () => {
       {showScrollToBottom && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-6 right-6 w-10 h-10 bg-white border border-slate-100 text-indigo-600 rounded-full shadow-xl flex items-center justify-center hover:bg-slate-50 hover:scale-110 active:scale-95 transition-all duration-200 z-30 group"
+          className="absolute bottom-6 right-6 w-10 h-10 bg-white border border-grey text-purple rounded-full shadow-xl flex items-center justify-center hover:opacity-90 hover:scale-110 active:scale-95 transition-all duration-200 z-30 group"
         >
           <i className="fi fi-rr-arrow-small-down text-2xl mt-0.5 group-hover:translate-y-0.5 transition-transform"></i>
         </button>

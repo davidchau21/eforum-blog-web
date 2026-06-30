@@ -47,7 +47,7 @@ const WritePostCard = ({ openModal }) => {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="bg-white dark:bg-grey/30 border border-grey dark:border-zinc-800/80 rounded-3xl p-5 mb-8 shadow-sm hover:shadow-md transition-all group overflow-hidden relative cursor-pointer"
+      className="bg-white dark:bg-grey border border-grey dark:border-zinc-800/85 rounded-3xl p-5 mb-8 shadow-sm hover:shadow-md transition-all group overflow-hidden relative cursor-pointer"
       onClick={openModal}
     >
       {/* Premium Background Ambient Glow */}
@@ -65,7 +65,7 @@ const WritePostCard = ({ openModal }) => {
           <div className="absolute inset-0 rounded-full bg-indigo-500/10 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
         </div>
 
-        <div className="flex-grow bg-grey/40 dark:bg-zinc-800/40 rounded-full h-12 px-6 text-dark-grey/80 dark:text-grey/60 text-sm font-medium hover:bg-grey/60 dark:hover:bg-zinc-800/60 transition-all text-left relative overflow-hidden flex items-center border border-grey/30 dark:border-zinc-800/30">
+        <div className="flex-grow bg-grey/40 dark:bg-zinc-800/40 rounded-full h-12 px-6 text-dark-grey/80 text-sm font-medium hover:bg-grey/60 transition-all text-left relative overflow-hidden flex items-center border border-grey/30 dark:border-zinc-800/30">
           <AnimatePresence mode="wait">
             <motion.span
               key={currentIdx}
@@ -89,7 +89,7 @@ const WritePostCard = ({ openModal }) => {
         <motion.div
           whileHover={{ scale: 1.04, y: -1 }}
           whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-transparent hover:bg-sky-500/5 dark:hover:bg-sky-500/10 hover:border-sky-500/10 dark:hover:border-sky-500/20 text-dark-grey dark:text-grey/80 text-xs font-bold transition-all cursor-pointer"
+          className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-transparent hover:bg-sky-500/5 dark:hover:bg-sky-500/10 hover:border-sky-500/10 dark:hover:border-sky-500/20 text-dark-grey text-xs font-bold transition-all cursor-pointer"
         >
           <div className="w-7 h-7 rounded-lg bg-sky-500/10 dark:bg-sky-500/20 flex items-center justify-center flex-none">
             <i className="fi fi-rr-picture text-sky-500 text-sm mt-0.5"></i>
@@ -100,7 +100,7 @@ const WritePostCard = ({ openModal }) => {
         <motion.div
           whileHover={{ scale: 1.04, y: -1 }}
           whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-transparent hover:bg-rose-500/5 dark:hover:bg-rose-500/10 hover:border-rose-500/10 dark:hover:border-rose-500/20 text-dark-grey dark:text-grey/80 text-xs font-bold transition-all cursor-pointer"
+          className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-transparent hover:bg-rose-500/5 dark:hover:bg-rose-500/10 hover:border-rose-500/10 dark:hover:border-rose-500/20 text-dark-grey text-xs font-bold transition-all cursor-pointer"
         >
           <div className="w-7 h-7 rounded-lg bg-rose-500/10 dark:bg-rose-500/20 flex items-center justify-center flex-none">
             <i className="fi fi-rr-play-alt text-rose-500 text-sm mt-0.5"></i>
@@ -111,7 +111,7 @@ const WritePostCard = ({ openModal }) => {
         <motion.div
           whileHover={{ scale: 1.04, y: -1 }}
           whileTap={{ scale: 0.98 }}
-          className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-transparent hover:bg-amber-500/5 dark:hover:bg-amber-500/10 hover:border-amber-500/10 dark:hover:border-amber-500/20 text-dark-grey dark:text-grey/80 text-xs font-bold transition-all cursor-pointer"
+          className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl border border-transparent hover:bg-amber-500/5 dark:hover:bg-amber-500/10 hover:border-amber-500/10 dark:hover:border-amber-500/20 text-dark-grey text-xs font-bold transition-all cursor-pointer"
         >
           <div className="w-7 h-7 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center flex-none">
             <i className="fi fi-rr-grin text-amber-500 text-sm mt-0.5"></i>

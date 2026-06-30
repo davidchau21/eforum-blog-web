@@ -155,6 +155,109 @@ class AdminReportService {
       totalReads: totalStats[0]?.totalReads || 0,
     };
   }
+
+  /**
+   * Returns summary stats (user, blog, comment, likes, shares, reads)
+   * filtered by a date range AND the equivalent previous period for comparison.
+   */
+  async getSummaryByDate({ startDate, endDate }) {
+    if (!startDate || !endDate) throw new Error("startDate and endDate are required");
+    const start = moment(startDate).startOf("day").toDate();
+    const end = moment(endDate).endOf("day").toDate();
+
+    // Calculate previous period of same length
+    const durationMs = end.getTime() - start.getTime();
+    const prevEnd = new Date(start.getTime() - 1); // 1ms before current start
+    const prevStart = new Date(prevEnd.getTime() - durationMs);
+
+    const fetchPeriodStats = async (from, to) => {
+      const [totalUser, totalBlog, totalComment, blogStats] = await Promise.all([
+        User.countDocuments({ joinedAt: { $gte: from, $lte: to } }),
+        Blog.countDocuments({
+          isDeleted: { $in: [false, null] },
+          publishedAt: { $gte: from, $lte: to },
+        }),
+        Comment.countDocuments({ commentedAt: { $gte: from, $lte: to } }),
+        Blog.aggregate([
+          {
+            $match: {
+              isDeleted: { $in: [false, null] },
+              publishedAt: { $gte: from, $lte: to },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              totalLikes: { $sum: "$activity.total_likes" },
+              totalShares: { $sum: "$activity.total_share" },
+              totalReads: { $sum: "$activity.total_reads" },
+              totalComments: { $sum: "$activity.total_comments" },
+            },
+          },
+        ]),
+      ]);
+      return {
+        totalUser,
+        totalBlog,
+        totalComment,
+        totalLikes: blogStats[0]?.totalLikes || 0,
+        totalShares: blogStats[0]?.totalShares || 0,
+        totalReads: blogStats[0]?.totalReads || 0,
+        totalComments: blogStats[0]?.totalComments || 0,
+      };
+    };
+
+    const [current, previous] = await Promise.all([
+      fetchPeriodStats(start, end),
+      fetchPeriodStats(prevStart, prevEnd),
+    ]);
+
+    return { current, previous };
+  }
+
+
+  /**
+   * Interaction chart data grouped by day over a custom date range.
+   * Replaces the hardcoded weekly 7-day version.
+   */
+  async getInteractionsByDate({ startDate, endDate }) {
+    if (!startDate || !endDate) throw new Error("startDate and endDate are required");
+    const start = moment(startDate).startOf("day").toDate();
+    const end = moment(endDate).endOf("day").toDate();
+
+    const timeDiff = end.getTime() - start.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1;
+    // Cap at 60 data points to keep the chart readable
+    const buckets = Math.min(daysDiff, 60);
+
+    const interactionStats = await Blog.aggregate([
+      { $match: { publishedAt: { $gte: start, $lte: end } } },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$publishedAt" } },
+          totalLikes: { $sum: "$activity.total_likes" },
+          totalShares: { $sum: "$activity.total_share" },
+          totalComments: { $sum: "$activity.total_comments" },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Fill every day in the range with 0 if no data
+    const days = Array.from({ length: buckets }, (_, i) =>
+      moment(start).add(i, "days").format("YYYY-MM-DD")
+    );
+
+    return days.map((date) => {
+      const stat = interactionStats.find((s) => s._id === date) || {};
+      return {
+        date,
+        totalLikes: stat.totalLikes || 0,
+        totalShares: stat.totalShares || 0,
+        totalComments: stat.totalComments || 0,
+      };
+    });
+  }
 }
 
 export default new AdminReportService();

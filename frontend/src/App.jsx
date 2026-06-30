@@ -106,14 +106,28 @@ const App = () => {
 
   useEffect(() => {
     const themeInSession = lookInSession("theme");
+    const activeTheme = themeInSession || theme;
 
-    if (themeInSession) {
-      setTheme(themeInSession);
-      document.body.setAttribute("data-theme", themeInSession);
+    setTheme(activeTheme);
+    document.body.setAttribute("data-theme", activeTheme);
+    
+    if (activeTheme === "dark") {
+      document.documentElement.classList.add("dark");
     } else {
-      document.body.setAttribute("data-theme", theme);
+      document.documentElement.classList.remove("dark");
     }
   }, [theme]);
+
+  useEffect(() => {
+    if (fullScreenImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [fullScreenImage]);
 
   const themeContextValue = useMemo(() => ({ theme, setTheme }), [theme]);
   const userContextValue = useMemo(
@@ -235,7 +249,10 @@ const App = () => {
                     element={<UserAuthForm type="sign-up" />}
                   />
                   <Route path="new-password" element={<NewPasswordPage />} />
-                  <Route path="verify-reset-otp" element={<VerifyResetOtpPage />} />
+                  <Route
+                    path="verify-reset-otp"
+                    element={<VerifyResetOtpPage />}
+                  />
                   <Route
                     path="forgot-password"
                     element={<ForgotPasswordPage />}

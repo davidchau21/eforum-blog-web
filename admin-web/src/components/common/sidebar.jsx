@@ -13,6 +13,7 @@ import {
   Shield,
   Clock,
   Book,
+  Users2,
 } from "lucide-react";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -59,6 +60,12 @@ const Sidebar = ({ isOpen, onClose }) => {
         icon: <MessageCircleCode size={20} />,
         link: "/comments",
         permission: "COMMENT_VIEW",
+      },
+      {
+        label: t('sidebar.groups', "Nhóm học tập"),
+        icon: <Users2 size={20} />,
+        link: "/groups",
+        permission: "GROUP_VIEW",
       },
       {
         label: t('sidebar.notifications'),

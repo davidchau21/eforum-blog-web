@@ -3,7 +3,7 @@ import useConversation from "../../zustand/useConversation.jsx";
 import useGetConversations from "../../hook/useGetConversations";
 import toast from "react-hot-toast";
 
-const SearchInput = () => {
+const SearchInput = ({ closeSidebar }) => {
   const [search, setSearch] = useState("");
   const [filteredConversations, setFilteredConversations] = useState([]);
   const { setSelectedConversation } = useConversation();
@@ -30,6 +30,7 @@ const SearchInput = () => {
     setSelectedConversation(conversation);
     setSearch("");
     setFilteredConversations([]);
+    if (closeSidebar) closeSidebar();
   };
 
   const handleSubmit = (e) => {

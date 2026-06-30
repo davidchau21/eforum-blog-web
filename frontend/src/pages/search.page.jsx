@@ -81,7 +81,7 @@ const SearchBlogCard = ({ blog }) => {
           </div>
 
           {/* Title */}
-          <h3 className="text-[15px] font-bold text-slate-900 dark:text-white leading-snug line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+          <h3 className="text-[15px] font-bold text-slate-900 dark:text-black leading-snug line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             {blog.title}
           </h3>
 
@@ -139,7 +139,7 @@ const SearchUserCard = ({ user }) => {
       </Link>
       <div className="flex-1 min-w-0">
         <Link to={`/user/${user.personal_info?.username}`}>
-          <p className="font-bold text-[14px] text-slate-900 dark:text-white hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors truncate">
+          <p className="font-bold text-[14px] text-slate-900 dark:text-black hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors truncate">
             {user.personal_info?.fullname}
           </p>
         </Link>
@@ -244,13 +244,13 @@ const SearchPage = () => {
     <AnimationWrapper>
       <div
         className={`min-h-screen pb-20 ${
-          isDark ? "bg-[#09090B] text-white" : "bg-[#F8FAFC] text-slate-900"
+          isDark ? "bg-[#09090B] text-black" : "bg-[#F8FAFC] text-slate-900"
         } transition-colors`}
       >
         <div className="max-w-2xl mx-auto px-4 pt-6">
           {/* ── Result Summary ── */}
           <div className="mb-5">
-            <h1 className="text-xl font-black text-slate-900 dark:text-white font-jakarta">
+            <h1 className="text-xl font-black text-slate-900 dark:text-black font-jakarta">
               Kết quả cho{" "}
               <span className="text-indigo-600 dark:text-indigo-400">
                 &ldquo;{query}&rdquo;
@@ -367,7 +367,7 @@ const SearchPage = () => {
                     >
                       <i className="fi fi-rr-document"></i>
                     </div>
-                    <p className="font-bold text-slate-900 dark:text-white mb-1">
+                    <p className="font-bold text-slate-900 dark:text-black mb-1">
                       Không tìm thấy bài viết
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -405,7 +405,7 @@ const SearchPage = () => {
                     >
                       <i className="fi fi-rr-user"></i>
                     </div>
-                    <p className="font-bold text-slate-900 dark:text-white mb-1">
+                    <p className="font-bold text-slate-900 dark:text-black mb-1">
                       Không tìm thấy người dùng
                     </p>
                     <p className="text-sm text-slate-500 dark:text-slate-400">

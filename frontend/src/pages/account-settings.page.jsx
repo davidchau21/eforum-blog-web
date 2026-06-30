@@ -92,13 +92,13 @@ const AccountSettings = () => {
       </div>
 
       {/* Danger Zone */}
-      <div className="border border-rose-200 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 bg-rose-50 border-b border-rose-200">
-          <h2 className="text-[14px] font-bold text-rose-600 flex items-center gap-2">
+      <div className="border border-rose-200 dark:border-rose-950/40 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 bg-rose-50 dark:bg-rose-950/10 border-b border-rose-200 dark:border-rose-950/30">
+          <h2 className="text-[14px] font-bold text-rose-600 dark:text-rose-400 flex items-center gap-2">
             <i className="fi fi-rr-shield-exclamation"></i>
             Vùng nguy hiểm
           </h2>
-          <p className="text-[12px] text-rose-500/80 mt-0.5">
+          <p className="text-[12px] text-rose-500/80 dark:text-rose-400/60 mt-0.5">
             Các thao tác dưới đây không thể hoàn tác dễ dàng.
           </p>
         </div>
@@ -112,7 +112,7 @@ const AccountSettings = () => {
           </div>
           <button
             onClick={() => setShowDeactivateModal(true)}
-            className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold text-rose-600 border border-rose-300 hover:bg-rose-50 transition-all"
+            className="flex-shrink-0 px-4 py-2 rounded-xl text-sm font-bold text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-950/50 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all"
           >
             Vô hiệu hóa
           </button>
@@ -127,12 +127,12 @@ const AccountSettings = () => {
           onClick={() => setShowDeactivateModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-grey"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3 mb-5">
-              <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center flex-shrink-0">
-                <i className="fi fi-rr-shield-exclamation text-rose-500 text-base"></i>
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-950/30 flex items-center justify-center flex-shrink-0">
+                <i className="fi fi-rr-shield-exclamation text-rose-500 dark:text-rose-400 text-base"></i>
               </div>
               <div>
                 <h3 className="text-[15px] font-bold text-black">
@@ -175,7 +175,7 @@ const AccountSettings = () => {
               <button
                 onClick={handleDeactivateAccount}
                 disabled={deactivating}
-                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-[#ffffff] text-sm font-bold transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {deactivating ? "Đang xử lý..." : "Xác nhận vô hiệu hóa"}
               </button>

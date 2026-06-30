@@ -15,6 +15,7 @@ import NotificationManagement from "./features/notifications";
 import Profile from "./features/profile";
 import RoleManagement from "./features/roles";
 import ActivityLogs from "./features/activity-logs";
+import GroupManagement from "./features/groups";
 
 const App = () => {
   return (
@@ -33,6 +34,7 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/roles" element={<RoleManagement />} />
         <Route path="/logs" element={<ActivityLogs />} />
+        <Route path="/groups" element={<GroupManagement />} />
         <Route index element={<Dashboard />} />
       </Route>
     </Routes>

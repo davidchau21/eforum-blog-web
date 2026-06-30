@@ -34,7 +34,13 @@ const reportApi = {
   },
   getStats: () => {
     return handleResponse(axiosClient.get(`/reports/get-stats`));
-  }
+  },
+  summaryByDate: (startDate, endDate) => {
+    return handleResponse(axiosClient.get(`/reports/summary-by-date`, { params: { startDate, endDate } }));
+  },
+  interactionsByDate: (startDate, endDate) => {
+    return handleResponse(axiosClient.get(`/reports/interactions-by-date`, { params: { startDate, endDate } }));
+  },
 };
 
 export default reportApi;

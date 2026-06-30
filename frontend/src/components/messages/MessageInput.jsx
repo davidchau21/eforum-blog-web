@@ -1,10 +1,11 @@
-/* eslint-disable no-unused-vars */
-import { useState } from "react";
+import { useState, useContext } from "react";
 import EmojiPicker from "emoji-picker-react";
 import useSendMessage from "../../hook/useSendMessage";
 import fileIcon from "../../imgs/file-folder.jpg";
+import { ThemeContext } from "../../App";
 
 const MessageInput = () => {
+  const { theme } = useContext(ThemeContext);
   const [message, setMessage] = useState("");
   const { loading, uploadFile, sendMessage } = useSendMessage();
   const [selectedFile, setSelectedFile] = useState(null);
@@ -87,7 +88,7 @@ const MessageInput = () => {
             </button>
             {showEmojiPicker && (
               <div className="absolute bottom-full mb-4 left-0 z-50 shadow-lg border border-grey rounded-2xl overflow-hidden">
-                <EmojiPicker onEmojiClick={handleEmojiClick} theme="light" />
+                <EmojiPicker onEmojiClick={handleEmojiClick} theme={theme} />
               </div>
             )}
           </div>
@@ -96,7 +97,7 @@ const MessageInput = () => {
           <div className="flex-1 relative group">
             <input
               type="text"
-              placeholder="Type a message..."
+              placeholder="Nhập tin nhắn..."
               className="w-full py-3 px-5 bg-grey border border-transparent rounded-full focus:outline-none focus:bg-white focus:border-black/20 text-[14px] text-black placeholder:text-dark-grey transition-all duration-200"
               value={message}
               onChange={(e) => setMessage(e.target.value)}

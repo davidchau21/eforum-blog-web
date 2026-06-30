@@ -24,6 +24,7 @@ import adminTagRouter from "./admin/adminTagRouter.js";
 import adminUserRouter from "./admin/adminUserRouter.js";
 import adminRoleRouter from "./admin/adminRoleRouter.js";
 import adminActivityLogRouter from "./admin/adminActivityLogRouter.js";
+import adminGroupRouter from "./admin/adminGroupRouter.js";
 
 const appRouter = express.Router();
 
@@ -51,5 +52,6 @@ appRouter.use("/comments", adminCommentRouter);
 appRouter.use("/reports", adminReportRouter);
 appRouter.use("/roles", adminRoleRouter);
 appRouter.use("/logs", adminActivityLogRouter);
+appRouter.use("/groups", adminGroupRouter);
 
 export default appRouter;

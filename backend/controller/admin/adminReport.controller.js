@@ -82,6 +82,24 @@ class AdminReportController extends BaseController {
       return this.sendError(res, error.message);
     }
   }
+
+  async summaryByDate(req, res) {
+    try {
+      const result = await adminReportService.getSummaryByDate(req.query);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async interactionsByDate(req, res) {
+    try {
+      const result = await adminReportService.getInteractionsByDate(req.query);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
 }
 
 export default new AdminReportController();
