@@ -146,7 +146,7 @@ const GroupsPage = () => {
                 Communities
               </span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tighter leading-none font-jakarta">
+            <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-black tracking-tighter leading-none font-jakarta">
               Cộng đồng
             </h1>
             <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-base max-w-xl font-inter">

@@ -602,8 +602,8 @@ const GroupAdminPage = () => {
                   onClick={() => handleSectionChange(opt.id)}
                   className={`w-full py-3 px-4 rounded-xl text-xs font-bold transition-colors duration-200 flex items-center justify-between cursor-pointer ${
                     isActive
-                      ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 shadow-md"
-                      : "text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                      ? "bg-slate-950 dark:bg-black text-white shadow-md"
+                      : "text-slate-500 hover:text-slate-800 dark:hover:text-black hover:bg-slate-50 dark:hover:bg-slate-900/50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -727,8 +727,8 @@ const GroupAdminPage = () => {
                             onClick={() => setMemberSubTab("active")}
                             className={`px-4 py-2 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer ${
                               memberSubTab === "active"
-                                ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 shadow-sm"
-                                : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                                ? "bg-slate-950 dark:bg-black text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-800 dark:hover:text-black"
                             }`}
                           >
                             Thành viên ({members.length})
@@ -737,8 +737,8 @@ const GroupAdminPage = () => {
                             onClick={() => setMemberSubTab("pending")}
                             className={`px-4 py-2 rounded-xl text-xs font-black transition-colors duration-200 cursor-pointer flex items-center gap-2 ${
                               memberSubTab === "pending"
-                                ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 shadow-sm"
-                                : "text-slate-500 hover:text-slate-800 dark:hover:text-white"
+                                ? "bg-slate-950 dark:bg-black text-white shadow-sm"
+                                : "text-slate-500 hover:text-slate-800 dark:hover:text-black"
                             }`}
                           >
                             Yêu cầu tham gia
@@ -1046,7 +1046,7 @@ const GroupAdminPage = () => {
                       onClick={() => setBlogSubSection("pending")}
                       className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                         blogSubSection === "pending"
-                          ? "bg-slate-950 text-white dark:bg-white dark:text-black font-extrabold"
+                          ? "bg-slate-950 text-white dark:bg-black font-extrabold"
                           : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
                       }`}
                     >
@@ -1056,7 +1056,7 @@ const GroupAdminPage = () => {
                       onClick={() => setBlogSubSection("reported")}
                       className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
                         blogSubSection === "reported"
-                          ? "bg-slate-950 text-white dark:bg-white dark:text-black font-extrabold"
+                          ? "bg-slate-950 text-white dark:bg-black font-extrabold"
                           : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-zinc-800"
                       }`}
                     >

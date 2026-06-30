@@ -105,7 +105,7 @@ export const GroupCard = ({ group, navigate }) => {
         </div>
 
         <div className="space-y-3 flex-grow">
-          <h3 className="text-lg font-black text-slate-900 dark:text-white leading-snug font-jakarta line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+          <h3 className="text-lg font-black text-slate-900 dark:text-black leading-snug font-jakarta line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
             {group.name}
           </h3>
 

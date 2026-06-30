@@ -79,8 +79,8 @@ export const GroupSettingsTab = ({
               onClick={() => setSettingsCategory(cat.id)}
               className={`w-full text-left py-2.5 px-4 rounded-xl text-xs font-bold font-jakarta flex items-center gap-2.5 transition-all cursor-pointer relative z-10 pointer-events-auto ${
                 isActive
-                  ? "bg-slate-950 dark:bg-white text-white dark:text-slate-950 shadow-md"
-                  : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.02] hover:text-slate-800 dark:hover:text-white"
+                  ? "bg-slate-950 dark:bg-black text-white shadow-md"
+                  : "text-slate-500 hover:bg-slate-50 dark:hover:bg-white/[0.02] hover:text-slate-800 dark:hover:text-black"
               }`}
             >
               <i className={`fi ${cat.icon} text-sm pointer-events-none`}></i>
@@ -560,7 +560,7 @@ export const GroupSettingsTab = ({
           {settingsCategory === "danger" && (
             <div className="space-y-6 font-inter text-sm animate-in fade-in duration-200">
               <div>
-                <h4 className="text-sm font-black text-slate-800 dark:text-white font-jakarta mb-1">
+                <h4 className="text-sm font-black text-slate-800 dark:text-black font-jakarta mb-1">
                   Quản lý nâng cao
                 </h4>
                 <p className="text-[10px] text-slate-400">
@@ -623,7 +623,7 @@ export const GroupSettingsTab = ({
                     <button
                       type="button"
                       onClick={() => setIsConfirmDeleteOpen(true)}
-                      className="py-2.5 px-6 bg-rose-600 hover:bg-rose-700 active:scale-95 text-white rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md shadow-rose-500/25 cursor-pointer"
+                      className="py-2.5 px-6 bg-rose-600 hover:bg-rose-700 active:scale-95 text-[#ffffff] rounded-xl text-[11px] font-black uppercase tracking-wider transition-all shadow-md shadow-rose-500/25 cursor-pointer"
                     >
                       Xóa nhóm vĩnh viễn
                     </button>

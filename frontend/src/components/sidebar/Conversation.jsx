@@ -4,7 +4,7 @@ import { useContext } from "react";
 import useConversation from "../../zustand/useConversation";
 import { UserContext } from "../../App";
 
-const Conversation = ({ conversation, lastIndex, online }) => {
+const Conversation = ({ conversation, lastIndex, online, closeSidebar }) => {
   const { selectedConversation, setSelectedConversation } = useConversation();
   const { userAuth } = useContext(UserContext);
 
@@ -30,7 +30,10 @@ const Conversation = ({ conversation, lastIndex, online }) => {
       className={`flex gap-3 items-center mx-2 rounded-xl px-3 py-3 cursor-pointer transition-all duration-200 ${
         isSelected ? "bg-black text-white" : "hover:bg-grey/70"
       }`}
-      onClick={() => setSelectedConversation(conversation)}
+      onClick={() => {
+        setSelectedConversation(conversation);
+        if (closeSidebar) closeSidebar();
+      }}
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">

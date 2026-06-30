@@ -1,8 +1,8 @@
 import React from "react";
 import SearchInput from "./SearchInput";
-import Coversations from "./Coversations";
+import Conversations from "./Conversations";
 
-const Sidebar = () => {
+const Sidebar = ({ closeSidebar }) => {
   return (
     <div className="flex flex-col h-full bg-white border-r border-grey overflow-hidden">
       {/* Header */}
@@ -13,12 +13,12 @@ const Sidebar = () => {
             <i className="fi fi-rr-edit text-[14px]"></i>
           </button>
         </div>
-        <SearchInput />
+        <SearchInput closeSidebar={closeSidebar} />
       </div>
 
       {/* Conversation list */}
       <div className="flex-1 overflow-y-auto py-2">
-        <Coversations />
+        <Conversations closeSidebar={closeSidebar} />
       </div>
     </div>
   );

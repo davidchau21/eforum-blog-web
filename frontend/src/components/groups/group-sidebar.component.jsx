@@ -108,7 +108,7 @@ export const GroupSidebar = ({
               {isAdminOrMod && (
                 <a
                   href={`/group/${group._id}/admin`}
-                  className="w-full py-2.5 bg-slate-950 dark:bg-white hover:bg-slate-850 dark:hover:bg-slate-100 text-white dark:text-slate-950 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 font-jakarta hover:scale-[1.02] active:scale-98"
+                  className="w-full py-2.5 bg-slate-950 dark:bg-black hover:bg-slate-850 dark:hover:bg-black/90 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5 font-jakarta hover:scale-[1.02] active:scale-98"
                 >
                   <i className="fi fi-rr-settings-sliders text-xs"></i>
                   Quản lý nhóm

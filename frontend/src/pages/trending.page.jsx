@@ -300,7 +300,7 @@ const TrendingPage = () => {
                       </div>
 
                       <h2
-                        className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight font-jakarta cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-black leading-tight tracking-tight font-jakarta cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                         onClick={() => navigate(`/blog/${trendingBlogs[0].blog_id}`)}
                       >
                         {trendingBlogs[0].title}

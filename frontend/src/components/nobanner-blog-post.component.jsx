@@ -44,9 +44,9 @@ const MinimalBlogPost = ({ blog, index }) => {
                 <div className="flex gap-2 items-center mb-1.5">
                     <img src={profile_img} className="w-5 h-5 rounded-full object-cover ring-1 ring-slate-200 dark:ring-white/10" />
                     <p className="text-xs text-slate-500 dark:text-slate-400 truncate font-medium">@{username}</p>
-                    <span className="text-xs text-slate-300 dark:text-slate-600 ml-auto flex-shrink-0">• {getDisplayDate(publishedAt)}</span>
+                    <span className="text-xs text-dark-grey ml-auto flex-shrink-0">• {getDisplayDate(publishedAt)}</span>
                 </div>
-                <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 line-clamp-2 leading-snug font-jakarta">
+                <p className="text-sm font-semibold text-slate-900 dark:text-black group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200 line-clamp-2 leading-snug font-jakarta">
                     {title}
                 </p>
             </div>

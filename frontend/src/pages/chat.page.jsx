@@ -22,7 +22,7 @@ const ChatUI = () => {
               : "-translate-x-full md:translate-x-0"
           }`}
         >
-          <Sidebar />
+          <Sidebar closeSidebar={() => setIsSidebarOpen(false)} />
         </div>
 
         {/* Mobile Header Toggle */}

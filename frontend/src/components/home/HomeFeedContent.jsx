@@ -52,7 +52,7 @@ const HomeFeedContent = ({
               className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
                 pageState === "feed"
                   ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
-                  : "bg-white dark:bg-zinc-800/80 border-grey dark:border-zinc-700/80 text-dark-grey dark:text-grey/80"
+                  : "bg-white dark:bg-zinc-800/80 border-grey dark:border-zinc-700/80 text-dark-grey"
               }`}
             >
               Tất cả
@@ -66,7 +66,7 @@ const HomeFeedContent = ({
                   className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
                     isActive
                       ? "bg-indigo-600 border-indigo-600 text-white shadow-sm"
-                      : "bg-white dark:bg-zinc-800/80 border-grey dark:border-zinc-700/80 text-dark-grey dark:text-grey/80 hover:bg-grey/50"
+                      : "bg-white dark:bg-zinc-800/80 border-grey dark:border-zinc-700/80 text-dark-grey hover:bg-grey/50"
                   }`}
                 >
                   {category}
@@ -119,7 +119,7 @@ const HomeFeedContent = ({
                 <p className="text-black dark:text-white font-bold text-lg mb-2">
                   Bạn đã xem hết tin bài rồi! 🎉
                 </p>
-                <p className="text-dark-grey dark:text-grey text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
+                <p className="text-dark-grey text-[13px] mb-8 text-center max-w-[280px] leading-relaxed">
                   Hãy quay lại sau để cập nhật thêm những kiến thức bổ ích nhé.
                 </p>
                 <button
@@ -179,18 +179,18 @@ const HomeFeedContent = ({
       {activeTab === 4 && (
         <div className="space-y-6">
           {/* Dashboard Header */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-950 to-purple-950 text-white p-6 md:p-8 shadow-xl border border-white/5 mb-6">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-900 via-indigo-950 to-purple-950 text-[#ffffff] p-6 md:p-8 shadow-xl border border-[#ffffff]/5 mb-6">
             {/* Ambient background glows */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl -ml-20 -mb-20 pointer-events-none" />
 
             <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
               <div className="space-y-3">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/10 text-[9px] font-black uppercase tracking-wider text-indigo-300">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#ffffff]/10 backdrop-blur-md rounded-full border border-[#ffffff]/10 text-[9px] font-black uppercase tracking-wider text-indigo-300">
                   <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-pulse"></span>
                   My Workspace
                 </div>
-                <div className="text-2xl md:text-3xl font-black font-jakarta tracking-tight leading-tight text-white">
+                <div className="text-2xl md:text-3xl font-black font-jakarta tracking-tight leading-tight text-[#ffffff]">
                   Cộng Đồng Học Tập
                 </div>
                 <p className="text-xs md:text-sm text-indigo-200/70 max-w-md font-medium leading-relaxed font-inter">
@@ -202,14 +202,14 @@ const HomeFeedContent = ({
                 <div className="flex flex-wrap items-center gap-3 pt-2">
                   <button
                     onClick={() => setIsCreateGroupModalOpen(true)}
-                    className="flex items-center gap-2 py-2.5 px-5 rounded-xl bg-white text-indigo-950 hover:bg-indigo-50 font-bold text-xs transition-all shadow-md hover:scale-105 active:scale-95 duration-250 cursor-pointer"
+                    className="flex items-center gap-2 py-2.5 px-5 rounded-xl bg-[#ffffff] text-indigo-950 hover:bg-indigo-50 font-bold text-xs transition-all shadow-md hover:scale-105 active:scale-95 duration-250 cursor-pointer"
                   >
                     <i className="fi fi-rr-plus text-xs"></i>
                     Tạo cộng đồng
                   </button>
                   <button
                     onClick={() => navigate("/groups")}
-                    className="flex items-center gap-2 py-2.5 px-5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-white font-bold text-xs transition-all hover:scale-105 active:scale-95 duration-250 cursor-pointer"
+                    className="flex items-center gap-2 py-2.5 px-5 rounded-xl bg-[#ffffff]/10 hover:bg-[#ffffff]/15 border border-[#ffffff]/10 text-[#ffffff] font-bold text-xs transition-all hover:scale-105 active:scale-95 duration-250 cursor-pointer"
                   >
                     <i className="fi fi-rr-search-alt text-xs"></i>
                     Khám phá cộng đồng
@@ -217,7 +217,7 @@ const HomeFeedContent = ({
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 shrink-0 bg-white/5 backdrop-blur-md px-5 py-4 rounded-2xl border border-white/10">
+              <div className="flex items-center gap-4 shrink-0 bg-[#ffffff]/5 backdrop-blur-md px-5 py-4 rounded-2xl border border-[#ffffff]/10">
                 <div className="w-11 h-11 rounded-xl bg-indigo-500/20 flex items-center justify-center text-xl text-indigo-300">
                   <i className="fi fi-rr-users"></i>
                 </div>
@@ -424,7 +424,7 @@ const HomeFeedContent = ({
                             />
                             <div className="absolute top-3 right-3 z-10">
                               <span
-                                className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider backdrop-blur-md border border-white/10 text-white ${group.isPrivate ? "bg-red-500/60" : "bg-black/30"}`}
+                                className={`px-2.5 py-0.5 rounded-full text-[8px] font-black uppercase tracking-wider backdrop-blur-md border border-[#ffffff]/10 text-[#ffffff] ${group.isPrivate ? "bg-red-500/60" : "bg-black/30"}`}
                               >
                                 {group.isPrivate ? "Riêng tư" : "Công khai"}
                               </span>
@@ -510,7 +510,7 @@ const HomeFeedContent = ({
                       append: true,
                     })
                   }
-                  className="text-dark-grey hover:text-black dark:text-grey/80 dark:hover:text-white p-2.5 px-5 bg-white dark:bg-zinc-900 border border-grey dark:border-zinc-800 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
+                  className="text-dark-grey hover:text-black p-2.5 px-5 bg-white dark:bg-zinc-900 border border-grey dark:border-zinc-800 rounded-xl flex items-center gap-2 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer"
                 >
                   Tải thêm nhóm
                 </button>
