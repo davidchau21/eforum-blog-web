@@ -14,19 +14,19 @@ import { UserContext } from "../../App";
 import useConversation from "../../zustand/useConversation";
 
 const MessageSkeleton = () => (
-  <div className="flex flex-col gap-6 mb-8 animate-pulse">
-    <div className="flex items-end gap-3 px-4">
-      <div className="w-9 h-9 rounded-full bg-grey shadow-sm"></div>
-      <div className="flex flex-col gap-2">
-        <div className="w-56 h-12 bg-grey/60 rounded-2xl rounded-tl-none border border-grey/30"></div>
-        <div className="w-28 h-4 bg-grey/40 rounded-full ml-1"></div>
+  <div className="flex flex-col gap-5 mb-6 animate-pulse px-4">
+    <div className="flex items-end gap-2.5">
+      <div className="w-7 h-7 rounded-full bg-grey flex-shrink-0"></div>
+      <div className="flex flex-col gap-1.5">
+        <div className="w-52 h-11 bg-grey rounded-2xl rounded-tl-sm"></div>
+        <div className="w-16 h-3 bg-grey/60 rounded-full ml-1"></div>
       </div>
     </div>
-    <div className="flex items-end flex-row-reverse gap-3 px-4">
-      <div className="w-9 h-9 rounded-full bg-grey shadow-sm"></div>
-      <div className="flex flex-col items-end gap-2">
-        <div className="w-44 h-12 bg-grey/60 rounded-2xl rounded-tr-none border border-grey/30"></div>
-        <div className="w-20 h-4 bg-grey/40 rounded-full mr-1"></div>
+    <div className="flex items-end flex-row-reverse gap-2.5">
+      <div className="w-7 h-7 rounded-full bg-grey flex-shrink-0"></div>
+      <div className="flex flex-col items-end gap-1.5">
+        <div className="w-40 h-11 bg-grey rounded-2xl rounded-tr-sm"></div>
+        <div className="w-12 h-3 bg-grey/60 rounded-full mr-1"></div>
       </div>
     </div>
   </div>
@@ -93,7 +93,7 @@ const Messages = () => {
       }
     }
 
-    // 4. Loading state changed (Spinner appearing/disappearing)
+    // 4. Loading state changed
     if (loading) {
       if (container.scrollHeight > lastScrollHeight.current) {
         const diff = container.scrollHeight - lastScrollHeight.current;
@@ -154,12 +154,12 @@ const Messages = () => {
       return (
         <div key={message._id}>
           {showDivider && (
-            <div className="flex items-center my-6 gap-4">
-              <div className="flex-1 h-[1px] bg-grey/30"></div>
-              <span className="text-[11px] font-bold text-dark-grey/50 uppercase tracking-widest px-3 py-1 bg-grey/10 rounded-full border border-grey/20">
+            <div className="flex items-center my-5 gap-3 px-2">
+              <div className="flex-1 h-px bg-grey"></div>
+              <span className="text-[10px] font-bold text-dark-grey uppercase tracking-widest px-3 py-1 bg-grey rounded-full border border-grey whitespace-nowrap">
                 {dividerText}
               </span>
-              <div className="flex-1 h-[1px] bg-grey/30"></div>
+              <div className="flex-1 h-px bg-grey"></div>
             </div>
           )}
           <Message message={message} />
@@ -169,7 +169,7 @@ const Messages = () => {
   }, [messages]);
 
   return (
-    <div className="flex-1 flex flex-col relative min-h-0 overflow-hidden">
+    <div className="flex-1 flex flex-col relative min-h-0 overflow-hidden bg-white">
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
@@ -177,26 +177,29 @@ const Messages = () => {
         className="px-4 flex-1 overflow-auto scrollbar-hide py-4"
       >
         {loading && hasMore && messages.length > 0 && (
-          <div className="mb-6">
+          <div className="mb-5">
             <MessageSkeleton />
           </div>
         )}
 
         {!loading && messages.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-dark-grey/40 gap-4 opacity-60">
-            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center">
-              <i className="fi fi-rr-messages text-4xl text-slate-300"></i>
+          <div className="h-full flex flex-col items-center justify-center text-center gap-3">
+            <div className="w-16 h-16 bg-grey rounded-2xl border border-grey flex items-center justify-center">
+              <i className="fi fi-rr-messages text-2xl text-dark-grey"></i>
             </div>
-            <p className="text-sm font-medium tracking-wide">
-              Bắt đầu cuộc trò chuyện ngay
-            </p>
+            <div>
+              <p className="text-sm font-semibold text-black">No messages yet</p>
+              <p className="text-[11px] text-dark-grey mt-1">
+                Send a message to start the conversation
+              </p>
+            </div>
           </div>
         )}
 
         {renderedMessages}
 
         {loading && messages.length === 0 && (
-          <div className="h-full flex flex-col gap-6 p-4">
+          <div className="h-full flex flex-col gap-5 p-2">
             <MessageSkeleton />
             <MessageSkeleton />
             <MessageSkeleton />
@@ -208,9 +211,9 @@ const Messages = () => {
       {showScrollToBottom && (
         <button
           onClick={scrollToBottom}
-          className="absolute bottom-6 right-6 w-10 h-10 bg-white border border-grey text-purple rounded-full shadow-xl flex items-center justify-center hover:opacity-90 hover:scale-110 active:scale-95 transition-all duration-200 z-30 group"
+          className="absolute bottom-5 right-5 w-10 h-10 bg-gradient-to-br from-violet-500 to-indigo-600 text-white rounded-full shadow-xl shadow-violet-500/30 flex items-center justify-center hover:from-violet-600 hover:to-indigo-700 hover:scale-110 active:scale-95 transition-all duration-200 z-30"
         >
-          <i className="fi fi-rr-arrow-small-down text-2xl mt-0.5 group-hover:translate-y-0.5 transition-transform"></i>
+          <i className="fi fi-rr-arrow-small-down text-2xl mt-0.5"></i>
         </button>
       )}
     </div>

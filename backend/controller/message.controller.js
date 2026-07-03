@@ -33,6 +33,28 @@ class MessageController extends BaseController {
       return this.sendError(res, error.message);
     }
   }
+
+  async deleteConversation(req, res) {
+    try {
+      const { id: otherUserId } = req.params;
+      const userId = req.user.id;
+      const result = await messageService.deleteConversation(userId, otherUserId);
+      return this.sendSuccess(res, result);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
+
+  async getConversationMedia(req, res) {
+    try {
+      const { id: otherUserId } = req.params;
+      const userId = req.user.id;
+      const media = await messageService.getConversationMedia(userId, otherUserId);
+      return this.sendSuccess(res, media);
+    } catch (error) {
+      return this.sendError(res, error.message);
+    }
+  }
 }
 
 export default new MessageController();

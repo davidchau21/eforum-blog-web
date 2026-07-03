@@ -35,6 +35,14 @@ EE.on('new-message', (users, newMessage) => {
   }
 });
 
+// Emit new conversation entry to the specific user's sidebar
+EE.on('new-conversation', (userId, conversationPayload) => {
+  const socketId = getReceiverSocketId(userId.toString());
+  if (socketId) {
+    io.to(socketId).emit("newConversation", conversationPayload);
+  }
+});
+
 EE.on('online', () => {
   io.emit("online-users", Object.keys(userSocketMap));
 });

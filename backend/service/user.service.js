@@ -252,7 +252,12 @@ class UserService {
    */
   async getUsersForSidebar(loggedInUserId) {
     const allUserExceptLoggedIn = await User.find({ _id: { $ne: loggedInUserId } }).select("-personal_info.password -personal_info.email");
-    const conversations = await Conversation.find({ participants: { $in: [loggedInUserId] } });
+
+    // Exclude conversations the logged-in user has soft-deleted
+    const conversations = await Conversation.find({
+      participants: { $in: [loggedInUserId] },
+      deleted_by: { $nin: [loggedInUserId] },
+    });
 
     const userWithConversation = await Promise.all(
       allUserExceptLoggedIn.map(async (user) => {
