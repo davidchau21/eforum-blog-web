@@ -253,15 +253,19 @@ class UserService {
   async getUsersForSidebar(loggedInUserId) {
     const allUserExceptLoggedIn = await User.find({ _id: { $ne: loggedInUserId } }).select("-personal_info.password -personal_info.email");
 
-    // Exclude conversations the logged-in user has soft-deleted
+    // Fetch all active conversations for the logged-in user
     const conversations = await Conversation.find({
       participants: { $in: [loggedInUserId] },
       deleted_by: { $nin: [loggedInUserId] },
     });
 
-    const userWithConversation = await Promise.all(
+    const directConversations = conversations.filter(c => !c.isGroup);
+    const groupConversations = conversations.filter(c => c.isGroup);
+
+    // 1. Map 1-1 conversations (associated with other users)
+    const directChatUsers = await Promise.all(
       allUserExceptLoggedIn.map(async (user) => {
-        const conversation = conversations.find((c) => c.participants.includes(user._id));
+        const conversation = directConversations.find((c) => c.participants.includes(user._id));
         let unread_count = 0;
         let last_message = null;
         let last_message_time = null;
@@ -290,6 +294,7 @@ class UserService {
 
         return {
           ...user.toObject(),
+          isGroup: false,
           conversation: conversation ? conversation._id : null,
           unread_count,
           last_message,
@@ -299,7 +304,64 @@ class UserService {
       })
     );
 
-    return userWithConversation.sort((a, b) => {
+    // 2. Map Group conversations into sidebar entries
+    const groupChatEntries = await Promise.all(
+      groupConversations.map(async (group) => {
+        let unread_count = 0;
+        let last_message = null;
+        let last_message_time = group.createdAt;
+        let last_message_sender = group.creator;
+
+        // Count group messages that the current user hasn't seen
+        unread_count = await Message.countDocuments({
+          conversationId: group._id,
+          senderId: { $ne: loggedInUserId },
+          readBy: { $ne: loggedInUserId },
+        });
+
+        const lastMsgDoc = await Message.findOne({
+          conversationId: group._id,
+        }).sort({ createdAt: -1 });
+
+        if (lastMsgDoc) {
+          const isImage =
+            lastMsgDoc.type === "img" ||
+            /\.(jpg|jpeg|png|webp|avif|gif|svg)$/i.test(lastMsgDoc.message);
+          
+          // Get sender display name for preview (e.g. "John: Hello")
+          const senderUser = await User.findById(lastMsgDoc.senderId).select("personal_info.fullname");
+          const senderName = senderUser ? senderUser.personal_info.fullname.split(" ").pop() : "User";
+
+          last_message = isImage ? `${senderName}: [Ảnh]` : `${senderName}: ${lastMsgDoc.message}`;
+          last_message_time = lastMsgDoc.createdAt;
+          last_message_sender = lastMsgDoc.senderId;
+        } else {
+          last_message = "Nhóm đã được tạo";
+        }
+
+        return {
+          _id: group._id, // Map group ID as the target ID
+          isGroup: true,
+          personal_info: {
+            fullname: group.groupName,
+            username: `group_${group._id}`,
+            profile_img: group.groupAvatar || "https://cdn-icons-png.flaticon.com/512/166/166258.png",
+            bio: `Nhóm chat tạo bởi chủ phòng. ${group.participants.length} thành viên.`,
+          },
+          conversation: group._id,
+          unread_count,
+          last_message,
+          last_message_time,
+          last_message_sender,
+        };
+      })
+    );
+
+    // Combine both entries
+    const allSidebarEntries = [...directChatUsers, ...groupChatEntries];
+
+    // Sort by latest message time
+    return allSidebarEntries.sort((a, b) => {
       const timeA = a.last_message_time ? new Date(a.last_message_time).getTime() : 0;
       const timeB = b.last_message_time ? new Date(b.last_message_time).getTime() : 0;
       return timeB - timeA;

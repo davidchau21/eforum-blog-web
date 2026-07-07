@@ -105,7 +105,7 @@ const Conversation = ({ conversation, lastIndex, online, closeSidebar, onRequest
             alt={conversation.personal_info.fullname}
           />
         </div>
-        {isOnline && (
+        {isOnline && !conversation.isGroup && (
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-sm">
             <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-60"></span>
           </span>
@@ -182,10 +182,14 @@ const Conversation = ({ conversation, lastIndex, online, closeSidebar, onRequest
           }`}
         >
           {conversation.last_message
-            ? isLastMessageFromMe
-              ? `You: ${conversation.last_message}`
-              : conversation.last_message
-            : `@${conversation.personal_info.username}`}
+            ? conversation.isGroup
+              ? conversation.last_message
+              : isLastMessageFromMe
+                ? `You: ${conversation.last_message}`
+                : conversation.last_message
+            : conversation.isGroup
+              ? "Nhóm đã được tạo"
+              : `@${conversation.personal_info.username}`}
         </p>
       </div>
     </div>

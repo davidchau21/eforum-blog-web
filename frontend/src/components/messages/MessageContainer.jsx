@@ -1,14 +1,17 @@
 import { useEffect, useContext, useState } from "react";
 import Messages from "./Messages";
 import MessageInput from "./MessageInput";
-import { ChatHeader, UserInfoPanel, NoChatSelected } from "./ChatParts";
+import { ChatHeader, UserInfoPanel, NoChatSelected, AddMembersModal } from "./ChatParts";
 import useConversation from "../../zustand/useConversation";
 import { SocketContext } from "../../socket/SocketContext";
+import { UserContext } from "../../App";
 
 const MessageContainer = () => {
   const { selectedConversation, setSelectedConversation } = useConversation();
   const { onlineUsers } = useContext(SocketContext);
+  const { userAuth } = useContext(UserContext);
   const [showInfo, setShowInfo] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Clear selected conversation on unmount
   useEffect(() => {
@@ -38,6 +41,7 @@ const MessageContainer = () => {
         isOnline={isOnline}
         showInfo={showInfo}
         onToggleInfo={() => setShowInfo((prev) => !prev)}
+        onAddMemberClick={() => setIsAddModalOpen(true)}
       />
 
       {/* Chat body + optional info panel */}
@@ -58,9 +62,33 @@ const MessageContainer = () => {
             conversation={selectedConversation}
             isOnline={isOnline}
             onClose={() => setShowInfo(false)}
+            onAddMemberClick={() => setIsAddModalOpen(true)}
           />
         )}
       </div>
+
+      {/* Modal Thêm thành viên */}
+      <AddMembersModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        conversationId={selectedConversation._id}
+        existingParticipants={selectedConversation.participants || []}
+        onAddSuccess={(newMembers) => {
+          // Cập nhật danh sách participants của cuộc trò chuyện trong zustand để đồng bộ hóa
+          const updatedParticipants = [
+            ...(selectedConversation.participants || []),
+            ...newMembers.map((m) => m._id),
+          ];
+          setSelectedConversation({
+            ...selectedConversation,
+            participants: updatedParticipants,
+          });
+
+          // Phát custom event để UserInfoPanel cập nhật danh sách thành viên tại chỗ
+          window.dispatchEvent(new CustomEvent("group-members-updated", { detail: newMembers }));
+        }}
+        userAuth={userAuth}
+      />
     </div>
   );
 };

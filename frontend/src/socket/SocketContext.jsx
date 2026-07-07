@@ -104,7 +104,10 @@ export const SocketContextProvider = ({ children }) => {
 
       newSocket.on("newMessage", (data) => {
         setUserAuth((prev) => {
-          if (data.receiverId === prev._id) {
+          const isMyMessage = data.senderId === prev._id;
+          const isForMe = data.receiverId === prev._id || (!data.receiverId && !isMyMessage);
+
+          if (isForMe) {
             const currentCount =
               typeof prev.unread_messages === "number"
                 ? prev.unread_messages

@@ -16,9 +16,12 @@ const useGetMessages = (limit = 10) => {
 
     try {
       setLoading(true);
+      const apiPath = selectedConversation.isGroup
+        ? `/message/group/${selectedConversation._id}`
+        : `/message/${selectedConversation._id}`;
+
       const res = await axios.get(
-        import.meta.env.VITE_SERVER_DOMAIN +
-          `/message/${selectedConversation._id}`,
+        import.meta.env.VITE_SERVER_DOMAIN + apiPath,
         {
           params: { page: pageNum, limit },
           headers: { Authorization: "Bearer " + userAuth.access_token },

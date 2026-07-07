@@ -12,7 +12,9 @@ const Message = ({ message }) => {
   const messageFromMe = message.senderId === userAuth._id;
   const profileImage = messageFromMe
     ? userAuth.profile_img
-    : selectedConversation?.personal_info.profile_img;
+    : selectedConversation?.isGroup
+      ? message.senderAvatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+      : selectedConversation?.personal_info.profile_img;
 
   const isPDF = message?.type === "application/pdf";
   const isImage = message?.type?.startsWith("image");
@@ -21,10 +23,27 @@ const Message = ({ message }) => {
     message?.type?.startsWith("video");
   const formattedTime = formatTime(message.createdAt);
 
+  if (message?.type === "system") {
+    return (
+      <div className="flex justify-center my-3.5 w-full animate-fadeIn">
+        <span className="text-[11px] font-semibold text-dark-grey bg-grey/40 dark:bg-[#18181b] px-4 py-1.5 rounded-full border border-grey/80 dark:border-grey/10 shadow-sm text-center max-w-[85%] leading-relaxed">
+          {message.message}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`flex flex-col mb-3 ${messageFromMe ? "items-end" : "items-start"}`}
     >
+      {/* Tên người gửi tin nhắn (Chỉ hiển thị cho thành viên khác trong Group Chat) */}
+      {!messageFromMe && selectedConversation?.isGroup && (
+        <span className="text-[10px] font-bold text-dark-grey ml-9.5 mb-1 leading-none">
+          {message.senderName || "Thành viên"}
+        </span>
+      )}
+
       <div
         className={`flex gap-2.5 items-end ${messageFromMe ? "flex-row-reverse" : "flex-row"}`}
       >

@@ -43,6 +43,22 @@ EE.on('new-conversation', (userId, conversationPayload) => {
   }
 });
 
+EE.on('remove-conversation', (userId, conversationId) => {
+  const socketId = getReceiverSocketId(userId.toString());
+  if (socketId) {
+    io.to(socketId).emit("removeConversation", conversationId.toString());
+  }
+});
+
+EE.on('group-info-updated', (users, payload) => {
+  for (const user of users) {
+    const receiverSocketId = getReceiverSocketId(user);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("groupInfoUpdated", payload);
+    }
+  }
+});
+
 EE.on('online', () => {
   io.emit("online-users", Object.keys(userSocketMap));
 });

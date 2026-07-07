@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import SearchInput from "./SearchInput";
 import Conversations from "./Conversations";
+import CreateGroupModal from "./CreateGroupModal";
 
 const Sidebar = ({ closeSidebar }) => {
+  const [isGroupModalOpen, setIsGroupModalOpen] = useState(false);
+
   return (
     <div className="flex flex-col h-full bg-white overflow-hidden">
       {/* Header */}
@@ -14,8 +17,12 @@ const Sidebar = ({ closeSidebar }) => {
             </div>
             <h2 className="text-[16px] font-bold text-black tracking-tight">Messages</h2>
           </div>
-          <button className="w-8 h-8 flex items-center justify-center rounded-xl bg-grey hover:opacity-80 text-dark-grey hover:text-black transition-all duration-200 group">
-            <i className="fi fi-rr-edit text-[13px] group-hover:rotate-12 transition-transform duration-200"></i>
+          <button
+            onClick={() => setIsGroupModalOpen(true)}
+            title="Tạo nhóm chat mới"
+            className="w-8 h-8 flex items-center justify-center rounded-xl bg-grey hover:opacity-80 text-dark-grey hover:text-black transition-all duration-200 group"
+          >
+            <i className="fi fi-rr-users-medical text-[13px] group-hover:scale-110 transition-transform duration-200"></i>
           </button>
         </div>
         <SearchInput closeSidebar={closeSidebar} />
@@ -25,6 +32,12 @@ const Sidebar = ({ closeSidebar }) => {
       <div className="flex-1 overflow-y-auto py-2 scrollbar-hide">
         <Conversations closeSidebar={closeSidebar} />
       </div>
+
+      {/* Modal tạo nhóm chat */}
+      <CreateGroupModal
+        isOpen={isGroupModalOpen}
+        onClose={() => setIsGroupModalOpen(false)}
+      />
     </div>
   );
 };

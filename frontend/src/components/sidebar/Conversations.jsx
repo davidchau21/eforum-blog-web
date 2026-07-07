@@ -5,6 +5,8 @@ import useGetConversations from "../../hook/useGetConversations.jsx";
 import { useSocketContext } from "../../socket/SocketContext.jsx";
 import useOnline from "../../hook/useOnline.jsx";
 import useDeleteConversation from "../../hook/useDeleteConversation.jsx";
+import useConversation from "../../zustand/useConversation";
+import { toast } from "react-hot-toast";
 
 // Skeleton item that matches the real Conversation item layout
 const ConversationSkeleton = () => (
@@ -25,6 +27,7 @@ const Conversations = ({ closeSidebar }) => {
   const [conversations, setConversations] = useState([]);
   const [online, setOnline] = useState([]);
   const [conversationToDelete, setConversationToDelete] = useState(null); // Trạng thái lưu cuộc trò chuyện đang muốn xóa
+  const { selectedConversation, setSelectedConversation } = useConversation();
   const { socket } = useSocketContext();
   const { sendOnline } = useOnline();
 
@@ -87,6 +90,91 @@ const Conversations = ({ closeSidebar }) => {
     socket.on("newConversation", handleNewConversation);
     return () => socket.off("newConversation", handleNewConversation);
   }, [socket]);
+
+  // Lắng nghe socket event 'removeConversation' khi bị trưởng nhóm xóa
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRemoveConversation = (removedGroupId) => {
+      setConversations((prev) => prev.filter((c) => c._id !== removedGroupId));
+      if (selectedConversation?._id === removedGroupId) {
+        setSelectedConversation(null);
+        toast.error("Bạn đã bị xóa khỏi nhóm chat bởi trưởng nhóm", {
+          style: { borderRadius: "12px", background: "#09090b", color: "#fff" },
+        });
+      }
+    };
+
+    socket.on("removeConversation", handleRemoveConversation);
+    return () => socket.off("removeConversation", handleRemoveConversation);
+  }, [socket, selectedConversation, setSelectedConversation]);
+
+  // Đặt lại số lượng tin nhắn chưa đọc bằng 0 khi cuộc trò chuyện hiện tại đang được chọn
+  useEffect(() => {
+    if (selectedConversation?._id) {
+      setConversations((prev) =>
+        prev.map((c) =>
+          c._id === selectedConversation._id
+            ? { ...c, unread_count: 0 }
+            : c
+        )
+      );
+    }
+  }, [selectedConversation?._id]);
+
+  // Lắng nghe socket event 'groupInfoUpdated' khi đổi tên nhóm/avatar nhóm
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleGroupInfoUpdated = (payload) => {
+      const { conversationId, groupName, groupAvatar } = payload;
+
+      // Cập nhật danh sách sidebar
+      setConversations((prev) =>
+        prev.map((c) => {
+          if (c._id === conversationId) {
+            return {
+              ...c,
+              personal_info: {
+                ...c.personal_info,
+                fullname: groupName,
+                profile_img: groupAvatar || c.personal_info.profile_img,
+              },
+            };
+          }
+          return c;
+        })
+      );
+
+      // Cập nhật cuộc trò chuyện đang active
+      if (selectedConversation?._id === conversationId) {
+        setSelectedConversation({
+          ...selectedConversation,
+          personal_info: {
+            ...selectedConversation.personal_info,
+            fullname: groupName,
+            profile_img: groupAvatar || selectedConversation.personal_info.profile_img,
+          },
+        });
+      }
+    };
+
+    socket.on("groupInfoUpdated", handleGroupInfoUpdated);
+    return () => socket.off("groupInfoUpdated", handleGroupInfoUpdated);
+  }, [socket, selectedConversation, setSelectedConversation]);
+
+  // Lắng nghe sự kiện rời nhóm chat thành công để cập nhật danh sách sidebar tức thì
+  useEffect(() => {
+    const handleLeaveGroupSuccess = (e) => {
+      const groupId = e.detail;
+      setConversations((prev) => prev.filter((c) => c._id !== groupId));
+    };
+
+    window.addEventListener("leave-group-success", handleLeaveGroupSuccess);
+    return () => {
+      window.removeEventListener("leave-group-success", handleLeaveGroupSuccess);
+    };
+  }, []);
 
   // Filter out stale conversations with no conversation object
   const filteredConversations = conversations.filter(

@@ -18,9 +18,13 @@ const useSendMessage = () => {
 
         try {
             setLoading(true);
+            const apiPath = selectedConversation.isGroup
+                ? `/message/group/send/${selectedConversation._id}`
+                : `/message/send/${selectedConversation._id}`;
+
             const response = await axios.post(
-                import.meta.env.VITE_SERVER_DOMAIN + `/message/send/${selectedConversation._id}`,
-                { message,type:type },
+                import.meta.env.VITE_SERVER_DOMAIN + apiPath,
+                { message, type: type },
                 {
                     headers: { Authorization: "Bearer " + userAuth.access_token },
                 }
