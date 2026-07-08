@@ -10,6 +10,7 @@
     "start": "node server.js",
     "ingest": "node scripts/ingest.js",
     "seed-groups": "node scripts/seed_groups.js",
+    "seed-group-chats": "node scripts/seed_group_chats.js",
     "seed-all": "node scripts/index.js"
   },
   "author": "",

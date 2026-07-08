@@ -43,7 +43,7 @@ const useGetConversations = () => {
       });
   }, [userAuth?.access_token]);
 
-  return { loading, conversations };
+  return { loading, conversations, setConversations };
 };
 
 export default useGetConversations;

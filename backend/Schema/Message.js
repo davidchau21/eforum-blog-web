@@ -9,13 +9,13 @@ const messageSchema = new mongoose.Schema(
     },
     senderId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "users",
       required: true,
     },
     receiverId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      ref: "users",
+      required: false,
     },
     message: {
       type: String,
@@ -28,7 +28,13 @@ const messageSchema = new mongoose.Schema(
     seen: {
       type: Boolean,
       default: false
-    }
+    },
+    readBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+      }
+    ],
   },
   { timestamps: true }
 )
