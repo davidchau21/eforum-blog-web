@@ -193,25 +193,7 @@ const HomePage = () => {
     fetchTrendingTopics().then(setTrendingTopics).catch(console.log);
     fetchTopContributors().then(setTopContributors).catch(console.log);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pageState]);
-
-  // ── Re-fetch on login/logout ────────────────────────────────────────────
-  useEffect(() => {
-    if (!access_token) return;
-    if (pageState === translations.following) {
-      fetchFollowingBlogs(1, access_token, null)
-        .then(setFollowingBlogs)
-        .catch(console.log);
-    } else if (pageState === "my-groups") {
-      fetchJoinedGroups(1, access_token)
-        .then(({ list, totalGroups }) => {
-          setJoinedGroups(list);
-          setJoinedGroupsTotal(totalGroups);
-        })
-        .catch(console.log);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [access_token]);
+  }, [pageState, access_token]);
 
   // ── Admin alert (session-scoped) ────────────────────────────────────────
   useEffect(() => {
