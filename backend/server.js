@@ -8,6 +8,7 @@ import "./config/firebase.js";
 
 // Import central router
 import appRouter from "./router/index.js";
+import { initNotificationQueue } from "./queue/notification.queue.js";
 
 server.set("trust proxy", true);
 server.use(express.json());
@@ -26,4 +27,5 @@ server.use("/", appRouter);
 
 app.listen(PORT, () => {
   console.log("listening on port -> " + PORT);
+  initNotificationQueue();
 });

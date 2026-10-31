@@ -17,15 +17,16 @@ const NotificationCard = ({ data, index, notificationState }) => {
     comment,
     replied_on_comment,
     user,
-    user: {
-      personal_info: { fullname, username, profile_img },
-    },
     blog,
     group,
     role,
     _id: notification_id,
     metadata,
   } = data;
+
+  const fullname = user?.personal_info?.fullname || "User";
+  const username = user?.personal_info?.username || "user";
+  const profile_img = user?.personal_info?.profile_img || "/default-avatar.png";
 
   const blog_id = blog?.blog_id || null;
   const blog_title = blog?.title || "Blog no longer available";
@@ -81,7 +82,7 @@ const NotificationCard = ({ data, index, notificationState }) => {
           ...notifications,
           results,
           totalDocs: totalDocs - 1,
-          deleteDocCount: notifications.deleteDocCount + 1,
+          deletedDocCount: (notifications.deletedDocCount || 0) + 1,
         });
       })
       .catch((err) => {
@@ -133,22 +134,37 @@ const NotificationCard = ({ data, index, notificationState }) => {
     >
       <div className="flex gap-5 mb-4">
         <div className="relative flex-none">
-          <img src={profile_img} className="w-14 h-14 rounded-full border-2 border-grey shadow-sm" />
+          <img
+            src={profile_img}
+            className="w-14 h-14 rounded-full border-2 border-grey shadow-sm"
+          />
           <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-grey flex items-center justify-center">
-             <i className={`fi ${
-                type === "like" ? "fi-sr-heart text-rose-500" : 
-                type === "comment" ? "fi-sr-comment-dots text-indigo-500" : 
-                type === "reply" ? "fi-sr-reply text-emerald-500" : 
-                type === "share" ? "fi-sr-share text-amber-500" :
-                type === "group_join_request" ? "fi-sr-user-add text-indigo-500" :
-                type === "group_join_approve" ? "fi-sr-checkbox text-emerald-500" :
-                type === "group_role_change" ? "fi-sr-crown text-amber-500" :
-                type === "group_new_post" ? "fi-sr-document text-rose-500" :
-                "fi-sr-bell text-slate-500"
-             } text-[10px]`}></i>
+            <i
+              className={`fi ${
+                type === "like"
+                  ? "fi-sr-heart text-rose-500"
+                  : type === "comment"
+                    ? "fi-sr-comment-dots text-indigo-500"
+                    : type === "reply"
+                      ? "fi-sr-reply text-emerald-500"
+                      : type === "share"
+                        ? "fi-sr-share text-amber-500"
+                        : type === "follow"
+                          ? "fi-sr-user-add text-cyan-500"
+                          : type === "group_join_request"
+                            ? "fi-sr-user-add text-indigo-500"
+                            : type === "group_join_approve"
+                              ? "fi-sr-checkbox text-emerald-500"
+                              : type === "group_role_change"
+                                ? "fi-sr-crown text-amber-500"
+                                : type === "group_new_post"
+                                  ? "fi-sr-document text-rose-500"
+                                  : "fi-sr-bell text-slate-500"
+              } text-[10px]`}
+            ></i>
           </div>
         </div>
-        
+
         <div className="w-full">
           <h1 className="font-bold text-sm text-black flex items-center flex-wrap gap-1">
             <span className="hidden sm:inline-block">{fullname}</span>
@@ -167,17 +183,22 @@ const NotificationCard = ({ data, index, notificationState }) => {
                     ? translations.repliedOn
                     : type === "share"
                       ? translations.sharedYourBlog
-                      : type === "message"
-                        ? translations.sentYouAMessage || "sent you a message"
-                        : type === "group_join_request"
-                          ? translations.groupJoinRequest || "yêu cầu tham gia nhóm học tập"
-                          : type === "group_join_approve"
-                            ? translations.groupJoinApprove || "đã đồng ý yêu cầu tham gia nhóm học tập"
-                            : type === "group_role_change"
-                              ? `${translations.groupRoleChange || "đã thay đổi vai trò của bạn thành"} ${role}`
-                              : type === "group_new_post"
-                                ? translations.groupNewPost || "đã đăng bài viết mới trong nhóm học tập"
-                                : ""}
+                      : type === "follow"
+                        ? translations.followedYou || "đã bắt đầu theo dõi bạn"
+                        : type === "message"
+                          ? translations.sentYouAMessage || "sent you a message"
+                          : type === "group_join_request"
+                            ? translations.groupJoinRequest ||
+                              "yêu cầu tham gia nhóm học tập"
+                            : type === "group_join_approve"
+                              ? translations.groupJoinApprove ||
+                                "đã đồng ý yêu cầu tham gia nhóm học tập"
+                              : type === "group_role_change"
+                                ? `${translations.groupRoleChange || "đã thay đổi vai trò của bạn thành"} ${role}`
+                                : type === "group_new_post"
+                                  ? translations.groupNewPost ||
+                                    "đã đăng bài viết mới trong nhóm học tập"
+                                  : ""}
             </span>
           </h1>
 
@@ -190,13 +211,26 @@ const NotificationCard = ({ data, index, notificationState }) => {
                 {`"${blog_title}"`}
               </Link>
               <p className="text-[11px] text-slate-500 mt-1">
-                Nhóm: <Link to={`/group/${group?._id}`} className="hover:underline font-bold text-indigo-500">{group?.name || "Chi tiết nhóm"}</Link>
+                Nhóm:{" "}
+                <Link
+                  to={`/group/${group?._id}`}
+                  className="hover:underline font-bold text-indigo-500"
+                >
+                  {group?.name || "Chi tiết nhóm"}
+                </Link>
               </p>
             </div>
-          ) : (type === "group_join_request" || type === "group_join_approve" || type === "group_role_change") && group ? (
+          ) : (type === "group_join_request" ||
+              type === "group_join_approve" ||
+              type === "group_role_change") &&
+            group ? (
             <div className="p-4 mt-3 rounded-2xl bg-grey border border-grey/50">
               <Link
-                to={type === "group_join_request" ? `/group/${group?._id}?tab=members&sub=pending` : `/group/${group?._id}`}
+                to={
+                  type === "group_join_request"
+                    ? `/group/${group?._id}?tab=members&sub=pending`
+                    : `/group/${group?._id}`
+                }
                 className="text-xs font-bold text-indigo-600 hover:underline flex items-center gap-1.5"
               >
                 <i className="fi fi-rr-users"></i>
@@ -221,7 +255,9 @@ const NotificationCard = ({ data, index, notificationState }) => {
               >
                 {`"${blog_title}"`}
               </Link>
-              <p className="text-sm text-black/70 italic line-clamp-2">"{replied_on_comment.comment}"</p>
+              <p className="text-sm text-black/70 italic line-clamp-2">
+                "{replied_on_comment.comment}"
+              </p>
             </div>
           ) : blog_id ? (
             <Link
@@ -231,13 +267,16 @@ const NotificationCard = ({ data, index, notificationState }) => {
               {`on "${blog_title}"`}
             </Link>
           ) : (
-            <span className="text-xs font-bold text-rose-500">{blog_title}</span>
+            <span className="text-xs font-bold text-rose-500">
+              {blog_title}
+            </span>
           )}
 
           {type === "share" && metadata ? (
             <div className="p-4 mt-3 rounded-2xl bg-grey border border-grey/50">
               <p className="text-xs font-bold text-black mb-2">
-                {translations.sharedOn} <span className="text-indigo-600">{metadata.share_type}</span>
+                {translations.sharedOn}{" "}
+                <span className="text-indigo-600">{metadata.share_type}</span>
               </p>
               {metadata.share_img && (
                 <img
@@ -273,39 +312,48 @@ const NotificationCard = ({ data, index, notificationState }) => {
 
       <div className="ml-14 pl-5 flex items-center justify-between">
         <div className="flex items-center gap-6">
-            <span className="text-[10px] font-bold text-dark-grey uppercase tracking-wider">
-                {getDisplayDate(createdAt)}
-            </span>
-            
-            <div className="flex items-center gap-4">
-                {type !== "like" && type !== "share" && type !== "message" ? (
-                <>
-                    {!reply && (
-                    <button
-                        className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:bg-indigo-500/10 px-2 py-1 rounded-md transition-all"
-                        onClick={handleReplyClick}
-                    >
-                        {translations.reply}
-                    </button>
-                    )}
-                    <button
-                    className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 px-2 py-1 rounded-md transition-all"
-                    onClick={(e) => handleDelete(comment._id, "comment", e.target)}
-                    >
-                    {translations.delete}
-                    </button>
-                </>
-                ) : type === "share" || type === "like" || type === "message" || type === "group_join_request" || type === "group_join_approve" || type === "group_role_change" || type === "group_new_post" ? (
-                <button
-                    className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 px-2 py-1 rounded-md transition-all"
-                    onClick={(e) => handleDelete(notification_id, type, e.target)}
-                >
-                    {translations.delete}
-                </button>
-                ) : (
-                ""
+          <span className="text-[10px] font-bold text-dark-grey uppercase tracking-wider">
+            {getDisplayDate(createdAt)}
+          </span>
+
+          <div className="flex items-center gap-4">
+            {type !== "like" && type !== "share" && type !== "message" ? (
+              <>
+                {!reply && (
+                  <button
+                    className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest hover:bg-indigo-500/10 px-2 py-1 rounded-md transition-all"
+                    onClick={handleReplyClick}
+                  >
+                    {translations.reply}
+                  </button>
                 )}
-            </div>
+                <button
+                  className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 px-2 py-1 rounded-md transition-all"
+                  onClick={(e) =>
+                    handleDelete(comment._id, "comment", e.target)
+                  }
+                >
+                  {translations.delete}
+                </button>
+              </>
+            ) : type === "share" ||
+              type === "like" ||
+              type === "follow" ||
+              type === "message" ||
+              type === "group_join_request" ||
+              type === "group_join_approve" ||
+              type === "group_role_change" ||
+              type === "group_new_post" ? (
+              <button
+                className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 px-2 py-1 rounded-md transition-all"
+                onClick={(e) => handleDelete(notification_id, type, e.target)}
+              >
+                {translations.delete}
+              </button>
+            ) : (
+              ""
+            )}
+          </div>
         </div>
       </div>
 
@@ -327,33 +375,40 @@ const NotificationCard = ({ data, index, notificationState }) => {
         <div className="ml-14 pl-5 mt-6 border-l-2 border-indigo-600/30">
           <div className="bg-grey/50 p-5 rounded-2xl border border-grey">
             <div className="flex gap-3 mb-4">
-                <img src={author_profile_img} className="w-10 h-10 rounded-full border-2 border-white dark:border-grey shadow-sm" />
-                <div className="flex flex-col justify-center">
-                    <h1 className="text-xs font-bold text-black flex items-center gap-1">
-                        <Link
-                        to={`/user/${author_username}`}
-                        className="text-indigo-600 hover:underline"
-                        >
-                        @{author_username}
-                        </Link>
-                        <span className="font-medium text-dark-grey">{translations.repliedTo}</span>
-                        <Link
-                        to={`/user/${username}`}
-                        className="text-indigo-600 hover:underline"
-                        >
-                        @{username}
-                        </Link>
-                    </h1>
-                </div>
+              <img
+                src={author_profile_img}
+                className="w-10 h-10 rounded-full border-2 border-white dark:border-grey shadow-sm"
+              />
+              <div className="flex flex-col justify-center">
+                <h1 className="text-xs font-bold text-black flex items-center gap-1">
+                  <Link
+                    to={`/user/${author_username}`}
+                    className="text-indigo-600 hover:underline"
+                  >
+                    @{author_username}
+                  </Link>
+                  <span className="font-medium text-dark-grey">
+                    {translations.repliedTo}
+                  </span>
+                  <Link
+                    to={`/user/${username}`}
+                    className="text-indigo-600 hover:underline"
+                  >
+                    @{username}
+                  </Link>
+                </h1>
+              </div>
             </div>
 
-            <p className="font-gelasio text-lg text-black/80 leading-relaxed italic mb-4">"{reply.comment}"</p>
+            <p className="font-gelasio text-lg text-black/80 leading-relaxed italic mb-4">
+              "{reply.comment}"
+            </p>
 
             <button
-                className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 px-2 py-1 rounded-md transition-all"
-                onClick={(e) => handleDelete(reply._id, "reply", e.target)}
+              className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:bg-rose-500/10 px-2 py-1 rounded-md transition-all"
+              onClick={(e) => handleDelete(reply._id, "reply", e.target)}
             >
-                {translations.delete}
+              {translations.delete}
             </button>
           </div>
         </div>
