@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # 1. Dịch vụ Redis
+  redis:
+    image: redis:alpine
+    container_name: eforum-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # 2. Dịch vụ Backend
+  backend:
+    build: ./backend
+    container_name: eforum-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_ENABLED=true
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+    restart: always
+
+  # 3. Dịch vụ Frontend
+  frontend:
+    build: ./frontend
+    container_name: eforum-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+  # 4. Dịch vụ Admin Web
+  admin-web:
+    build: ./admin-web
+    container_name: eforum-admin-web
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    restart: always
