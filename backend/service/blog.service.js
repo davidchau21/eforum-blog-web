@@ -37,8 +37,24 @@ async function notifyGroupMembersOfNewPost(blog, authorId) {
 
 class BlogService {
   async getForbiddenGroupIds(userId) {
-    const privateGroups = await Group.find({ isPrivate: true }).select("_id");
-    return privateGroups.map(g => g._id.toString());
+    if (userId) {
+      const joinedMemberships = await GroupMember.find({
+        user: userId,
+        status: "JOINED"
+      }).select("group");
+      
+      const joinedGroupIds = joinedMemberships.map(m => m.group.toString());
+      
+      const privateGroups = await Group.find({
+        isPrivate: true,
+        _id: { $nin: joinedGroupIds }
+      }).select("_id");
+      
+      return privateGroups.map(g => g._id.toString());
+    } else {
+      const privateGroups = await Group.find({ isPrivate: true }).select("_id");
+      return privateGroups.map(g => g._id.toString());
+    }
   }
 
   async attachGroupMemberships(blogs, userId) {
@@ -433,7 +449,7 @@ class BlogService {
     } else if (query) {
       findQuery = { draft: false, title: new RegExp(query, "i") };
     } else if (author) {
-      findQuery = { author, draft: false };
+      findQuery = { author, draft: false, group: null };
     }
 
     const forbiddenGroupIds = await this.getForbiddenGroupIds(currentUserId);
@@ -463,7 +479,7 @@ class BlogService {
     } else if (query) {
       findQuery = { draft: false, title: new RegExp(query, "i") };
     } else if (author) {
-      findQuery = { author, draft: false };
+      findQuery = { author, draft: false, group: null };
     }
     const forbiddenGroupIds = await this.getForbiddenGroupIds(currentUserId);
     return await Blog.countDocuments({

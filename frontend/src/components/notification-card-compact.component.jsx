@@ -8,13 +8,15 @@ const NotificationCardCompact = ({ data, onClick }) => {
     seen,
     type,
     createdAt,
-    user: {
-      personal_info: { fullname, username, profile_img },
-    },
+    user,
     blog,
     group,
     role,
   } = data;
+
+  const fullname = user?.personal_info?.fullname || "User";
+  const username = user?.personal_info?.username || "user";
+  const profile_img = user?.personal_info?.profile_img || "/default-avatar.png";
 
   const {
     userAuth: { language },
@@ -52,6 +54,8 @@ const NotificationCardCompact = ({ data, onClick }) => {
         return translations.repliedOn;
       case "share":
         return translations.sharedYourBlog;
+      case "follow":
+        return translations.followedYou || "đã bắt đầu theo dõi bạn";
       case "message":
         return translations.sentYouAMessage || "sent a message";
       case "group_join_request":
@@ -70,6 +74,9 @@ const NotificationCardCompact = ({ data, onClick }) => {
   const getNotificationLink = () => {
     if (type === "message") {
       return "/chat";
+    }
+    if (type === "follow") {
+      return `/user/${username}`;
     }
     if (type === "group_join_request") {
       return `/group/${group?._id}?tab=members&sub=pending`;
